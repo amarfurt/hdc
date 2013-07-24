@@ -1,6 +1,5 @@
 package utils;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -14,7 +13,7 @@ public class TestConnection {
 
 	private MongoClient mongoClient;
 
-	public TestConnection() throws FileNotFoundException, IOException {
+	public TestConnection() throws IOException {
 		Properties properties = new Properties();
 		try (FileReader fr = new FileReader(CONFIG)) {
 			properties.load(fr);
