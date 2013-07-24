@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, user: User)(content: Html)
 
 <!DOCTYPE html>
 
@@ -10,6 +10,15 @@
         <script src="@routes.Assets.at("javascripts/jquery-1.9.0.min.js")" type="text/javascript"></script>
     </head>
     <body>
+    <header>
+	    <a href="@routes.Application.index" id="logo"><span>Zen</span>tasks</a>
+	    <dl id="user">
+	        <dt>@user.name <span>(@user.email)</span></dt>
+	        <dd>
+	            <a href="@routes.Application.logout()">Logout</a>
+	        </dd>
+	    </dl>
+	</header>
         @content
     </body>
 </html>
