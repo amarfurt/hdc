@@ -36,7 +36,7 @@ public class CircleTest {
 	}
 
 	@Test
-	public void ownerSuccessTest() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
+	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -50,7 +50,7 @@ public class CircleTest {
 	}
 
 	@Test
-	public void ownerFailureTest() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
+	public void ownerFailure() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -62,5 +62,37 @@ public class CircleTest {
 		ObjectId circleId = (ObjectId) circles.findOne().get("_id");
 		assertFalse(Circle.isOwner(circleId, "wrong@example.com"));
 	}
-	
+
+	@Test
+	public void renameSuccess() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		assertEquals(1, circles.count());
+		ObjectId circleId = (ObjectId) circles.findOne().get("_id");
+		Circle.rename(circleId, "New circle");
+		assertEquals(1, circles.count());
+		assertEquals("New circle", circles.findOne().get("name"));
+	}
+
+	@Test
+	public void renameFailure() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		assertEquals(1, circles.count());
+		ObjectId circleId = null;
+		Circle.rename(circleId, "New circle");
+		assertEquals(1, circles.count());
+		assertEquals("Test circle", circles.findOne().get("name"));
+	}
+
 }
