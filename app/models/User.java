@@ -4,7 +4,7 @@ import java.net.UnknownHostException;
 
 import utils.ModelConversion;
 
-import com.mongodb.DBCursor;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import controllers.database.Connection;
@@ -17,15 +17,13 @@ public class User {
 
 	public static User find(String email) throws UnknownHostException, IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBObject cur = null;
-		DBCursor cursor = Connection.getCursor("users");
-		while (cursor.hasNext()) {
-			cur = cursor.next();
-			if (cur.get("email").equals(email)) {
-				return ModelConversion.mapToModel(User.class, cur.toMap());
-			}
+		DBObject query = new BasicDBObject("email", email);
+		DBObject result = Connection.getCollection("users").findOne(query);
+		if (result != null) {
+			return ModelConversion.mapToModel(User.class, result.toMap());
+		} else {
+			return null;
 		}
-		return null;
 	}
 
 	public static User authenticate(String email, String password) throws UnknownHostException, IllegalArgumentException,

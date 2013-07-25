@@ -6,7 +6,6 @@ import play.Play;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 
 public class Connection {
@@ -54,15 +53,8 @@ public class Connection {
 	/**
 	 * Retrieve a collection.
 	 */
-	protected static DBCollection getCollection(String collection) {
+	public static DBCollection getCollection(String collection) {
 		return getDB().getCollection(collection);
-	}
-	
-	/**
-	 * Open a cursor on the given collection.
-	 */
-	public static DBCursor getCursor(String collection) {
-		return getCollection(collection).find();
 	}
 
 	/**

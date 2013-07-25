@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
+import models.Circle;
 import models.Message;
 import models.Person;
 import models.User;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import utils.ModelConversion;
 import utils.TestConnection;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -50,7 +52,7 @@ public class DatabaseObjectTest {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
-		user.email = "test.user@example.com";
+		user.email = "test1@example.com";
 		user.name = "Test User";
 		user.password = "secret";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
@@ -65,7 +67,7 @@ public class DatabaseObjectTest {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		Person person = new Person();
-		person.email = "test.user@example.com";
+		person.email = "test1@example.com";
 		person.name = "Test User";
 		person.password = "secret";
 		person.birthday = "2000-01-01";
@@ -81,7 +83,7 @@ public class DatabaseObjectTest {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		Person person = new Person();
-		person.email = "test.user@example.com";
+		person.email = "test1@example.com";
 		person.name = "Test User";
 		person.password = "secret";
 		person.birthday = "2000-01-01";
@@ -107,6 +109,24 @@ public class DatabaseObjectTest {
 		DBObject foundObject = messages.findOne();
 		Message retrievedMessage = ModelConversion.mapToModel(Message.class, foundObject.toMap());
 		assertEquals("Test", retrievedMessage.title);
+	}
+	
+	@Test
+	public void createAndRetrieveCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Family";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circle.members.add("test2@example.com");
+		circle.members.add("test3@example.com");
+		circle.members.add("test4@example.com");
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		assertEquals(1, circles.count());
+		DBObject foundObject = circles.findOne();
+		Circle retrievedCircle = ModelConversion.mapToModel(Circle.class, foundObject.toMap());
+		assertEquals("Family", retrievedCircle.name);
 	}
 
 }
