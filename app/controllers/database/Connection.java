@@ -9,10 +9,8 @@ import com.mongodb.MongoClient;
 
 public class Connection {
 
-	// mongo client is already a connection pool
-	private static MongoClient mongoClient;
-	// database currently in use
-	private static String database;
+	private static MongoClient mongoClient; // mongo client is already a connection pool
+	private static String database; // database currently in use
 
 	/**
 	 * Open mongo client.
@@ -29,7 +27,7 @@ public class Connection {
 	}
 
 	/**
-	 * Connects to the main database 'healthbank'.
+	 * Connects to the production database 'healthbank'.
 	 */
 	public static void connect() {
 		openConnection();
