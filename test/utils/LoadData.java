@@ -19,7 +19,7 @@ import controllers.database.Connection;
 
 public class LoadData {
 
-	private static final String DATA = "test/data/users.json";
+	private static final String DATA = "test/data/db.json";
 
 	public static void load() {
 		try {
