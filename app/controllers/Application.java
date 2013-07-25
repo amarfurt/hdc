@@ -2,6 +2,7 @@ package controllers;
 
 import java.net.UnknownHostException;
 
+import models.Message;
 import models.User;
 import play.data.Form;
 import play.mvc.Controller;
@@ -10,24 +11,13 @@ import play.mvc.Security;
 import views.html.index;
 import views.html.welcome;
 
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-
-import controllers.database.Access;
-
 public class Application extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public static Result index() {
 		try {
-			DBCursor cursor = Access.getUsers();
-			String names = "";
-			while (cursor.hasNext()) {
-				DBObject object = cursor.next();
-				names += object.get("name") + ", ";
-			}
-			cursor.close();
-			return ok(index.render(names.substring(0, names.length() - 2), User.find(request().username())));
+			User user = User.find(request().username());
+			return ok(index.render(Message.findSentTo(user), user));
 		} catch (UnknownHostException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
+import models.Message;
 import models.Person;
 import models.User;
 
@@ -13,30 +14,29 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.ModelConversion;
+import utils.TestConnection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-
-import controllers.database.Connection;
 
 public class DatabaseObjectTest {
 
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectTest();
-		Connection.getDB().dropDatabase();
+		TestConnection.connectTest();
+		TestConnection.dropDatabase();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		TestConnection.close();
 	}
 
 	@Test
 	public void createAndSaveObject() {
-		DBCollection users = Connection.getDB().getCollection("users");
+		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		users.insert(new BasicDBObject("name", "Test User"));
 		assertEquals(1, users.count());
@@ -47,9 +47,12 @@ public class DatabaseObjectTest {
 
 	@Test
 	public void createAndSaveUser() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = Connection.getDB().getCollection("users");
+		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
-		User user = new User("test.user@example.com", "Test User", "secret");
+		User user = new User();
+		user.email = "test.user@example.com";
+		user.name = "Test User";
+		user.password = "secret";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
@@ -59,9 +62,13 @@ public class DatabaseObjectTest {
 
 	@Test
 	public void createAndSavePerson() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = Connection.getDB().getCollection("users");
+		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
-		Person person = new Person("test.user@example.com", "Test User", "secret", "2000-01-01");
+		Person person = new Person();
+		person.email = "test.user@example.com";
+		person.name = "Test User";
+		person.password = "secret";
+		person.birthday = "2000-01-01";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
@@ -71,14 +78,35 @@ public class DatabaseObjectTest {
 
 	@Test
 	public void createAndRetrievePerson() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection users = Connection.getDB().getCollection("users");
+		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
-		Person person = new Person("test.user@example.com", "Test User", "secret", "2000-01-01");
+		Person person = new Person();
+		person.email = "test.user@example.com";
+		person.name = "Test User";
+		person.password = "secret";
+		person.birthday = "2000-01-01";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
 		Person retrievedPerson = ModelConversion.mapToModel(Person.class, foundObject.toMap());
 		assertEquals("Test User", retrievedPerson.name);
+	}
+	
+	@Test
+	public void createAndRetrieveMessage() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		DBCollection messages = TestConnection.getCollection("messages");
+		assertEquals(0, messages.count());
+		Message message = new Message();
+		message.sender = "test1@example.com";
+		message.receiver = "test2@example.com";
+		message.datetime = "2000-01-01-120000Z";
+		message.title = "Test";
+		message.content = "This is a test message.";
+		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
+		assertEquals(1, messages.count());
+		DBObject foundObject = messages.findOne();
+		Message retrievedMessage = ModelConversion.mapToModel(Message.class, foundObject.toMap());
+		assertEquals("Test", retrievedMessage.title);
 	}
 
 }

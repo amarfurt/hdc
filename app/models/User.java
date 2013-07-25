@@ -7,45 +7,31 @@ import utils.ModelConversion;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import controllers.database.Access;
+import controllers.database.Connection;
 
 public class User {
 
-	public String email;
+	public String email; // serves as id
 	public String name;
 	public String password;
 
-	public User() {
-		// empty constructor
-	}
-
-	public User(String email, String name, String password) {
-		this.email = email;
-		this.name = name;
-		this.password = password;
-	}
-
 	public static User find(String email) throws UnknownHostException, IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		User user = null;
 		DBObject cur = null;
-		DBCursor cursor = Access.getUsers();
+		DBCursor cursor = Connection.getCursor("users");
 		while (cursor.hasNext()) {
 			cur = cursor.next();
-			if (cur.get("email").equals(email))
-				break;
+			if (cur.get("email").equals(email)) {
+				return ModelConversion.mapToModel(User.class, cur.toMap());
+			}
 		}
-		if (cur != null) {
-			// User found, create object
-			user = ModelConversion.mapToModel(User.class, cur.toMap());
-		}
-		return user;
+		return null;
 	}
 
 	public static User authenticate(String email, String password) throws UnknownHostException, IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
 		User user = find(email);
-		if (user.password.equals(password)) {
+		if (user != null && user.password.equals(password)) {
 			return user;
 		} else {
 			return null;

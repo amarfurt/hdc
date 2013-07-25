@@ -1,7 +1,39 @@
-@(message: String, user: User)
+@(messages: List[Message], user: User)
 
-@main("Healthbank", user) {
-    
-    @message
-    
+@*** TODO ***
+Can't do one call for every request to the User object.
+Do this by loading the user in the message class.
+***@
+@getUser(email: String) = @{
+	User.find(email)
+}
+
+@main(user) {
+
+	<header>
+		<hgroup>
+			<h1>News</h1>
+		</hgroup>
+	</header>
+	
+	<article class="tasks">
+        @messages.groupBy(_.sender).map {
+            case (sender, messages) => {
+                <div class="folder" data-folder-id="@sender">
+                    <header>
+                        <h3>@getUser(sender).name</h3>
+                    </header>
+                    <ul class="list">
+                        @messages.map { message =>
+                            <li data-task-id="@message._id">
+                                <h4>@message.title</h4><br>
+                                @message.content
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+        }
+    </article>
+
 }

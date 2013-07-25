@@ -1,39 +1,22 @@
 package utils;
 
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Properties;
+import com.mongodb.DBCollection;
 
-import com.mongodb.DB;
-import com.mongodb.MongoClient;
+import controllers.database.Connection;
 
-public class TestConnection {
+/**
+ * Make certain operations available to test classes.
+ * @author amarfurt
+ *
+ */
+public class TestConnection extends Connection {
 
-	public static String CONFIG = "conf/test.conf";
-
-	private MongoClient mongoClient;
-
-	public TestConnection() throws IOException {
-		Properties properties = new Properties();
-		try (FileReader fr = new FileReader(CONFIG)) {
-			properties.load(fr);
-			String host = properties.getProperty("mongo.host");
-			int port = Integer.parseInt(properties.getProperty("mongo.port"));
-			mongoClient = new MongoClient(host, port);
-		}
+	public static DBCollection getCollection(String collection) {
+		return Connection.getCollection(collection);
 	}
-
-	public DB connect() throws IOException {
-		Properties properties = new Properties();
-		try (FileReader fr = new FileReader(CONFIG)) {
-			properties.load(fr);
-			String database = properties.getProperty("mongo.database");
-			return mongoClient.getDB(database);
-		}
-	}
-
-	public void close() {
-		mongoClient.close();
+	
+	public static void dropDatabase() {
+		Connection.dropDatabase();
 	}
 
 }

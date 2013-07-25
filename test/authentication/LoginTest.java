@@ -27,7 +27,7 @@ public class LoginTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectTest();
+		Connection.connect();
 		LoadData.load();
 	}
 
@@ -45,7 +45,15 @@ public class LoginTest {
 	}
 
 	@Test
-	public void authenticateFailure() {
+	public void authenticateFailureEmail() {
+		Result result = callAction(controllers.routes.ref.Application.authenticate(),
+				fakeRequest().withFormUrlEncodedBody(ImmutableMap.of("email", "testA@example.com", "password", "secret")));
+		assertEquals(400, status(result));
+		assertNull(session(result).get("email"));
+	}
+
+	@Test
+	public void authenticateFailurePassword() {
 		Result result = callAction(controllers.routes.ref.Application.authenticate(),
 				fakeRequest().withFormUrlEncodedBody(ImmutableMap.of("email", "test1@example.com", "password", "badpassword")));
 		assertEquals(400, status(result));
