@@ -38,7 +38,7 @@ public class Connection {
 	/**
 	 * Connects to the test database 'test'.
 	 */
-	public static void connectTest() {
+	public static void connectToTest() {
 		openConnection();
 		database = "test";
 	}

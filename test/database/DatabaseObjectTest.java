@@ -27,7 +27,7 @@ public class DatabaseObjectTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectTest();
+		TestConnection.connectToTest();
 		TestConnection.dropDatabase();
 	}
 

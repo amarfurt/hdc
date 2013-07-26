@@ -26,7 +26,7 @@ public class CircleTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectTest();
+		TestConnection.connectToTest();
 		TestConnection.dropDatabase();
 	}
 
@@ -74,7 +74,7 @@ public class CircleTest {
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
 		ObjectId circleId = (ObjectId) circles.findOne().get("_id");
-		Circle.rename(circleId, "New circle");
+		assertEquals(1, Circle.rename(circleId, "New circle"));
 		assertEquals(1, circles.count());
 		assertEquals("New circle", circles.findOne().get("name"));
 	}
@@ -90,7 +90,7 @@ public class CircleTest {
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
 		ObjectId circleId = null;
-		Circle.rename(circleId, "New circle");
+		assertEquals(0, Circle.rename(circleId, "New circle"));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
 	}

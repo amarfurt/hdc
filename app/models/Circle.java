@@ -23,11 +23,14 @@ public class Circle {
 		return (result != null);
 	}
 
-	public static boolean rename(ObjectId circleId, String newName) {
+	/**
+	 * Tries to rename the circle with the given id and returns the number of updated circles (0 or 1).
+	 */
+	public static int rename(ObjectId circleId, String newName) {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject update = new BasicDBObject("name", newName);
 		WriteResult result = Connection.getCollection("circles").update(query, update);
-		return (result.getLastError().getErrorMessage() == null);
+		return result.getN();
 	}
 
 }
