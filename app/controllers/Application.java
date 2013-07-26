@@ -2,14 +2,17 @@ package controllers;
 
 import java.net.UnknownHostException;
 
+import models.Circle;
 import models.Message;
 import models.User;
+import play.Routes;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import views.html.index;
 import views.html.welcome;
+import views.html.circles;
 
 public class Application extends Controller {
 
@@ -25,6 +28,16 @@ public class Application extends Controller {
 
 	public static Result welcome() {
 		return ok(welcome.render(Form.form(Login.class)));
+	}
+	
+	@Security.Authenticated(Secured.class)
+	public static Result circles() {
+		try {
+			User user = User.find(request().username());
+			return ok(circles.render(Circle.findOwnedBy(user), user));
+		} catch (UnknownHostException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
 	}
 
 	public static Result authenticate() {
@@ -42,6 +55,14 @@ public class Application extends Controller {
 		session().clear();
 		flash("success", "You've been logged out");
 		return redirect(routes.Application.welcome());
+	}
+
+	public static Result javascriptRoutes() {
+		response().setContentType("text/javascript");
+		return ok(Routes.javascriptRouter("jsRoutes", 
+				controllers.routes.javascript.Circles.add(),
+				controllers.routes.javascript.Circles.rename(), 
+				controllers.routes.javascript.Circles.delete()));
 	}
 
 }

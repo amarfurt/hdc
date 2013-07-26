@@ -2,7 +2,11 @@
 
 @*** TODO ***
 Can't do one call for every request to the User object.
+
 Do this by loading the user in the message class.
+--- OR ---
+Provide general "get(collection, id, key)" method that retrieves 
+the value of the key of the document with this id in the given collection.
 ***@
 @getUser(email: String) = @{
 	User.find(email)

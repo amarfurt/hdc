@@ -1,5 +1,8 @@
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
@@ -7,6 +10,7 @@ import utils.ModelConversion;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
@@ -25,6 +29,20 @@ public class Circle {
 		DBObject query = new BasicDBObjectBuilder().append("_id", circleId).append("owner", email).get();
 		DBObject result = Connection.getCollection(collection).findOne(query);
 		return (result != null);
+	}
+
+	/**
+	 * Find the circles that are owned by the given user.
+	 */
+	public static List<Circle> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		List<Circle> circles = new ArrayList<Circle>();
+		DBObject query = new BasicDBObject("owner", user.email);
+		DBCursor result = Connection.getCollection(collection).find(query);
+		while (result.hasNext()) {
+			DBObject cur = result.next();
+			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+		}
+		return circles;
 	}
 
 	/**

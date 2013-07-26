@@ -1,0 +1,34 @@
+@(circles: List[Circle], user: User)
+
+@main(user) {
+	<header>
+		<hgroup>
+			<h1>Circles</h1>
+		</hgroup>
+	</header>
+	
+	<article>
+		<p>
+			<h1>Manage your circles</h1>
+		</p>
+
+		<p>
+			Your circles:
+		</p>
+
+		<ul>@circles.map { circle =>
+			<li>
+				<h4>@circle.name</h4>
+				<ul>@for(member <- circle.members) {
+					<li>@member</li>
+				}</ul>
+			</li>
+		}</ul>
+		
+		<p>
+			<button id="addCircle">Add circle</button>
+			<button id="renameCircle">Rename circle</button>
+			<button id="deleteCircle">Delete circle</button>
+		</p>
+	</article>
+}
