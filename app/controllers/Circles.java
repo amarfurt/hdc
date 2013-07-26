@@ -20,16 +20,37 @@ public class Circles extends Controller {
 		newCircle.name = Form.form().bindFromRequest().get("name");
 		newCircle.owner = request().username();
 		newCircle.members = new BasicDBList();
-		return ok(circle.render(newCircle));
+		try {
+			Circle.add(newCircle);
+			return ok(circle.render(newCircle));
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		}
 	}
 	
-	public static Result rename(ObjectId circleId) {
-		if (Secured.isOwnerOf(circleId)) {
+	public static Result rename(String circleId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId id = new ObjectId(circleId);
+		if (Secured.isOwnerOf(id)) {
 			String newName = Form.form().bindFromRequest().get("name");
-			if (Circle.rename(circleId, newName) == 1) {
+			if (Circle.rename(id, newName) == 1) {
 				return ok(newName);
 			} else {
 				return internalServerError("Couldn't rename the circle.");
+			}
+		} else {
+			return forbidden();
+		}
+	}
+	
+	public static Result delete(String circleId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId id = new ObjectId(circleId);
+		if (Secured.isOwnerOf(id)) {
+			if (Circle.delete(id) == 1) {
+				return ok();
+			} else {
+				return internalServerError("Couldn't delete the circle.");
 			}
 		} else {
 			return forbidden();
