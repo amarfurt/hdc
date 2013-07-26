@@ -20,10 +20,15 @@ public class Circles extends Controller {
 		newCircle.name = Form.form().bindFromRequest().get("name");
 		newCircle.owner = request().username();
 		newCircle.members = new BasicDBList();
+		newCircle.members.add(newCircle.owner);
 		try {
 			Circle.add(newCircle);
 			return ok(circle.render(newCircle));
-		} catch (IllegalArgumentException | IllegalAccessException e) {
+
+		// multi-catch doesn't seem to work...
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
 			return internalServerError(e.getMessage());
 		}
 	}

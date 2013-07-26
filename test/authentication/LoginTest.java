@@ -17,23 +17,22 @@ import org.junit.Test;
 
 import play.mvc.Result;
 import utils.LoadData;
+import utils.TestConnection;
 
 import com.google.common.collect.ImmutableMap;
-
-import controllers.database.Connection;
 
 public class LoginTest {
 
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connect();
+		TestConnection.connectToTest();
 		LoadData.load();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		TestConnection.close();
 	}
 
 	@Test

@@ -68,5 +68,15 @@
 		"owner": "test1@example.com",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01"
 	}
+	],
+	"circles" : [
+	{
+		"name": "Test circle 1",
+		"owner": "test1@example.com",
+		"members": [
+			"test1@example.com", 
+			"test2@example.com"
+		]
+	}
 	]
 }
