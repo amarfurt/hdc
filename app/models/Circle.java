@@ -61,7 +61,7 @@ public class Circle {
 	 */
 	public static int rename(ObjectId circleId, String newName) {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("name", newName);
+		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
 		return result.getN();
 	}

@@ -1,8 +1,8 @@
 @(circle: Circle)
 
 <li circle-id="@circle._id">
-	<a class="circleName" href="#">@circle.name</a><br>
-    <h4>Id: @circle._id</h4>
+	Name: <a class="circleName" href="#">@circle.name</a><br>
+    Id: @circle._id<br>
 	<ul>
 		Members: @for(member <- circle.members) {
 			<li>@member</li>

@@ -66,7 +66,9 @@ public class CirclesTest {
 		Result result = callAction(controllers.routes.ref.Circles.rename(circleId), fakeRequest().withSession("email", owner)
 				.withFormUrlEncodedBody(ImmutableMap.of("name", "Test circle 2")));
 		assertEquals(200, status(result));
-		assertEquals("Test circle 2", circles.findOne(new BasicDBObject("_id", id)).get("name"));
+		BasicDBObject idQuery = new BasicDBObject("_id", id);
+		assertEquals("Test circle 2", circles.findOne(idQuery).get("name"));
+		assertEquals(owner, circles.findOne(idQuery).get("owner"));
 	}
 
 	@Test
