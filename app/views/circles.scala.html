@@ -7,28 +7,19 @@
 		</hgroup>
 	</header>
 	
-	<article>
+	<article class="tasks">
 		<p>
-			<h1>Manage your circles</h1>
+			<h1>Manage your circles:</h1>
 		</p>
 
-		<p>
-			Your circles:
-		</p>
+		<div class="folder">
+			<ul id="circles">@circles.map { circle =>
+				@views.html.elements.circle(circle)
+			}</ul>
+		</div>
 
-		<ul>@circles.map { circle =>
-			<li>
-				<h4>@circle.name</h4>
-				<ul>@for(member <- circle.members) {
-					<li>@member</li>
-				}</ul>
-			</li>
-		}</ul>
-		
-		<p>
+		<p id="manage-circles">
 			<button id="addCircle">Add circle</button>
-			<button id="renameCircle">Rename circle</button>
-			<button id="deleteCircle">Delete circle</button>
 		</p>
 	</article>
 }

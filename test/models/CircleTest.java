@@ -2,6 +2,7 @@ package models;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
@@ -65,7 +66,7 @@ public class CircleTest {
 		ObjectId circleId = (ObjectId) circleObject.get("_id");
 		assertFalse(Circle.isOwner(circleId, "wrong@example.com"));
 	}
-	
+
 	@Test
 	public void addCircle() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection circles = TestConnection.getCollection("circles");
@@ -77,6 +78,7 @@ public class CircleTest {
 		assertEquals(null, Circle.add(circle));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
+		assertNotNull(circle._id);
 	}
 
 	@Test
@@ -111,7 +113,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
 	}
-	
+
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection circles = TestConnection.getCollection("circles");
@@ -127,7 +129,7 @@ public class CircleTest {
 		assertEquals(1, Circle.delete((ObjectId) circleObject.get("_id")));
 		assertEquals(0, circles.count());
 	}
-	
+
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection circles = TestConnection.getCollection("circles");

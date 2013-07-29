@@ -51,8 +51,8 @@ public class Circle {
 	 */
 	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));
-		newCircle._id = (ObjectId) insert.get("_id");
 		WriteResult result = Connection.getCollection(collection).insert(insert);
+		newCircle._id = (ObjectId) insert.get("_id");
 		return result.getLastError().getErrorMessage();
 	}
 

@@ -1,13 +1,3 @@
-$(".options dt, .users dt").live "click", (e) ->
-    e.preventDefault()
-    if $(e.target).parent().hasClass("opened")
-        $(e.target).parent().removeClass("opened")
-    else
-        $(e.target).parent().addClass("opened")
-        $(document).one "click", ->
-            $(e.target).parent().removeClass("opened")
-    false
-
 $.fn.editInPlace = (method, options...) ->
     this.each ->
         methods = 
@@ -47,28 +37,20 @@ $.fn.editInPlace = (method, options...) ->
             return methods.init.call(this, method)
         else
             $.error("Method " + method + " does not exist.")
-            
-class Drawer extends Backbone.View
-    initialize: ->
-        @el.children("li").each (i,circle) ->
-	        new Circle
-                el: $(circle)
-        $("#addCircle").click @addCircle
-    addCircle: ->
-        jsRoutes.controllers.Circles.add().ajax
-            success: (data) ->
-                _view = new Circle
-                    el: $(data).appendTo("#circles")
-                _view.el.find(".name").editInPlace("edit")
 
+class Drawer extends Backbone.View
+	initialize: ->
+		@el.children("li").each (i, circle) ->
+			new Circle
+				el: $(circle)
+            
 class Circle extends Backbone.View
 	initialize: ->
-        @id = @el.attr("data-project")
-        @name = $(".name", @el).editInPlace
+        @id = @el.attr("circle-id")
+        @name = $(".circleName", @el).editInPlace
             context: this
             onChange: @renameCircle
-    renameCircle: (name) ->
-        @loading(true)
+	renameCircle: (name) ->
         jsRoutes.controllers.Circles.rename(@id).ajax
             context: this
             data:
@@ -79,36 +61,32 @@ class Circle extends Backbone.View
             error: (err) ->
                 @loading(false)
                 $.error("Error: " + err)
-    loading: (display) ->
-        if (display)
-            @el.children(".delete").hide()
-            @el.children(".loader").show()
-        else
-            @el.children(".delete").show()
-            @el.children(".loader").hide()
 	events:
-        "click    .newCircle"       : "newCircle"
-        "click    .delete"          : "deleteCircle"
-    newCircle: (e) ->
-            @el.removeClass("closed")
-        jsRoutes.controllers.Circles.add().ajax
-            context: this
-            success: (tpl) ->
-                _list = $("ul",@el)
-                _view = new Circle
-                    el: $(tpl).appendTo(_list)
-                _view.el.find(".name").editInPlace("edit")
-            error: (err) ->
-                $.error("Error: " + err)
+        "click .deleteCircle": "deleteCircle"
     deleteCircle: (e) ->
-        e.preventDefault()
-        @loading(true)
-        jsRoutes.controllers.Circles.delete(@id).ajax
+    	jsRoutes.controllers.Circles.delete(@id).ajax
             context: this
             success: ->
-                @el.remove()
-                @loading(false)
+                alert "Circle deleted. Please refresh the page."
             error: (err) ->
-                @loading(false)
                 $.error("Error: " + err)
-        false
+
+class CircleManager extends Backbone.View
+	events:
+        "click #addCircle": "addCircle"
+    addCircle: (e) ->
+    	jsRoutes.controllers.Circles.add().ajax
+            context: this
+            success: (data) ->
+            	_view = new Circle
+                    el: $(data).appendTo("#circles")
+                _view.el.find(".circleName").editInPlace("edit")
+            error: (err) ->
+                $.error("Error: " + err)
+
+# Instantiate views
+$ -> 
+    drawer = new Drawer el: $("#circles")
+$ ->
+	mngr = new CircleManager el: $("#manage-circles")
+        

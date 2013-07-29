@@ -1,7 +1,13 @@
 @(circle: Circle)
 
-<li data-project="@circle._id">
-    <a class="name" href="#">@circle.name</a>
-    <button class="delete" href="#">Delete</button>
+<li circle-id="@circle._id">
+	<a class="circleName" href="#">@circle.name</a><br>
+    <h4>Id: @circle._id</h4>
+	<ul>
+		Members: @for(member <- circle.members) {
+			<li>@member</li>
+		}
+	</ul>
+    <button class="deleteCircle" href="#">Delete</button>
     <span class="loader">Loading</span>
 </li>
