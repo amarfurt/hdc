@@ -1,7 +1,5 @@
 package controllers;
 
-import java.net.UnknownHostException;
-
 import models.User;
 
 public class Login {
@@ -17,8 +15,6 @@ public class Login {
 				return null;
 			}
 		// multi-catch doesn't seem to work...
-		} catch (UnknownHostException e) {
-			return "Server error: " + e.getMessage();
 		} catch (IllegalArgumentException e) {
 			return "Server error: " + e.getMessage();
 		} catch (IllegalAccessException e) {

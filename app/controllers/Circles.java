@@ -73,11 +73,16 @@ public class Circles extends Controller {
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOf(id)) {
 			String newMember = Form.form().bindFromRequest().get("name");
-			String errorMessage = Circle.addMember(id, newMember);
-			if (errorMessage == null) {
-				return ok();
-			} else {
-				return badRequest(errorMessage);
+			String errorMessage;
+			try {
+				errorMessage = Circle.addMember(id, newMember);
+				if (errorMessage == null) {
+					return ok();
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				return internalServerError(e.getMessage());
 			}
 		} else {
 			return forbidden();

@@ -1,13 +1,21 @@
 @(circle: Circle)
 
 <li circle-id="@circle._id">
-	Name: <a class="circleName" href="#">@circle.name</a><br>
+	Name: <a class="circleName" href="">@circle.name</a><br>
     Id: @circle._id<br>
-	<ul>
-		Members: @for(member <- circle.members) {
-			<li>@member</li>
+	<ul class="members">
+		@if(circle.members.size > 1) {
+			Members: @for(member <- circle.members) {
+				@if(member != circle.owner) {
+					<li class="member">@member</li>
+				}
+			}
+		} else {
+			Currently no members in this circle.
 		}
 	</ul>
-    <button class="deleteCircle" href="#">Delete</button>
+	<button class="addMember" href="">Add member</button>
+	<a class="newMember" href="">New member</a>
+    <button class="deleteCircle" href="">Delete</button>
     <span class="loader">Loading</span>
 </li>

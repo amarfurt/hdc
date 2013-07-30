@@ -5,7 +5,6 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.net.UnknownHostException;
 import java.util.List;
 
 import org.junit.After;
@@ -33,7 +32,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findSuccessTest() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
+	public void findSuccessTest() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();
@@ -52,7 +51,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findFailureTest() throws IllegalArgumentException, IllegalAccessException, UnknownHostException, InstantiationException {
+	public void findFailureTest() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();

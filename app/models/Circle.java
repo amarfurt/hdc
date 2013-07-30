@@ -46,8 +46,8 @@ public class Circle {
 	}
 
 	/**
-	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to
-	 * the circle object.
+	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle
+	 * object.
 	 */
 	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
@@ -91,11 +91,16 @@ public class Circle {
 	/**
 	 * Adds a member to the circle with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String addMember(ObjectId circleId, String newMember) {
-		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", newMember));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+	public static String addMember(ObjectId circleId, String newMember) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		if (User.find(newMember) != null) {
+			DBObject query = new BasicDBObject("_id", circleId);
+			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", newMember));
+			WriteResult result = Connection.getCollection(collection).update(query, update);
+			return result.getLastError().getErrorMessage();
+		} else {
+			return "No user with this email address exists.";
+		}
 	}
 
 	/**

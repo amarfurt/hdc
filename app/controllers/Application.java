@@ -1,7 +1,5 @@
 package controllers;
 
-import java.net.UnknownHostException;
-
 import models.Circle;
 import models.Message;
 import models.User;
@@ -10,9 +8,9 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import views.html.circles;
 import views.html.index;
 import views.html.welcome;
-import views.html.circles;
 
 public class Application extends Controller {
 
@@ -21,7 +19,7 @@ public class Application extends Controller {
 		try {
 			User user = User.find(request().username());
 			return ok(index.render(Message.findSentTo(user), user));
-		} catch (UnknownHostException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -35,7 +33,7 @@ public class Application extends Controller {
 		try {
 			User user = User.find(request().username());
 			return ok(circles.render(Circle.findOwnedBy(user), user));
-		} catch (UnknownHostException | IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -62,7 +60,8 @@ public class Application extends Controller {
 		return ok(Routes.javascriptRouter("jsRoutes", 
 				controllers.routes.javascript.Circles.add(),
 				controllers.routes.javascript.Circles.rename(), 
-				controllers.routes.javascript.Circles.delete()));
+				controllers.routes.javascript.Circles.delete(),
+				controllers.routes.javascript.Circles.addMember()));
 	}
 
 }

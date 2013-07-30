@@ -40,6 +40,7 @@ $.fn.editInPlace = (method, options...) ->
             
 class Circle extends Backbone.View
 	initialize: ->
+        @loadingMember(false)
         @id = @el.attr("circle-id")
         @name = $(".circleName", @el).editInPlace
             context: this
@@ -57,6 +58,7 @@ class Circle extends Backbone.View
                 $.error("Error: " + err)
 	events:
         "click .deleteCircle": "deleteCircle"
+        "click .addMember": "addMember"
     deleteCircle: (e) ->
     	e.preventDefault()
     	@loading(true)
@@ -70,11 +72,39 @@ class Circle extends Backbone.View
                 $.error("Error: " + err)
 	loading: (display) ->
         if (display)
+            @el.children(".addMember").hide()
             @el.children(".deleteCircle").hide()
             @el.children(".loader").show()
         else
+            @el.children(".addMember").show()
             @el.children(".deleteCircle").show()
             @el.children(".loader").hide()
+    addMember: (e) ->
+    	e.preventDefault()
+    	@loadingMember(true)
+    	@member = $(".newMember", @el).editInPlace
+            context: this
+            onChange: @addNewMember
+    	@el.children(".newMember").editInPlace("edit")
+    addNewMember: (member) ->
+    	jsRoutes.controllers.Circles.addMember(@id).ajax
+    		context: this
+    		data:
+    			name: member
+    		success: (data) ->
+    			@member.editInPlace("close", data)
+    			@loadingMember(false)
+    		error: (err) ->
+    			@member.editInPlace("close", "")
+    			@loadingMember(false)
+    			$.error("Error: " + err)
+    loadingMember: (display) ->
+    	if (display)
+            @el.children(".addMember").hide()
+            @el.children(".newMember").show()
+        else
+            @el.children(".newMember").hide()
+            @el.children(".addMember").show()
 
 class CircleManager extends Backbone.View
 	initialize: ->
