@@ -22,40 +22,62 @@ public class Circles extends Controller {
 		newCircle.members = new BasicDBList();
 		newCircle.members.add(newCircle.owner);
 		try {
-			Circle.add(newCircle);
-			return ok(circle.render(newCircle));
+			String errorMessage = Circle.add(newCircle);
+			if (errorMessage == null) {
+				return ok(circle.render(newCircle));
+			} else {
+				return badRequest(errorMessage);
+			}
 
-		// multi-catch doesn't seem to work...
+			// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
-	
+
 	public static Result rename(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOf(id)) {
 			String newName = Form.form().bindFromRequest().get("name");
-			if (Circle.rename(id, newName) == 1) {
+			String errorMessage = Circle.rename(id, newName);
+			if (errorMessage == null) {
 				return ok(newName);
 			} else {
-				return internalServerError("Couldn't rename the circle.");
+				return badRequest(errorMessage);
 			}
 		} else {
 			return forbidden();
 		}
 	}
-	
+
 	public static Result delete(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOf(id)) {
-			if (Circle.delete(id) == 1) {
+			String errorMessage = Circle.delete(id);
+			if (errorMessage == null) {
 				return ok();
 			} else {
-				return internalServerError("Couldn't delete the circle.");
+				return internalServerError(errorMessage);
+			}
+		} else {
+			return forbidden();
+		}
+	}
+
+	public static Result addMember(String circleId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId id = new ObjectId(circleId);
+		if (Secured.isOwnerOf(id)) {
+			String newMember = Form.form().bindFromRequest().get("name");
+			String errorMessage = Circle.addMember(id, newMember);
+			if (errorMessage == null) {
+				return ok();
+			} else {
+				return badRequest(errorMessage);
 			}
 		} else {
 			return forbidden();

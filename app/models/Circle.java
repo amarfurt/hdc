@@ -46,33 +46,66 @@ public class Circle {
 	}
 
 	/**
-	 * Adds a circle and returns the error message (which is null in absence of errors). Also adds the generated id to
+	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to
 	 * the circle object.
 	 */
 	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException {
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));
-		WriteResult result = Connection.getCollection(collection).insert(insert);
-		newCircle._id = (ObjectId) insert.get("_id");
+		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
+			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));
+			WriteResult result = Connection.getCollection(collection).insert(insert);
+			newCircle._id = (ObjectId) insert.get("_id");
+			return result.getLastError().getErrorMessage();
+		} else {
+			return "A circle with this name already exists.";
+		}
+	}
+
+	/**
+	 * Tries to rename the circle with the given id and returns the error message (null in absence of errors).
+	 */
+	public static String rename(ObjectId circleId, String newName) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject foundCircle = Connection.getCollection(collection).findOne(query);
+		if (foundCircle == null) {
+			return "This circle doesn't exist.";
+		}
+		String owner = (String) foundCircle.get("owner");
+		if (!circleWithSameNameExists(newName, owner)) {
+			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
+			WriteResult result = Connection.getCollection(collection).update(query, update);
+			return result.getLastError().getErrorMessage();
+		} else {
+			return "A circle with this name already exists.";
+		}
+	}
+
+	/**
+	 * Tries to delete the circle with the given id and returns the error message (null in absence of errors).
+	 */
+	public static String delete(ObjectId circleId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		WriteResult result = Connection.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
 	}
 
 	/**
-	 * Tries to rename the circle with the given id and returns the number of updated circles (0 or 1).
+	 * Adds a member to the circle with the given id and returns the error message (null in absence of errors).
 	 */
-	public static int rename(ObjectId circleId, String newName) {
+	public static String addMember(ObjectId circleId, String newMember) {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", newMember));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
-		return result.getN();
+		return result.getLastError().getErrorMessage();
 	}
 
 	/**
-	 * Tries to delete the circle with the given id and returns the number of deleted circles (0 or 1).
+	 * Checks whether a circle with the same name already exists for the given owner.
 	 */
-	public static int delete(ObjectId circleId) {
-		DBObject query = new BasicDBObject("_id", circleId);
-		WriteResult result = Connection.getCollection(collection).remove(query);
-		return result.getN();
+	private static boolean circleWithSameNameExists(String name, String owner) {
+		DBObject query = new BasicDBObject();
+		query.put("name", name);
+		query.put("owner", owner);
+		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 }

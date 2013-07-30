@@ -3,6 +3,7 @@ package models;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
@@ -75,10 +76,29 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
-		assertEquals(null, Circle.add(circle));
+		assertNull(Circle.add(circle));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
 		assertNotNull(circle._id);
+	}
+
+	@Test
+	public void addCircleWithExistingName() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		assertNull(Circle.add(circle));
+		assertEquals(1, circles.count());
+		Circle anotherCircle = new Circle();
+		anotherCircle.name = circle.name;
+		anotherCircle.owner = circle.owner;
+		anotherCircle.members = circle.members;
+		assertEquals("A circle with this name already exists.", Circle.add(anotherCircle));
+		assertEquals(1, circles.count());
+
 	}
 
 	@Test
@@ -93,13 +113,13 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		ObjectId circleId = (ObjectId) circleObject.get("_id");
-		assertEquals(1, Circle.rename(circleId, "New circle"));
+		assertNull(Circle.rename(circleId, "New circle"));
 		assertEquals(1, circles.count());
 		assertEquals("New circle", circles.findOne().get("name"));
 	}
 
 	@Test
-	public void renameFailure() throws IllegalArgumentException, IllegalAccessException {
+	public void renameWrongId() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -109,7 +129,24 @@ public class CircleTest {
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
 		ObjectId circleId = ObjectId.get();
-		assertEquals(0, Circle.rename(circleId, "New circle"));
+		assertEquals("This circle doesn't exist.", Circle.rename(circleId, "New circle"));
+		assertEquals(1, circles.count());
+		assertEquals("Test circle", circles.findOne().get("name"));
+	}
+	
+	@Test
+	public void renameExistingName() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		ObjectId circleId = (ObjectId) circleObject.get("_id");
+		assertEquals("A circle with this name already exists.", Circle.rename(circleId, "Test circle"));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
 	}
@@ -126,7 +163,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
-		assertEquals(1, Circle.delete((ObjectId) circleObject.get("_id")));
+		assertNull(Circle.delete((ObjectId) circleObject.get("_id")));
 		assertEquals(0, circles.count());
 	}
 
@@ -142,8 +179,62 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		ObjectId randomId = ObjectId.get();
-		assertEquals(0, Circle.delete(randomId));
+		assertNull(Circle.delete(randomId));
 		assertEquals(1, circles.count());
+	}
+
+	@Test
+	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.addMember((ObjectId) circleObject.get("_id"), "test2@example.com"));
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+
+	@Test
+	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.addMember(ObjectId.get(), "test2@example.com"));
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+
+	@Test
+	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException {
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = "test1@example.com";
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.addMember(ObjectId.get(), circle.owner));
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
 
 }
