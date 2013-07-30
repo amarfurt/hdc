@@ -37,12 +37,6 @@ $.fn.editInPlace = (method, options...) ->
             return methods.init.call(this, method)
         else
             $.error("Method " + method + " does not exist.")
-
-class Drawer extends Backbone.View
-	initialize: ->
-		@el.children("li").each (i, circle) ->
-			new Circle
-				el: $(circle)
             
 class Circle extends Backbone.View
 	initialize: ->
@@ -64,17 +58,31 @@ class Circle extends Backbone.View
 	events:
         "click .deleteCircle": "deleteCircle"
     deleteCircle: (e) ->
+    	e.preventDefault()
+    	@loading(true)
     	jsRoutes.controllers.Circles.delete(@id).ajax
             context: this
             success: ->
-                alert "Circle deleted. Please refresh the page."
+                @el.remove()
+                @loading(false)
             error: (err) ->
+                @loading(false)
                 $.error("Error: " + err)
+	loading: (display) ->
+        if (display)
+            @el.children(".deleteCircle").hide()
+            @el.children(".loader").show()
+        else
+            @el.children(".deleteCircle").show()
+            @el.children(".loader").hide()
 
 class CircleManager extends Backbone.View
-	events:
-        "click #addCircle": "addCircle"
-    addCircle: (e) ->
+	initialize: ->
+		@el.children("li").each (i, circle) ->
+			new Circle
+				el: $(circle)
+		$("#addCircle").click @addCircle
+	addCircle: (e) ->
     	jsRoutes.controllers.Circles.add().ajax
             context: this
             success: (data) ->
@@ -85,8 +93,5 @@ class CircleManager extends Backbone.View
                 $.error("Error: " + err)
 
 # Instantiate views
-$ -> 
-    drawer = new Drawer el: $("#circles")
 $ ->
-	mngr = new CircleManager el: $("#manage-circles")
-        
+	mngr = new CircleManager el: $("#circles")
