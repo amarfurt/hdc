@@ -179,8 +179,7 @@ public class CirclesTest {
 		String circleId = id.toString();
 		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId), fakeRequest().withSession("email", owner)
 				.withFormUrlEncodedBody(ImmutableMap.of("name", "test3@example.com")));
-		// TODO give bad request here?
-		assertEquals(200, status(result));
+		assertEquals(400, status(result));
 		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 }

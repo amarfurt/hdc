@@ -220,7 +220,7 @@ public class CircleTest {
 	}
 
 	@Test
-	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		String[] emailAddresses = insertUsers(1);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -233,9 +233,29 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.addMember(ObjectId.get(), circle.owner));
+		assertEquals("Owner can't be added to own circle.", Circle.addMember((ObjectId) circleObject.get("_id"), circle.owner));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+
+	@Test
+	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		String[] emailAddresses = insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.members.add(emailAddresses[1]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
+		assertEquals("User is already in this circle.", Circle.addMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
 
 	private String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException {
@@ -288,7 +308,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.removeMember(ObjectId.get(), emailAddresses[1]));
+		assertEquals("User is not in this circle.", Circle.removeMember(ObjectId.get(), emailAddresses[1]));
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -307,7 +327,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals("User is not in this circle.", Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}

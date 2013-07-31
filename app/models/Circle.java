@@ -9,7 +9,6 @@ import utils.ModelConversion;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
@@ -26,9 +25,10 @@ public class Circle {
 	public BasicDBList members;
 
 	public static boolean isOwner(ObjectId circleId, String email) {
-		DBObject query = new BasicDBObjectBuilder().append("_id", circleId).append("owner", email).get();
-		DBObject result = Connection.getCollection(collection).findOne(query);
-		return (result != null);
+		DBObject query = new BasicDBObject();
+		query.put("_id", circleId);
+		query.put("owner", email);
+		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
@@ -94,13 +94,17 @@ public class Circle {
 	 */
 	public static String addMember(ObjectId circleId, String newMember) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		if (User.find(newMember) != null) {
+		if (User.find(newMember) == null) {
+			return "User doesn't exist.";
+		} else if (Circle.isOwner(circleId, newMember)) {
+			return "Owner can't be added to own circle.";
+		} else if (Circle.userIsInCircle(circleId, newMember)) {
+			return "User is already in this circle.";
+		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", newMember));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
-		} else {
-			return "No user with this email address exists.";
 		}
 	}
 
@@ -109,13 +113,15 @@ public class Circle {
 	 */
 	public static String removeMember(ObjectId circleId, String member) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		if (User.find(member) != null) {
+		if (User.find(member) == null) {
+			return "User doesn't exist.";
+		} else if (!Circle.userIsInCircle(circleId, member)) {
+			return "User is not in this circle.";
+		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", member));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
-		} else {
-			return "No user with this email address exists.";
 		}
 	}
 
@@ -126,6 +132,16 @@ public class Circle {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
 		query.put("owner", owner);
+		return (Connection.getCollection(collection).findOne(query) != null);
+	}
+
+	/**
+	 * Checks whether the given user is in the given circle.
+	 */
+	private static boolean userIsInCircle(ObjectId circleId, String user) {
+		DBObject query = new BasicDBObject();
+		query.put("_id", circleId);
+		query.put("members", new BasicDBObject("$in", new String[] { user }));
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
