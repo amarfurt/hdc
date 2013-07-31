@@ -9,6 +9,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import views.html.elements.circle;
+import views.html.elements.circles.member;
 
 import com.mongodb.BasicDBList;
 
@@ -73,9 +74,28 @@ public class Circles extends Controller {
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOf(id)) {
 			String newMember = Form.form().bindFromRequest().get("name");
-			String errorMessage;
 			try {
-				errorMessage = Circle.addMember(id, newMember);
+				String errorMessage = Circle.addMember(id, newMember);
+				if (errorMessage == null) {
+					return ok(member.render(circleId, newMember));
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				return internalServerError(e.getMessage());
+			}
+		} else {
+			return forbidden();
+		}
+	}
+
+	public static Result removeMember(String circleId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId id = new ObjectId(circleId);
+		if (Secured.isOwnerOf(id)) {
+			String member = Form.form().bindFromRequest().get("name");
+			try {
+				String errorMessage = Circle.removeMember(id, member);
 				if (errorMessage == null) {
 					return ok();
 				} else {

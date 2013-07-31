@@ -61,7 +61,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.add(),
 				controllers.routes.javascript.Circles.rename(), 
 				controllers.routes.javascript.Circles.delete(),
-				controllers.routes.javascript.Circles.addMember()));
+				controllers.routes.javascript.Circles.addMember(),
+				controllers.routes.javascript.Circles.removeMember()));
 	}
 
 }

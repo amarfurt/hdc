@@ -252,5 +252,64 @@ public class CircleTest {
 		}
 		return emailAddresses;
 	}
+	
+	@Test
+	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		String[] emailAddresses = insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.members.add(emailAddresses[1]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+	
+	@Test
+	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		String[] emailAddresses = insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.members.add(emailAddresses[1]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.removeMember(ObjectId.get(), emailAddresses[1]));
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+	
+	@Test
+	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		String[] emailAddresses = insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+		assertNull(Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+	}
 
 }

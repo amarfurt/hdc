@@ -105,6 +105,21 @@ public class Circle {
 	}
 
 	/**
+	 * Removes a member from the circle with the given id and returns the error message (null in absence of errors).
+	 */
+	public static String removeMember(ObjectId circleId, String member) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		if (User.find(member) != null) {
+			DBObject query = new BasicDBObject("_id", circleId);
+			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", member));
+			WriteResult result = Connection.getCollection(collection).update(query, update);
+			return result.getLastError().getErrorMessage();
+		} else {
+			return "No user with this email address exists.";
+		}
+	}
+
+	/**
 	 * Checks whether a circle with the same name already exists for the given owner.
 	 */
 	private static boolean circleWithSameNameExists(String name, String owner) {

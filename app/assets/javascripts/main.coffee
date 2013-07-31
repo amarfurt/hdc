@@ -45,6 +45,9 @@ class Circle extends Backbone.View
         @name = $(".circleName", @el).editInPlace
             context: this
             onChange: @renameCircle
+        @el.children("ul").each (i, members) ->
+        	$(members).children("li").each (i, member) ->
+        		new CircleMember el: $(member)
 	renameCircle: (name) ->
         @loading(true)
         jsRoutes.controllers.Circles.rename(@id).ajax
@@ -59,7 +62,7 @@ class Circle extends Backbone.View
                 $.error("Error: " + err)
 	events:
         "click .deleteCircle": "deleteCircle"
-        "click .addMember": "addMember"
+        "click .addMember":    "addMember"
     deleteCircle: (e) ->
     	e.preventDefault()
     	@loading(true)
@@ -93,8 +96,10 @@ class Circle extends Backbone.View
     		data:
     			name: member
     		success: (data) ->
-    			@member.editInPlace("close", data)
+    			@member.editInPlace("close", "New member")
     			@loadingMember(false)
+    			_view = new CircleMember
+                    el: $(data).appendTo("#"+@id+".members")
     		error: (err) ->
     			@member.editInPlace("close", "New member")
     			@loadingMember(false)
@@ -107,6 +112,34 @@ class Circle extends Backbone.View
         else
             @el.children(".newMember").hide()
             @el.children(".addMember").show()
+
+class CircleMember extends Backbone.View
+	initialize: ->
+        @circle_id = @el.attr("circle-id")
+        @id = @el.attr("id")
+    events:
+    	"click .removeMember": "removeMember"
+    removeMember: (e) ->
+    	e.preventDefault()
+    	@loading(true)
+    	jsRoutes.controllers.Circles.removeMember(@circle_id).ajax
+    		context: this
+    		data:
+    			name: @id
+    		success: (data) ->
+    			@el.remove()
+    			@loading(false)
+    		error: (err) ->
+    			@loading(false)
+    			alert err.responseText
+    			$.error("Error: " + err.responseText)
+    loading: (display) ->
+    	if (display)
+    		@el.children(".removeMember").hide()
+    		@el.children(".loader").show()
+    	else
+    		@el.children(".removeMember").show()
+    		@el.children(".loader").hide()
 
 class CircleManager extends Backbone.View
 	initialize: ->

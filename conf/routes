@@ -11,7 +11,8 @@ GET     /circles                    controllers.Application.circles()
 POST    /circles                    controllers.Circles.add()
 DELETE  /circles/:id                controllers.Circles.delete(id: String)
 PUT     /circles/:id                controllers.Circles.rename(id: String)
-PUT     /circles/addMember/:id      controllers.Circles.addMember(id: String)
+PUT     /circles/member/:id         controllers.Circles.addMember(id: String)
+DELETE  /circles/member/:id         controllers.Circles.removeMember(id: String)
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
 # Map static resources from the /public folder to the /assets URL path

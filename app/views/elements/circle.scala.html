@@ -2,16 +2,12 @@
 
 <li circle-id="@circle._id">
 	Name: <a class="circleName" href="">@circle.name</a><br>
-    Id: @circle._id<br>
-	<ul class="members">
-		@if(circle.members.size > 1) {
-			Members: @for(member <- circle.members) {
-				@if(member != circle.owner) {
-					<li class="member">@member</li>
-				}
+	<ul id="@circle._id" class="members">
+		Members:
+		@circle.members.map { member =>
+			@if(member != circle.owner) {
+				@views.html.elements.circles.member(circle._id, member)
 			}
-		} else {
-			Currently no members in this circle.
 		}
 	</ul>
 	<button class="addMember" href="">Add member</button>
