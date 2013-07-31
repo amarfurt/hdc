@@ -46,6 +46,7 @@ class Circle extends Backbone.View
             context: this
             onChange: @renameCircle
 	renameCircle: (name) ->
+        @loading(true)
         jsRoutes.controllers.Circles.rename(@id).ajax
             context: this
             data:
@@ -95,9 +96,10 @@ class Circle extends Backbone.View
     			@member.editInPlace("close", data)
     			@loadingMember(false)
     		error: (err) ->
-    			@member.editInPlace("close", "")
+    			@member.editInPlace("close", "New member")
     			@loadingMember(false)
-    			$.error("Error: " + err)
+    			alert err.responseText
+    			$.error("Error: " + err.responseText)
     loadingMember: (display) ->
     	if (display)
             @el.children(".addMember").hide()

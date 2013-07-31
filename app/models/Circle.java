@@ -42,6 +42,7 @@ public class Circle {
 			DBObject cur = result.next();
 			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
 		}
+		// TODO possibly sort by creation timestamp or a specific order field (changeable)
 		return circles;
 	}
 
