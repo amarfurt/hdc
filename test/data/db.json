@@ -34,7 +34,7 @@
 		"content": "I'm fine. How are you today?"
 	},
 	{
-		"sender": "tes2@example.com",
+		"sender": "test2@example.com",
 		"receiver": "test3@example.com",
 		"datetime": "2001-01-01-130000Z",
 		"title": "How are you?",
