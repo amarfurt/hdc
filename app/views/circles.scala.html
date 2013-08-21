@@ -1,21 +1,13 @@
 @(circles: List[Circle], user: User)
 
 @main(user) {
-	<header>
-		<hgroup>
-			<h1>Circles</h1>
-		</hgroup>
-	</header>
-	
-	<article class="tasks">
-		<h1>Manage your circles:</h1>
+	<h1>Manage your circles:</h1>
 
-		<div class="folder">
-			<ul id="circles">@circles.map { circle =>
-				@views.html.elements.circle(circle)
-			}</ul>
-		</div>
+	<div class="folder">
+		<ul id="circles">@circles.map { circle =>
+			@views.html.elements.circle(circle)
+		}</ul>
+	</div>
 
-		<button id="addCircle">Add circle</button>
-	</article>
+	<button id="addCircle">Add circle</button>
 }

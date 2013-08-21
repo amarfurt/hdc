@@ -18,30 +18,18 @@
     </head>
     <body>
     <header>
-	    <a href="@routes.Application.index" id="logo"><span>Health</span>bank</a>
+	    <a href="@routes.Application.index" id="logo"><img src="@routes.Assets.at("images/logo.png")" alt="Healthbank" /></a>
 	    <dl id="user">
 	        <dt>@user.name <span>(@user.email)</span></dt>
-	        <dd>
-	            <a href="@routes.Application.logout()">Logout</a>
-	        </dd>
+            <a href="@routes.Application.logout()">Logout</a>
 	    </dl>
 	</header>
 	<nav>
-		<h4 class="dashboard">
-			<a href="/#">News</a>
-		</h4>
-		<ul id="projects">
-			<li>
-				<h4 class="groupName">
-					<a href="/#">Spaces</a>
-				</h4>
-				<h4 class="groupName">
-					<a href="circles">Circles</a>
-				</h4>
-				<h4 class="groupName">
-					<a href="/#">Access</a>
-				</h4>
-			</li>
+		<ul class="navigation">
+			<li><a href="/#">News</a></li>
+			<li><a href="/#">Spaces</a></li>
+			<li><a href="circles">Circles</a></li>
+			<li><a href="/#">Access</a></li>
 		</ul>
 	</nav>
 	<section id="main">

@@ -10,11 +10,15 @@
 
 // ----------------------- MAIN STYLES
 body {
-    background: @mainBackground;
+    background: @loginBackground;
     color: @mainColor;
     font: @defaultFont;
     -webkit-font-smoothing: antialised;
     -webkit-user-select: none;
+    
+    & > header {
+        height: @headerHeight;
+    }
 }
 
 a {
@@ -79,7 +83,6 @@ form {
         }
     }
     button {
-        .button();
         display: block;
         width: inherit;
         font-size: 14px;
@@ -95,6 +98,5 @@ nav {
 }
 
 // --------------------------- IMPORTS
-@import 'main/_widgets.less';        // Some shared elements
-@import 'main/_header.less';         // Top header + User bar
+@import 'main/_header.less';        // Top header + User bar
 
