@@ -78,5 +78,24 @@
 			"test2@example.com"
 		]
 	}
+	],
+	"spaces" : [
+	{
+		"name": "Test space 1",
+		"owner": "test1@example.com",
+		"visualization": "Simple List"
+	}
+	],
+	"visualizations": [
+	{
+		"name": "Simple List",
+		"description": "This simple visualization shows all records in a list."
+	}
+	],
+	"apps": [
+	{
+		"name": "Runtastic",
+		"description": "Shows statistics of its owners running performances."
+	}
 	]
 }

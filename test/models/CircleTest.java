@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.CreateDBObjects;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -96,7 +97,6 @@ public class CircleTest {
 		anotherCircle.members = circle.members;
 		assertEquals("A circle with this name already exists.", Circle.add(anotherCircle));
 		assertEquals(1, circles.count());
-
 	}
 
 	@Test
@@ -183,7 +183,7 @@ public class CircleTest {
 
 	@Test
 	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -202,7 +202,7 @@ public class CircleTest {
 
 	@Test
 	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -221,7 +221,7 @@ public class CircleTest {
 
 	@Test
 	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(1);
+		String[] emailAddresses = CreateDBObjects.insertUsers(1);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -240,7 +240,7 @@ public class CircleTest {
 
 	@Test
 	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -257,25 +257,10 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
-
-	private String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = TestConnection.getCollection("users");
-		assertEquals(0, users.count());
-		String[] emailAddresses = new String[numUsers];
-		for (int i = 0; i < numUsers; i++) {
-		User user = new User();
-		user.email = "test" + (i+1) + "@example.com";
-		user.name = "Test User " + (i+1);
-		user.password = "secret";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
-		emailAddresses[i] = user.email;
-		}
-		return emailAddresses;
-	}
 	
 	@Test
 	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -295,7 +280,7 @@ public class CircleTest {
 	
 	@Test
 	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -315,7 +300,7 @@ public class CircleTest {
 	
 	@Test
 	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = insertUsers(2);
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();

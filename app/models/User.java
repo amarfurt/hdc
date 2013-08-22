@@ -35,4 +35,10 @@ public class User {
 		}
 	}
 
+	public static boolean isPerson(String email) {
+		// TODO security check before casting to person?
+		// requirement for record owners?
+		return true;
+	}
+
 }
