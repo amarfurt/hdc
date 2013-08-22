@@ -1,20 +1,20 @@
 package utils;
 
 import static org.junit.Assert.assertEquals;
-
-import org.bson.types.ObjectId;
-
 import models.Record;
 import models.User;
 
+import org.bson.types.ObjectId;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 public class CreateDBObjects {
 
 	public static String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException {
 		DBCollection users = TestConnection.getCollection("users");
-		assertEquals(0, users.count());
+		long originalCount = users.count();
 		String[] emailAddresses = new String[numUsers];
 		for (int i = 0; i < numUsers; i++) {
 			User user = new User();
@@ -24,21 +24,24 @@ public class CreateDBObjects {
 			users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
 			emailAddresses[i] = user.email;
 		}
+		assertEquals(originalCount + numUsers, users.count());
 		return emailAddresses;
 	}
 
 	public static ObjectId[] insertRecords(String creator, String owner, int numRecords) throws IllegalArgumentException, IllegalAccessException {
 		DBCollection records = TestConnection.getCollection("records");
-		assertEquals(0, records.count());
+		long originalCount = records.count();
 		ObjectId[] recordIds = new ObjectId[numRecords];
 		for (int i = 0; i < numRecords; i++) {
 			Record record = new Record();
 			record.creator = creator;
 			record.owner = owner;
 			record.data = "Random data.";
-			records.insert(new BasicDBObject(ModelConversion.modelToMap(Record.class, record)));
-			recordIds[i] = record._id;
+			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+			records.insert(recordObject);
+			recordIds[i] = (ObjectId) recordObject.get("_id");
 		}
+		assertEquals(originalCount + numRecords, records.count());
 		return recordIds;
 	}
 

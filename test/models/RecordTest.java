@@ -123,8 +123,7 @@ public class RecordTest {
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
-		ObjectId randomId = ObjectId.get();
-		assertNull(Record.delete(randomId));
+		assertNull(Record.delete(ObjectId.get()));
 		assertEquals(1, records.count());
 	}
 
