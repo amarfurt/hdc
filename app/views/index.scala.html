@@ -13,23 +13,21 @@ the value of the key of the document with this id in the given collection.
 }
 
 @main(user) {
-	
+	<h1>My messages</h1>
+	<hr>
+
 	@messages.groupBy(_.sender).map {
 	    case (sender, messages) => {
-	        <div class="folder" data-folder-id="@sender">
-	            <header>
-	                <h3>@getUser(sender).name</h3>
-	            </header>
-	            <ul class="list">
-	                @messages.map { message =>
-	                    <li data-task-id="@message._id">
-	                        <h4>@message.title</h4><br>
-	                        @message.content
-	                    </li>
-	                }
-	            </ul>
-	        </div>
+            <h2>@getUser(sender).name</h2>
+            <ul id="messages">
+                @messages.map { message =>
+                    <li message-id="@message._id">
+                        <h2>@message.title</h2>
+                        @message.content
+                    </li>
+                    <hr>
+                }
+            </ul>
 	    }
 	}
-
 }

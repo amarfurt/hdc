@@ -1,7 +1,7 @@
 @(circle: Circle)
 
 <li circle-id="@circle._id">
-	Name: <a class="circleName" href="">@circle.name</a><br>
+	<h2>Name: <span class="circleName">@circle.name</span></h2>
 	<ul id="@circle._id" class="members">
 		Members:
 		@circle.members.map { member =>
@@ -11,6 +11,7 @@
 		}
 	</ul>
 	<button class="addMember" href="">Add member</button>
-	<a class="newMember" href="">New member</a>
-    <button class="deleteCircle" href="">Delete</button>
+	<span class="newMember">New member</span>
+    <button class="deleteCircle" href="">Delete circle</button>
 </li>
+<hr>

@@ -1,6 +1,5 @@
 class Circle extends Backbone.View
 	initialize: ->
-        @loadingMember(false)
         @id = @el.attr("circle-id")
         @name = $(".circleName", @el).editInPlace
             context: this
@@ -38,11 +37,9 @@ class Circle extends Backbone.View
         if (display)
             @el.children(".addMember").hide()
             @el.children(".deleteCircle").hide()
-            @el.children(".loader").show()
         else
             @el.children(".addMember").show()
             @el.children(".deleteCircle").show()
-            @el.children(".loader").hide()
     addMember: (e) ->
     	e.preventDefault()
     	@loadingMember(true)
@@ -96,10 +93,8 @@ class CircleMember extends Backbone.View
     loading: (display) ->
     	if (display)
     		@el.children(".removeMember").hide()
-    		@el.children(".loader").show()
     	else
     		@el.children(".removeMember").show()
-    		@el.children(".loader").hide()
 
 class CircleManager extends Backbone.View
 	initialize: ->
