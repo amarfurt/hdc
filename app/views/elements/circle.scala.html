@@ -1,17 +1,26 @@
 @(circle: Circle)
 
-<li circle-id="@circle._id">
-	<h2>Name: <span class="circleName">@circle.name</span></h2>
-	<ul id="@circle._id" class="members">
-		Members:
-		@circle.members.map { member =>
-			@if(member != circle.owner) {
-				@views.html.elements.circles.member(circle._id, member)
-			}
-		}
-	</ul>
-	<button class="addMember" href="">Add member</button>
-	<span class="newMember">New member</span>
-    <button class="deleteCircle" href="">Delete circle</button>
-</li>
-<hr>
+<div circle-id="@circle._id" class="circle panel-container">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title"><span class="circleName">@circle.name</span></h3>
+		</div>
+		<div class="panel-body">
+			<div id="@circle._id" class="list-group">
+				<span class="list-group-item active">Members</span>
+				@circle.members.map { member =>
+					@if(member != circle.owner) {
+						@views.html.elements.circles.member(circle._id, member)
+					}
+				}
+			</div>
+			<button class="btn btn-sm btn-primary addMember" href="">
+				<span class="glyphicon glyphicon-plus"></span> Add member
+			</button>
+			<span class="newMember">New member</span>
+		    <button class="btn btn-sm btn-danger deleteCircle" href="">
+		    	<span class="glyphicon glyphicon-remove-circle"></span> Delete circle
+		    </button>
+    	</div>
+	</div>
+</div>

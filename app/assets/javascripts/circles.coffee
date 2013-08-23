@@ -1,11 +1,36 @@
+class CircleMember extends Backbone.View
+	initialize: ->
+        @circle_id = @el.attr("circle-id")
+        @id = @el.attr("id")
+    events:
+    	"click .removeMember": "removeMember"
+    removeMember: (e) ->
+    	e.preventDefault()
+    	@loading(true)
+    	jsRoutes.controllers.Circles.removeMember(@circle_id).ajax
+    		context: this
+    		data:
+    			name: @id
+    		success: (data) ->
+    			@el.remove()
+    			@loading(false)
+    		error: (err) ->
+    			@loading(false)
+    			alert err.responseText
+    			$.error("Error: " + err.responseText)
+    loading: (display) ->
+    	if (display)
+    		@el.children(".removeMember").hide()
+    	else
+    		@el.children(".removeMember").show()
+
 class Circle extends Backbone.View
 	initialize: ->
         @id = @el.attr("circle-id")
         @name = $(".circleName", @el).editInPlace
             context: this
             onChange: @renameCircle
-        @el.children("ul").each (i, members) ->
-        	$(members).children("li").each (i, member) ->
+        $(".member", @el).each (i, member) ->
         		new CircleMember el: $(member)
 	renameCircle: (name) ->
         @loading(true)
@@ -46,7 +71,7 @@ class Circle extends Backbone.View
     	@member = $(".newMember", @el).editInPlace
             context: this
             onChange: @addNewMember
-    	@el.children(".newMember").editInPlace("edit")
+    	$(".newMember", @el).editInPlace("edit")
     addNewMember: (member) ->
     	jsRoutes.controllers.Circles.addMember(@id).ajax
     		context: this
@@ -56,7 +81,7 @@ class Circle extends Backbone.View
     			@member.editInPlace("close", "New member")
     			@loadingMember(false)
     			_view = new CircleMember
-                    el: $(data).appendTo("#"+@id+".members")
+                    el: $(data).appendTo("#"+@id+".list-group")
     		error: (err) ->
     			@member.editInPlace("close", "New member")
     			@loadingMember(false)
@@ -64,44 +89,17 @@ class Circle extends Backbone.View
     			$.error("Error: " + err.responseText)
     loadingMember: (display) ->
     	if (display)
-            @el.children(".addMember").hide()
-            @el.children(".newMember").show()
+            $(".addMember", @el).hide()
+            $(".newMember", @el).show()
         else
-            @el.children(".newMember").hide()
-            @el.children(".addMember").show()
-
-class CircleMember extends Backbone.View
-	initialize: ->
-        @circle_id = @el.attr("circle-id")
-        @id = @el.attr("id")
-    events:
-    	"click .removeMember": "removeMember"
-    removeMember: (e) ->
-    	e.preventDefault()
-    	@loading(true)
-    	jsRoutes.controllers.Circles.removeMember(@circle_id).ajax
-    		context: this
-    		data:
-    			name: @id
-    		success: (data) ->
-    			@el.remove()
-    			@loading(false)
-    		error: (err) ->
-    			@loading(false)
-    			alert err.responseText
-    			$.error("Error: " + err.responseText)
-    loading: (display) ->
-    	if (display)
-    		@el.children(".removeMember").hide()
-    	else
-    		@el.children(".removeMember").show()
+            $(".newMember", @el).hide()
+            $(".addMember", @el).show()
 
 class CircleManager extends Backbone.View
 	initialize: ->
-		@el.children("li").each (i, circle) ->
-			new Circle
-				el: $(circle)
-		$("#addCircle").click @addCircle
+		@el.children(".circle").each (i, circle) ->
+			new Circle el: $(circle)
+		$(".addCircle").click @addCircle
 	addCircle: (e) ->
     	jsRoutes.controllers.Circles.add().ajax
             context: this

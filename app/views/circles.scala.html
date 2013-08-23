@@ -1,12 +1,15 @@
 @(circles: List[Circle], user: User)
 
 @main(user) {
-	<h1>My circles</h1>
-	<hr>
-
-	<ul id="circles">@circles.map { circle =>
-		@views.html.elements.circle(circle)
-	}</ul>
-
-	<button id="addCircle">Add circle</button>
+	<div class="container">
+		<h1>My circles</h1>
+	
+		<ul id="circles">@circles.map { circle =>
+			@views.html.elements.circle(circle)
+		}</ul>
+	
+		<button class="btn btn-default addCircle">
+			<span class="glyphicon glyphicon-plus-sign"></span> Add circle
+		</button>
+	</div> <!-- /container -->
 }

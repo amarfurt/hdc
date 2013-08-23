@@ -1,7 +1,9 @@
 @*#@(circle_id: Object, member: User)*@
 @(circle_id: Object, member: Object)
 
-<li circle-id="@circle_id" id="@member">
+<a href="" circle-id="@circle_id" id="@member" class="member list-group-item">
 	@member
-	<button class="removeMember" href="">Remove</button>
-</li>
+	<button class="btn btn-xs btn-warning removeMember" href="">
+		<span class="glyphicon glyphicon-remove"></span>
+	</button>
+</a>

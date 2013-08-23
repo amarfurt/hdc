@@ -3,34 +3,68 @@
 <html>
     <head>
         <title>Healthbank</title>
+        <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	    <meta name="description" content="Healthbank login page">
+	    <meta name="author" content="amarfurt">
         <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
-        <link rel="stylesheet" type="text/css" media="screen" href="@routes.Assets.at("stylesheets/login.css")">
+	    <!-- Bootstrap core CSS -->
+	    <link href="@routes.Assets.at("bootstrap/css/bootstrap.css")" rel="stylesheet">
+	    <!-- Bootstrap theme -->
+	    <link href="@routes.Assets.at("bootstrap/css/bootstrap-theme.min.css")" rel="stylesheet">
+	    
+	    <!-- Custom styles for this template -->
+    	<link href="@routes.Assets.at("bootstrap/css/custom/login.css")" rel="stylesheet">
+	    
     </head>
     <body>
-        <header>
-            <a href="@routes.Application.index" id="logo"><img src="@routes.Assets.at("images/logo.png")" alt="Healthbank" /></a>
-        </header>
+    	<!-- Navbar -->
+		<div class="navbar navbar-default">
+			<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="@routes.Application.index">
+	            		<img class="navbar-brand" src="@routes.Assets.at("images/logo.png")" alt="Healthbank" />
+	            	</a>
+	          	</div>
+	        </div>
+      	</div>
+		
+		<!-- Form -->
 		@helper.form(routes.Application.authenticate) {
-			<h1>Sign in</h1>
-			@if(form.hasGlobalErrors) {
-				<p class="error">
-					@form.globalError.message
-				</p>
-			}
-			@if(flash.contains("success")) {
-				<p class="success">
-					@flash.get("success")
-				</p>
-			}
-			<p>
-				<input type="email" name="email" placeholder="Email" value="@form("email").value">
-			</p>
-			<p>
-				<input type="password" name="password" placeholder="Password">
-			</p>
-			<p>
-				<button type="submit">Go!</button>
-			</p>
+			<div class="container">
+				<div class="panel-container">
+					<div class="panel panel-default">
+		            	<div class="panel-heading">
+		              		<h3 class="panel-title">Sign in</h3>
+		            	</div>
+		            	<div class="panel-body">
+			            	@if(form.hasGlobalErrors) {
+			            		<div class="alert alert-danger">
+									@form.globalError.message
+				            	</div>
+							}
+							@if(flash.contains("success")) {
+								<div class="alert alert-success">
+									@flash.get("success")
+								</div>
+							}
+							<form class="form-signin">
+								<input type="email" class="form-control" placeholder="Email address" name="email" value="@form("email").value" autofocus>
+								<input type="password" class="form-control" placeholder="Password" name="password">
+								<label class="checkbox">
+									<input type="checkbox" value="remember-me"> Remember me
+								</label>
+								<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+							</form>
+		            	</div>
+					</div>
+				</div>
+			</div> <!-- /container -->
 		}
+		
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	    <script src="//code.jquery.com/jquery.js"></script>
+	    <!-- Include all compiled plugins (below), or include individual files as needed -->
+	    <script src="@routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>
     </body>
 </html>
