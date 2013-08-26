@@ -4,9 +4,11 @@
 	<div class="container">
 		<h1>My circles</h1>
 	
-		<ul id="circles">@circles.map { circle =>
-			@views.html.elements.circle(circle)
-		}</ul>
+		<ul id="circles">
+			@circles.map { circle =>
+				@views.html.elements.circle(circle)
+			}
+		</ul>
 	
 		<button class="btn btn-default addCircle">
 			<span class="glyphicon glyphicon-plus-sign"></span> Add circle

@@ -41,7 +41,7 @@ public class Circles extends Controller {
 	public static Result rename(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
-		if (Secured.isOwnerOf(id)) {
+		if (Secured.isOwnerOfCircle(id)) {
 			String newName = Form.form().bindFromRequest().get("name");
 			String errorMessage = Circle.rename(id, newName);
 			if (errorMessage == null) {
@@ -57,7 +57,7 @@ public class Circles extends Controller {
 	public static Result delete(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
-		if (Secured.isOwnerOf(id)) {
+		if (Secured.isOwnerOfCircle(id)) {
 			String errorMessage = Circle.delete(id);
 			if (errorMessage == null) {
 				return ok();
@@ -72,7 +72,7 @@ public class Circles extends Controller {
 	public static Result addMember(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
-		if (Secured.isOwnerOf(id)) {
+		if (Secured.isOwnerOfCircle(id)) {
 			String newMember = Form.form().bindFromRequest().get("name");
 			try {
 				String errorMessage = Circle.addMember(id, newMember);
@@ -92,7 +92,7 @@ public class Circles extends Controller {
 	public static Result removeMember(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
-		if (Secured.isOwnerOf(id)) {
+		if (Secured.isOwnerOfCircle(id)) {
 			String member = Form.form().bindFromRequest().get("name");
 			try {
 				String errorMessage = Circle.removeMember(id, member);

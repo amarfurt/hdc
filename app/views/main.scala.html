@@ -45,13 +45,13 @@
 				</div>
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav">
-		            	<li><a href="/#">News</a></li>
-						<li><a href="/#">Spaces</a></li>
+		            	<li><a href="/#">News <span class="badge">0</span></a></li>
+						<li><a href="spaces">Spaces</a></li>
 						<li><a href="circles">Circles</a></li>
 						<li><a href="/#">Access</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						<li><p class="navbar-text">@user.name (@user.email)</p></li>
+						<li><p class="navbar-text">@user.name <small>(@user.email)</small></p></li>
 						<li><a href="@routes.Application.logout()">
 							<span class="glyphicon glyphicon-off"></span> Sign out
 						</a></li>
@@ -63,5 +63,10 @@
 		<section id="main">
 			@content
 		</section>
+		
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+	    <script src="@routes.Assets.at("bootstrap/js/jquery.js")"></script>
+	    <!-- Include all compiled plugins (below), or include individual files as needed -->
+	    <script src="@routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>
 	</body>
 </html>

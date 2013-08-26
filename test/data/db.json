@@ -83,7 +83,9 @@
 	{
 		"name": "Test space 1",
 		"owner": "test1@example.com",
-		"visualization": "Simple List"
+		"visualization": "Simple List",
+		"records": [
+		]
 	}
 	],
 	"visualizations": [

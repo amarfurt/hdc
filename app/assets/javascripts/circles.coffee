@@ -95,7 +95,7 @@ class Circle extends Backbone.View
             $(".newMember", @el).hide()
             $(".addMember", @el).show()
 
-class CircleManager extends Backbone.View
+class CirclesManager extends Backbone.View
 	initialize: ->
 		@el.children(".circle").each (i, circle) ->
 			new Circle el: $(circle)
@@ -112,4 +112,4 @@ class CircleManager extends Backbone.View
 
 # Instantiate views
 $ ->
-	mngr = new CircleManager el: $("#circles")
+	mngr = new CirclesManager el: $("#circles")

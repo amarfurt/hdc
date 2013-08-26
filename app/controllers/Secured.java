@@ -1,6 +1,8 @@
 package controllers;
 
 import models.Circle;
+import models.Record;
+import models.Space;
 
 import org.bson.types.ObjectId;
 
@@ -20,7 +22,15 @@ public class Secured extends Security.Authenticator {
 		return redirect(routes.Application.welcome());
 	}
 
-	public static boolean isOwnerOf(ObjectId circleId) {
+	public static boolean isCreatorOrOwnerOfRecord(ObjectId recordId) {
+		return Record.isCreatorOrOwner(recordId, Context.current().request().username());
+	}
+
+	public static boolean isOwnerOfSpace(ObjectId spaceId) {
+		return Space.isOwner(spaceId, Context.current().request().username());
+	}
+
+	public static boolean isOwnerOfCircle(ObjectId circleId) {
 		return Circle.isOwner(circleId, Context.current().request().username());
 	}
 

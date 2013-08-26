@@ -5,6 +5,10 @@ a.navbar-brand {
 
 img.navbar-brand {
 	height: 40px;
-    width: auto;
-    padding: 0;
+	width: auto;
+	padding: 0;
+}
+
+input.form-control {
+	margin-bottom: 5px;
 }
