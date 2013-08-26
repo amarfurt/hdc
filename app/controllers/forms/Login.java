@@ -1,4 +1,4 @@
-package controllers;
+package controllers.forms;
 
 import models.User;
 
