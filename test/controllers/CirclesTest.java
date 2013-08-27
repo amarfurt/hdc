@@ -1,7 +1,6 @@
 package controllers;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static play.test.Helpers.callAction;
@@ -81,12 +80,14 @@ public class CirclesTest {
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		String circleId = id.toString();
+		String originalName = (String) circle.get("name");
+		String originalOwner = (String) circle.get("owner");
 		Result result = callAction(controllers.routes.ref.Circles.rename(circleId), fakeRequest().withSession("email", "test2@example.com")
 				.withFormUrlEncodedBody(ImmutableMap.of("name", "Test circle 2")));
 		assertEquals(403, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
-		assertNotEquals("Test circle 2", circles.findOne(idQuery).get("owner"));
-		assertNotEquals("Test circle 2", circles.findOne(idQuery).get("name"));
+		assertEquals(originalName, circles.findOne(idQuery).get("name"));
+		assertEquals(originalOwner, circles.findOne(idQuery).get("owner"));
 	}
 
 	@Test

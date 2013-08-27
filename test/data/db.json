@@ -64,6 +64,7 @@
 	],
 	"records" : [
 	{
+		"_id": 1,
 		"creator": "test1@example.com",
 		"owner": "test1@example.com",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01"
@@ -85,6 +86,7 @@
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
 		"records": [
+			1
 		]
 	}
 	],
