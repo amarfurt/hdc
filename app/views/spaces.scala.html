@@ -6,26 +6,29 @@
 			<h1>My spaces</h1>
 		</div>
 		
-		<ul class="nav nav-tabs" id="spaceTabs">
+		<!-- Tabs -->
+		<ul id="spaceTabs" class="nav nav-tabs">
 			@spaces.map { space =>
-				<li><a href="#@space.name">@space.name</a></li>
+				<li><a href="#@space._id" data-toggle="tab">@space.name</a></li>
 			}
 		</ul>
 		
-		<div class="tab-content">
+		<div id="spaceContent" class="tab-content">
 			@spaces.map { space =>
-				<div class="tab-pane" id="@space.name">
+				<div class="tab-pane fade" id="@space._id">
 					@views.html.elements.space(space)
 				</div>
 			}
 		</div>
-	
+		
 		<script>
-			$(function() {
-				$('#spaceTabs a:first').tab('show')
-			})
+		$(function () {
+		    $('#spaceTabs li:first').addClass("active")
+		    $('#spaceContent div:first').addClass("active in")
+		  })
 		</script>
 	
+		<!-- Add space -->
 		<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default addSpace">
 			<span class="glyphicon glyphicon-plus"></span> Add space
 		</button>
