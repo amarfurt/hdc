@@ -8,10 +8,14 @@
 		<div class="panel-body">
 			<div id="@circle._id" class="list-group">
 				<span class="list-group-item active">Members</span>
-				@circle.members.map { member =>
-					@if(member != circle.owner) {
-						@views.html.elements.circles.member(circle._id, member)
+				@if(circle.members.size() > 1) {
+					@circle.members.map { member =>
+						@if(member != circle.owner) {
+							@views.html.elements.circles.member(circle._id, member)
+						}
 					}
+				} else {
+					<p id="noMembers" class="list-group-item">This circle has no members yet.</p>
 				}
 			</div>
 			<button class="btn btn-sm btn-primary addMember" href="">
