@@ -9,8 +9,16 @@
 		<!-- Tabs -->
 		<ul id="spaceTabs" class="nav nav-tabs">
 			@spaces.map { space =>
-				<li><a href="#@space._id" data-toggle="tab">@space.name</a></li>
+				<li id="@space._id" class="spaceTab">
+					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
+				</li>
 			}
+			<!-- Add new space button -->
+			<li>
+				<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default addSpace">
+					<span class="glyphicon glyphicon-plus"></span>
+				</button>
+			</li>
 		</ul>
 		
 		<div id="spaceContent" class="tab-content">
@@ -20,18 +28,6 @@
 				</div>
 			}
 		</div>
-		
-		<script>
-		$(function () {
-		    $('#spaceTabs li:first').addClass("active")
-		    $('#spaceContent div:first').addClass("active in")
-		  })
-		</script>
-	
-		<!-- Add space -->
-		<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default addSpace">
-			<span class="glyphicon glyphicon-plus"></span> Add space
-		</button>
 		
 		<!-- Modal -->
 		@helper.form(routes.Spaces.add) {

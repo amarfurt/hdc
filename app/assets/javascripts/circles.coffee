@@ -43,6 +43,7 @@ class Circle extends Backbone.View
                 @name.editInPlace("close", data)
             error: (err) ->
                 @loading(false)
+                alert err.responseText
                 $.error("Error: " + err)
 	events:
         "click .deleteCircle": "deleteCircle"
