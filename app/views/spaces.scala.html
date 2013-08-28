@@ -22,9 +22,7 @@
 	
 	<div id="spaceContent" class="tab-content">
 		@spaces.map { space =>
-			<div class="tab-pane fade" id="@space._id">
-				@views.html.elements.space(space)
-			</div>
+			@views.html.elements.space(space)
 		}
 	</div>
 	

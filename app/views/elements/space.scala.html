@@ -1,18 +1,20 @@
 @(space: Space)
 
-<div space-id="@space._id" class="space list-group">
-	<span class="list-group-item active">Records</span>
-	@if(space.records.size() > 0) {
-		@space.records.map { record =>
-			@views.html.elements.spaces.record(space._id, record.asInstanceOf[org.bson.types.ObjectId])
+<div class="space tab-pane fade" id="@space._id">
+	<div class="list-group">
+		<span class="list-group-item active">Records</span>
+		@if(space.records.size() > 0) {
+			@space.records.map { record =>
+				@views.html.elements.spaces.record(space._id, record.asInstanceOf[org.bson.types.ObjectId])
+			}
+		} else {
+			<p id="noRecords" class="list-group-item">This space has no records yet.</p>
 		}
-	} else {
-		<p id="noRecords" class="list-group-item">This space has no records yet.</p>
-	}
+	</div>
+	<button class="btn btn-sm btn-primary addRecord">
+		<span class="glyphicon glyphicon-plus"></span> Add record
+	</button>
+	<button class="btn btn-sm btn-danger deleteSpace">
+		<span class="glyphicon glyphicon-remove"></span> Delete space
+	</button>
 </div>
-<button class="btn btn-sm btn-primary addRecord">
-	<span class="glyphicon glyphicon-plus"></span> Add record
-</button>
-<button class="btn btn-sm btn-danger deleteSpace">
-	<span class="glyphicon glyphicon-remove"></span> Delete space
-</button>
