@@ -22,7 +22,7 @@ class SpaceContent extends Backbone.View
 
 class SpaceTab extends Backbone.View
 	initialize: ->
-		@id = @el.attr("id")
+		@id = @el.attr("tab-id")
 		@name = $(".spaceName", @el).editInPlace
 			context: this
 			onChange: @renameSpace

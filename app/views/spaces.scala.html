@@ -9,7 +9,7 @@
 		<!-- Tabs -->
 		<ul id="spaceTabs" class="nav nav-tabs">
 			@spaces.map { space =>
-				<li id="@space._id" class="spaceTab">
+				<li tab-id="@space._id" class="spaceTab">
 					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
 				</li>
 			}
@@ -64,4 +64,7 @@
 		}
 
 	</div> <!-- /container -->
+	
+	<!-- Load specific js -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>
 }
