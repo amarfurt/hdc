@@ -83,7 +83,7 @@ class Circle extends Backbone.View
     			@loadingMember(false)
     			_view = new CircleMember
                     el: $(data).appendTo("#"+@id+".list-group")
-                $("#noMembers").addClass("hidden")
+                $("#"+@id+".noMembers", @el).addClass("hidden")
     		error: (err) ->
     			@member.editInPlace("close", "New member")
     			@loadingMember(false)
