@@ -17,7 +17,7 @@ import controllers.database.Connection;
 
 public class Space {
 
-	private static final String collection = "spaces";
+	static final String collection = "spaces";
 
 	public ObjectId _id;
 	public String name;
