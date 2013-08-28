@@ -2,6 +2,7 @@ package controllers;
 
 import models.Circle;
 import models.Message;
+import models.Record;
 import models.Space;
 import models.User;
 import play.Routes;
@@ -9,6 +10,7 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import views.html.access;
 import views.html.circles;
 import views.html.index;
 import views.html.spaces;
@@ -47,6 +49,16 @@ public class Application extends Controller {
 		try {
 			User user = User.find(request().username());
 			return ok(spaces.render(Form.form(SpaceForm.class), Space.findOwnedBy(user), user));
+		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
+	
+	@Security.Authenticated(Secured.class)
+	public static Result access() {
+		try {
+			User user = User.find(request().username());
+			return ok(access.render(Record.findOwnedBy(user), Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

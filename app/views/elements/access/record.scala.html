@@ -1,0 +1,8 @@
+@(record: Record)
+
+<div class="checkbox">
+	<label>
+		<input type="checkbox" name="record" value="@record._id">
+			<span class="text-muted">@record._id:</span> @record.data
+	</label>
+</div>
