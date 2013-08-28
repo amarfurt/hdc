@@ -1,4 +1,6 @@
-class SpaceContent extends Backbone.View
+class Space extends Backbone.View
+	initialize: ->
+		@id = @el.attr("id")
 	events:
 		"click .deleteSpace": "deleteSpace"
 	deleteSpace: (e) ->
@@ -8,7 +10,10 @@ class SpaceContent extends Backbone.View
     		context: this
     		success: ->
     			@el.remove()
+    			$(".spaceTab.active").remove()
     			@loading(false)
+    			$("#spaceTabs").children("li:first").addClass("active")
+    			$("#spaceContent").children("div:first").addClass("active in")
     		error: (err) ->
     			@loading(false)
     			$.error("Error: " + err)
@@ -46,6 +51,8 @@ class SpaceTabs extends Backbone.View
 class SpaceContent extends Backbone.View
 	initialize: ->
 		@el.children("div:first").addClass("active in")
+		@el.children(".space").each (i, space) ->
+			new Space el: $(space)
 
 # Instantiate views
 $ ->
