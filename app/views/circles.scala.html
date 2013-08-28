@@ -1,21 +1,19 @@
 @(circles: List[Circle], user: User)
 
 @main(user) {
-	<div class="container">
-		<div class="page-header">
-			<h1>My circles</h1>
-		</div>
-	
-		<ul id="circles">
-			@circles.map { circle =>
-				@views.html.elements.circle(circle)
-			}
-		</ul>
-	
-		<button class="btn btn-default addCircle">
-			<span class="glyphicon glyphicon-plus-sign"></span> Add circle
-		</button>
-	</div> <!-- /container -->
+	<div class="page-header">
+		<h1>My circles</h1>
+	</div>
+
+	<ul id="circles">
+		@circles.map { circle =>
+			@views.html.elements.circle(circle)
+		}
+	</ul>
+
+	<button class="btn btn-default addCircle">
+		<span class="glyphicon glyphicon-plus-sign"></span> Add circle
+	</button>
 	
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/circles.js")"></script>

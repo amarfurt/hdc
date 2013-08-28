@@ -13,31 +13,29 @@ the value of the key of the document with this id in the given collection.
 }
 
 @main(user) {
-   	<div class="container">
-		<div class="page-header">
-			<h1>My messages</h1>
-		</div>
+	<div class="page-header">
+		<h1>My messages</h1>
+	</div>
 
-		@messages.groupBy(_.sender).map {
-		    case (sender, messages) => {
-	    		<div class="panel-container">
-	    			<div class="panel panel-default">
-	    				<div class="panel-heading">
-	    					<h3 class="panel-title">@getUser(sender).name</h3>
-		            	</div>
-		            	<div class="panel-body">
-		            		<ul id="messages">
-		            			@messages.map { message =>
-		            				<li message-id="@message._id">
-		            					<p><strong>@message.title</strong></p>
-		            					@message.content
-		            				</li>
-		            			}
-		            		</ul>
-		            	</div>
-					</div>
+	@messages.groupBy(_.sender).map {
+	    case (sender, messages) => {
+    		<div class="panel-container">
+    			<div class="panel panel-default">
+    				<div class="panel-heading">
+    					<h3 class="panel-title">@getUser(sender).name</h3>
+	            	</div>
+	            	<div class="panel-body">
+	            		<ul id="messages">
+	            			@messages.map { message =>
+	            				<li message-id="@message._id">
+	            					<p><strong>@message.title</strong></p>
+	            					@message.content
+	            				</li>
+	            			}
+	            		</ul>
+	            	</div>
 				</div>
-			}
+			</div>
 		}
-	</div> <!-- /container -->
+	}
 }

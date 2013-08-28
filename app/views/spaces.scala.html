@@ -1,70 +1,67 @@
 @(spaceForm: Form[forms.SpaceForm], spaces: List[Space], user: User)
 
 @main(user) {
-	<div class="container">
-		<div class="page-header">
-			<h1>My spaces</h1>
-		</div>
-		
-		<!-- Tabs -->
-		<ul id="spaceTabs" class="nav nav-tabs">
-			@spaces.map { space =>
-				<li tab-id="@space._id" class="spaceTab">
-					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
-				</li>
-			}
-			<!-- Add new space button -->
-			<li>
-				<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default addSpace">
-					<span class="glyphicon glyphicon-plus"></span>
-				</button>
-			</li>
-		</ul>
-		
-		<div id="spaceContent" class="tab-content">
-			@spaces.map { space =>
-				<div class="tab-pane fade" id="@space._id">
-					@views.html.elements.space(space)
-				</div>
-			}
-		</div>
-		
-		<!-- Modal -->
-		@helper.form(routes.Spaces.add) {
-			<div class="modal fade" id="spaceForm" tabindex="-1" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-							<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
-						</div>
-						<div class="modal-body">
-			            	@if(spaceForm.hasGlobalErrors) {
-			            		<div class="alert alert-danger">
-									@spaceForm.globalError.message
-				            	</div>
-							}
-							@if(flash.contains("success")) {
-								<div class="alert alert-success">
-									@flash.get("success")
-								</div>
-							}
-							<form>
-								<input type="text" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
-								<input type="text" class="form-control" placeholder="Visualization (to be replaced by dropdown list)" name="visualization">
-							</form>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Discard</button>
-							<button type="submit" class="btn btn-primary">Create</button>
-						</div>
-					</div> <!-- /.modal-content -->
-				</div> <!-- /.modal-dialog -->
-			</div> <!-- /.modal -->
-		}
-
-	</div> <!-- /container -->
+	<div class="page-header">
+		<h1>My spaces</h1>
+	</div>
 	
+	<!-- Tabs -->
+	<ul id="spaceTabs" class="nav nav-tabs">
+		@spaces.map { space =>
+			<li tab-id="@space._id" class="spaceTab">
+				<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
+			</li>
+		}
+		<!-- Add new space button -->
+		<li>
+			<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default addSpace">
+				<span class="glyphicon glyphicon-plus"></span>
+			</button>
+		</li>
+	</ul>
+	
+	<div id="spaceContent" class="tab-content">
+		@spaces.map { space =>
+			<div class="tab-pane fade" id="@space._id">
+				@views.html.elements.space(space)
+			</div>
+		}
+	</div>
+	
+	<!-- Modal -->
+	@helper.form(routes.Spaces.add) {
+		<div class="modal fade" id="spaceForm" tabindex="-1" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
+					</div>
+					<div class="modal-body">
+		            	@if(spaceForm.hasGlobalErrors) {
+		            		<div class="alert alert-danger">
+								@spaceForm.globalError.message
+			            	</div>
+						}
+						@if(flash.contains("success")) {
+							<div class="alert alert-success">
+								@flash.get("success")
+							</div>
+						}
+						<form>
+							<input type="text" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
+							<input type="text" class="form-control" placeholder="Visualization (to be replaced by dropdown list)" name="visualization">
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Discard</button>
+						<button type="submit" class="btn btn-primary">Create</button>
+					</div>
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
+	}
+
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>
 }
