@@ -64,9 +64,18 @@
 	],
 	"records" : [
 	{
-		"_id": 1,
-		"creator": "test1@example.com",
+		"creator": "test4@example.com",
 		"owner": "test1@example.com",
+		"data": "Ran 11.53km in 1.35h on 2010-01-01"
+	},
+	{
+		"creator": "test3@example.com",
+		"owner": "test1@example.com",
+		"data": "Ran 12.53km in 1.35h on 2010-01-01"
+	},
+	{
+		"creator": "test3@example.com",
+		"owner": "test2@example.com",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01"
 	}
 	],
@@ -85,9 +94,19 @@
 		"name": "Test space 1",
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
-		"records": [
-			1
-		]
+		"records": [ ]
+	},
+	{
+		"name": "Test space 2",
+		"owner": "test1@example.com",
+		"visualization": "Simple List",
+		"records": [ ]
+	},
+	{
+		"name": "Test space 2",
+		"owner": "test2@example.com",
+		"visualization": "Simple List",
+		"records": [ ]
 	}
 	],
 	"visualizations": [

@@ -22,9 +22,13 @@ import utils.ModelConversion;
 import utils.TestConnection;
 
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
+
+import controllers.database.Connection;
 
 public class SpacesTest {
 
@@ -57,16 +61,16 @@ public class SpacesTest {
 	@Test
 	public void renameSpaceSuccess() {
 		DBCollection spaces = TestConnection.getCollection("spaces");
-		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Test space 2"));
+		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed test space"));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String owner = (String) space.get("owner");
 		String spaceId = id.toString();
 		Result result = callAction(controllers.routes.ref.Spaces.rename(spaceId), fakeRequest().withSession("email", owner)
-				.withFormUrlEncodedBody(ImmutableMap.of("name", "Test space 2")));
+				.withFormUrlEncodedBody(ImmutableMap.of("name", "Renamed test space")));
 		assertEquals(200, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
-		assertEquals("Test space 2", spaces.findOne(idQuery).get("name"));
+		assertEquals("Renamed test space", spaces.findOne(idQuery).get("name"));
 		assertEquals(owner, spaces.findOne(idQuery).get("owner"));
 	}
 
@@ -116,6 +120,109 @@ public class SpacesTest {
 		assertEquals(403, status(result));
 		assertNotNull(spaces.findOne(new BasicDBObject("_id", id)));
 		assertEquals(originalCount, spaces.count());
+	}
+
+	@Test
+	public void addRecordSuccess() {
+		DBObject record = TestConnection.getCollection("records").findOne();
+		ObjectId recordId = (ObjectId) record.get("_id");
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBObject query = new BasicDBObject();
+		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
+		DBObject space = spaces.findOne(query);
+		ObjectId id = (ObjectId) space.get("_id");
+		String owner = (String) space.get("owner");
+		BasicDBList records = (BasicDBList) space.get("records");
+		int oldSize = records.size();
+		String spaceId = id.toString();
+		Result result = callAction(controllers.routes.ref.Spaces.addRecord(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		assertEquals(200, status(result));
+		assertEquals(oldSize + 1, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+	}
+
+	@Test
+	public void addRecordAlreadyInSpace() {
+		// get a record
+		DBObject record = TestConnection.getCollection("records").findOne();
+		ObjectId recordId = (ObjectId) record.get("_id");
+
+		// get a space without that record
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBObject query = new BasicDBObject();
+		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
+		DBObject space = spaces.findOne(query);
+		ObjectId id = (ObjectId) space.get("_id");
+		String owner = (String) space.get("owner");
+
+		// insert that record into that space
+		DBObject updateQuery = new BasicDBObject("_id", id);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+		WriteResult writeResult = Connection.getCollection("spaces").update(updateQuery, update);
+		assertNull(writeResult.getLastError().getErrorMessage());
+
+		// try to insert the same record again
+		BasicDBList records = (BasicDBList) spaces.findOne(updateQuery).get("records");
+		int oldSize = records.size();
+		String spaceId = id.toString();
+		Result result = callAction(controllers.routes.ref.Spaces.addRecord(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		assertEquals(400, status(result));
+		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+	}
+
+	@Test
+	public void removeRecordSuccess() {
+		// get a record
+		DBObject record = TestConnection.getCollection("records").findOne();
+		ObjectId recordId = (ObjectId) record.get("_id");
+
+		// get a space without that record
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBObject query = new BasicDBObject();
+		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
+		DBObject space = spaces.findOne(query);
+		ObjectId id = (ObjectId) space.get("_id");
+		String owner = (String) space.get("owner");
+
+		// insert that record into that space
+		DBObject updateQuery = new BasicDBObject("_id", id);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+		WriteResult writeResult = Connection.getCollection("spaces").update(updateQuery, update);
+		assertNull(writeResult.getLastError().getErrorMessage());
+
+		// remove the record from the space again
+		BasicDBList records = (BasicDBList) spaces.findOne(updateQuery).get("records");
+		int oldSize = records.size();
+		String spaceId = id.toString();
+		Result result = callAction(controllers.routes.ref.Spaces.removeRecord(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		assertEquals(200, status(result));
+		assertEquals(oldSize - 1, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+	}
+
+	@Test
+	public void removeRecordNotInSpace() {
+		// get a record
+		DBObject record = TestConnection.getCollection("records").findOne();
+		ObjectId recordId = (ObjectId) record.get("_id");
+
+		// get a space without that record
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBObject query = new BasicDBObject();
+		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
+		DBObject space = spaces.findOne(query);
+		ObjectId id = (ObjectId) space.get("_id");
+		String owner = (String) space.get("owner");
+		
+		// try to remove that record from that space
+		BasicDBList records = (BasicDBList) space.get("records");
+		int oldSize = records.size();
+		String spaceId = id.toString();
+		Result result = callAction(controllers.routes.ref.Spaces.removeRecord(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		assertEquals(400, status(result));
+		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
 	}
 
 }
