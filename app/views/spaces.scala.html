@@ -5,6 +5,13 @@
 		<h1>My spaces</h1>
 	</div>
 	
+	@if(spaceForm.hasGlobalErrors) {
+		<div class="alert alert-danger alert-dismissable">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			@spaceForm.globalError.message
+		</div>
+	}
+	
 	<!-- Tabs -->
 	<ul id="spaceTabs" class="nav nav-tabs">
 		@spaces.map { space =>
@@ -28,7 +35,7 @@
 	
 	<!-- Modal -->
 	@helper.form(routes.Spaces.add) {
-		<div class="modal fade" id="spaceForm" tabindex="-1" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">
+		<div class="modal fade" id="spaceForm" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -36,16 +43,6 @@
 						<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
 					</div>
 					<div class="modal-body">
-		            	@if(spaceForm.hasGlobalErrors) {
-		            		<div class="alert alert-danger">
-								@spaceForm.globalError.message
-			            	</div>
-						}
-						@if(flash.contains("success")) {
-							<div class="alert alert-success">
-								@flash.get("success")
-							</div>
-						}
 						<form role="form">
 							<input type="text" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
 							<input type="text" class="form-control" placeholder="Visualization (to be replaced by dropdown list)" name="visualization">

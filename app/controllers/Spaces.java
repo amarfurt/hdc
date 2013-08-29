@@ -1,6 +1,7 @@
 package controllers;
 
 import models.Space;
+import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -8,7 +9,8 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.elements.space;
+import views.html.spaces;
+import views.html.elements.spaces.record;
 
 import com.mongodb.BasicDBList;
 
@@ -18,27 +20,22 @@ import controllers.forms.SpaceForm;
 public class Spaces extends Controller {
 
 	public static Result add() {
-		Space newSpace = new Space();
-		SpaceForm spaceForm = Form.form(SpaceForm.class).bindFromRequest().get();
-		newSpace.name = spaceForm.name;
-		newSpace.owner = request().username();
-		newSpace.visualization = spaceForm.visualization;
-		newSpace.records = new BasicDBList();
-		try {
-			String errorMessage = Space.add(newSpace);
-			if (errorMessage == null) {
-				// TODO js ajax insertion
-//				return ok(space.render(newSpace));
-				return Application.spaces();
-			} else {
-				return badRequest(errorMessage);
+		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
+		if (spaceForm.hasErrors()) {
+			try {
+				User user = User.find(request().username());
+				return badRequest(spaces.render(spaceForm, Space.findOwnedBy(user), user));
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
+				return internalServerError(e.getMessage());
 			}
-
-			// multi-catch doesn't seem to work...
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
+		} else {
+			// TODO js ajax insertion
+			// return ok(space.render(newSpace));
+			return Application.spaces();
 		}
 	}
 
@@ -70,6 +67,67 @@ public class Spaces extends Controller {
 			}
 		} else {
 			return forbidden();
+		}
+	}
+
+	public static Result addRecord(String spaceId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId sId = new ObjectId(spaceId);
+		if (Secured.isOwnerOfSpace(sId)) {
+			String recordId = Form.form().bindFromRequest().get("id");
+			ObjectId rId = new ObjectId(recordId);
+			try {
+				String errorMessage = Space.addRecord(sId, rId);
+				if (errorMessage == null) {
+					return ok(record.render(sId, rId));
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				return internalServerError(e.getMessage());
+			}
+		} else {
+			return forbidden();
+		}
+	}
+
+	public static Result removeRecord(String spaceId) {
+		// can't pass parameter of type ObjectId, using String
+		ObjectId sId = new ObjectId(spaceId);
+		if (Secured.isOwnerOfSpace(sId)) {
+			String recordId = Form.form().bindFromRequest().get("id");
+			ObjectId rId = new ObjectId(recordId);
+			try {
+				String errorMessage = Space.removeRecord(sId, rId);
+				if (errorMessage == null) {
+					return ok();
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+				return internalServerError(e.getMessage());
+			}
+		} else {
+			return forbidden();
+		}
+	}
+
+	/**
+	 * Validation helper for space form (we only have access to current user in controllers).
+	 */
+	public static String validateSpace(String name, String visualization) {
+		Space newSpace = new Space();
+		newSpace.name = name;
+		newSpace.owner = request().username();
+		newSpace.visualization = visualization;
+		newSpace.records = new BasicDBList();
+		try {
+			return Space.add(newSpace);
+		// multi-catch doesn't seem to work...
+		} catch (IllegalArgumentException e) {
+			return e.getMessage();
+		} catch (IllegalAccessException e) {
+			return e.getMessage();
 		}
 	}
 
