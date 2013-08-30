@@ -63,10 +63,13 @@ public class Record {
 		// find all records in the given space
 		List<ObjectId> recordsInSpace = new ArrayList<ObjectId>();
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBCursor result = Connection.getCollection(Space.collection).find(query);
-		while (result.hasNext()) {
-			ObjectId cur = (ObjectId) result.next();
-			recordsInSpace.add(cur);
+		DBObject projection = new BasicDBObject("records", 1);
+		Object result = Connection.getCollection(Space.collection).findOne(query, projection).get("records");
+		if (result instanceof List<?>) { // workaround to avoid warning
+			List<?> recordList = (List<?>) result;
+			for (Object recordId : recordList) {
+				recordsInSpace.add((ObjectId) recordId);
+			}
 		}
 		
 		// remove all records already in the space from the map
@@ -80,8 +83,7 @@ public class Record {
 	 * Checks whether the user with the given email is the creator or owner of the record with the given id.
 	 */
 	public static boolean isCreatorOrOwner(ObjectId recordId, String email) {
-		DBObject query = new BasicDBObject();
-		query.put("_id", recordId);
+		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject creator = new BasicDBObject("creator", email);
 		DBObject owner = new BasicDBObject("owner", email);
 		query.put("$or", new DBObject[] { creator, owner });

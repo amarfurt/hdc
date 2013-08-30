@@ -1,4 +1,7 @@
-@(space: Space)
+@(space: Space, user: User)
+@getRecords(user: User, spaceId: org.bson.types.ObjectId) = @{
+	Record.findNotInSpace(user, spaceId)
+}
 
 <div class="space tab-pane fade" id="@space._id">
 	<div class="list-group">
@@ -11,10 +14,43 @@
 			<p id="noRecords" class="list-group-item">This space has no records yet.</p>
 		}
 	</div>
-	<button class="btn btn-sm btn-primary addRecord">
+	<button data-toggle="modal" data-target="#recordForm@space._id" class="btn btn-sm btn-primary addRecord">
 		<span class="glyphicon glyphicon-plus"></span> Add record
 	</button>
 	<button class="btn btn-sm btn-danger deleteSpace">
 		<span class="glyphicon glyphicon-remove"></span> Delete space
 	</button>
+	
+	<!-- Modal -->
+	@helper.form(routes.Spaces.addRecords(space._id.toString())) {
+		<div class="modal fade" id="recordForm@space._id" role="dialog" aria-labelledby="recordFormLabel@space._id" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="recordFormLabel@space._id">Add records to this space</h4>
+					</div>
+					<div class="modal-body">
+						<form role="form">
+							<div class="btn-group-vertical" data-toggle="buttons">
+								@defining(getRecords(user, space._id)) { records =>
+									@if(records.size() > 0) {
+										@for(record <- records) {
+											@views.html.elements.spaces.checkbox(record)
+										}
+									} else {
+										<p>No records available for this space.</p>
+									}
+								}
+							</div>
+						</form>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary">Add</button>
+					</div>
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
+	}
 </div>

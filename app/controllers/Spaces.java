@@ -1,5 +1,7 @@
 package controllers;
 
+import java.util.Map;
+
 import models.Space;
 import models.User;
 
@@ -10,7 +12,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import views.html.spaces;
-import views.html.elements.spaces.record;
 
 import com.mongodb.BasicDBList;
 
@@ -70,19 +71,24 @@ public class Spaces extends Controller {
 		}
 	}
 
-	public static Result addRecord(String spaceId) {
+	public static Result addRecords(String spaceId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId sId = new ObjectId(spaceId);
 		if (Secured.isOwnerOfSpace(sId)) {
-			String recordId = Form.form().bindFromRequest().get("id");
-			ObjectId rId = new ObjectId(recordId);
+			Map<String, String> data = Form.form().bindFromRequest().data();
 			try {
-				String errorMessage = Space.addRecord(sId, rId);
-				if (errorMessage == null) {
-					return ok(record.render(sId, rId));
-				} else {
-					return badRequest(errorMessage);
+				String recordsAdded = "";
+				for (String recordId : data.keySet()) {
+					ObjectId rId = new ObjectId(recordId);
+					String errorMessage = Space.addRecord(sId, rId);
+					if (errorMessage != null) {
+						return badRequest(recordsAdded + errorMessage);
+					}
+					if (recordsAdded.isEmpty()) {
+						recordsAdded = "Added some records, but then an error occurred: ";
+					}
 				}
+				return Application.spaces();
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
@@ -123,7 +129,7 @@ public class Spaces extends Controller {
 		newSpace.records = new BasicDBList();
 		try {
 			return Space.add(newSpace);
-		// multi-catch doesn't seem to work...
+			// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return e.getMessage();
 		} catch (IllegalAccessException e) {
