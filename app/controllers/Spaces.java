@@ -2,6 +2,7 @@ package controllers;
 
 import java.util.Map;
 
+import models.Record;
 import models.Space;
 import models.User;
 
@@ -115,6 +116,25 @@ public class Spaces extends Controller {
 			}
 		} else {
 			return forbidden();
+		}
+	}
+
+	public static Result manuallyAddRecord() {
+		Record newRecord = new Record();
+		newRecord.creator = request().username();
+		newRecord.owner = newRecord.creator;
+		newRecord.data = Form.form().bindFromRequest().get("data");
+		try {
+			String errorMessage = Record.add(newRecord);
+			if (errorMessage == null) {
+				return Application.spaces();
+			} else {
+				return badRequest(errorMessage);
+			}
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
 		}
 	}
 

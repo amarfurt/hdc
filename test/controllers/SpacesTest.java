@@ -225,4 +225,16 @@ public class SpacesTest {
 		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
 	}
 
+	@Test
+	public void manuallyAddRecord() {
+		DBCollection records = TestConnection.getCollection("records");
+		long oldSize = records.count();
+		DBCollection users = TestConnection.getCollection("users");
+		String username = (String) users.findOne().get("email");
+		Result result = callAction(controllers.routes.ref.Spaces.manuallyAddRecord(), fakeRequest().withSession("email", username)
+				.withFormUrlEncodedBody(ImmutableMap.of("data", "Test data")));
+		assertEquals(200, status(result));
+		assertEquals(oldSize + 1, records.count());
+	}
+
 }
