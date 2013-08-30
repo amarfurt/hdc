@@ -135,8 +135,8 @@ public class SpacesTest {
 		BasicDBList records = (BasicDBList) space.get("records");
 		int oldSize = records.size();
 		String spaceId = id.toString();
-		Result result = callAction(controllers.routes.ref.Spaces.addRecord(spaceId), fakeRequest().withSession("email", owner)
-				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		Result result = callAction(controllers.routes.ref.Spaces.addRecords(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(200, status(result));
 		assertEquals(oldSize + 1, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
 	}
@@ -165,8 +165,8 @@ public class SpacesTest {
 		BasicDBList records = (BasicDBList) spaces.findOne(updateQuery).get("records");
 		int oldSize = records.size();
 		String spaceId = id.toString();
-		Result result = callAction(controllers.routes.ref.Spaces.addRecord(spaceId), fakeRequest().withSession("email", owner)
-				.withFormUrlEncodedBody(ImmutableMap.of("id", recordId.toString())));
+		Result result = callAction(controllers.routes.ref.Spaces.addRecords(spaceId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(400, status(result));
 		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
 	}
