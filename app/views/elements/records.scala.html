@@ -6,7 +6,7 @@
 	</div>
 	<div class="panel-body">
 		@records.map { record =>
-			@views.html.elements.access.record(record, shared.contains(record._id))
+			@views.html.elements.share.record(record, shared.contains(record._id))
 		}
 	</div>
 </div>

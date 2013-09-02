@@ -18,7 +18,7 @@ import play.mvc.Security;
 import views.html.elements.records;
 
 @Security.Authenticated(Secured.class)
-public class Access extends Controller {
+public class Share extends Controller {
 
 	public static Result sharedRecords(List<String> circleIds) {
 		Iterator<String> iterator = circleIds.iterator();

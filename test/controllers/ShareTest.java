@@ -55,7 +55,7 @@ public class ShareTest {
 		for (ObjectId circleId : circleIds) {
 			cIds.add(circleId.toString());
 		}
-		Result result = callAction(controllers.routes.ref.Access.sharedRecords(cIds), fakeRequest().withSession("email", owner));
+		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds), fakeRequest().withSession("email", owner));
 		assertEquals(200, status(result));
 		assertTrue(contentAsString(result).contains("name=\"" + recordIds[0].toString() + "\" checked"));
 		assertFalse(contentAsString(result).contains("name=\"" + recordIds[1].toString() + "\" checked"));
@@ -72,7 +72,7 @@ public class ShareTest {
 		for (ObjectId circleId : circleIds) {
 			cIds.add(circleId.toString());
 		}
-		Result result = callAction(controllers.routes.ref.Access.sharedRecords(cIds),
+		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds),
 				fakeRequest().withSession("email", "test2@example.com"));
 		assertEquals(200, status(result));
 		assertFalse(contentAsString(result).contains("checked>"));
@@ -89,7 +89,7 @@ public class ShareTest {
 		for (ObjectId circleId : circleIds) {
 			cIds.add(circleId.toString());
 		}
-		Result result = callAction(controllers.routes.ref.Access.sharedRecords(cIds), fakeRequest().withSession("email", owner));
+		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds), fakeRequest().withSession("email", owner));
 		assertEquals(200, status(result));
 		assertFalse(contentAsString(result).contains("checked>"));
 	}

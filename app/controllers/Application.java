@@ -15,9 +15,9 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.access;
 import views.html.circles;
 import views.html.index;
+import views.html.share;
 import views.html.spaces;
 import views.html.welcome;
 import controllers.forms.Login;
@@ -60,11 +60,11 @@ public class Application extends Controller {
 	}
 	
 	@Security.Authenticated(Secured.class)
-	public static Result access() {
+	public static Result share() {
 		try {
 			User user = User.find(request().username());
 			Set<ObjectId> emptySet = Collections.emptySet();
-			return ok(access.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
+			return ok(share.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

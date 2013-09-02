@@ -19,7 +19,7 @@
 					</div>
 					<div class="panel-body">
 						@circles.map { circle => 
-							@views.html.elements.access.circle(circle)
+							@views.html.elements.share.circle(circle)
 						}
 					</div>
 				</div>
@@ -33,5 +33,5 @@
 	</form>
 	
 	<!-- Load specific js -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/access.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/share.js")"></script>
 }

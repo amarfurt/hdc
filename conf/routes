@@ -20,9 +20,9 @@ DELETE  /circles/:id                controllers.Circles.delete(id: String)
 PUT     /circles/:id                controllers.Circles.rename(id: String)
 PUT     /circles/member/:id         controllers.Circles.addMember(id: String)
 DELETE  /circles/member/:id         controllers.Circles.removeMember(id: String)
-GET     /access                     controllers.Application.access()
-POST    /access                     controllers.Access.update()
-GET     /access/shared              controllers.Access.sharedRecords(circleIds: java.util.List[String])
+GET     /share                      controllers.Application.share()
+POST    /share                      controllers.Share.update()
+GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
 # Map static resources from the /public folder to the /assets URL path
