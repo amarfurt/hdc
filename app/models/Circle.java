@@ -1,7 +1,9 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 
@@ -23,6 +25,7 @@ public class Circle {
 	public String name;
 	public String owner;
 	public BasicDBList members;
+	public BasicDBList shared; // records shared with this circle
 
 	public static boolean isOwner(ObjectId circleId, String email) {
 		DBObject query = new BasicDBObject();
@@ -123,6 +126,24 @@ public class Circle {
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
+	}
+	
+	/**
+	 * Returns a list of all records shared with this circle.
+	 */
+	public static Set<ObjectId> getShared(ObjectId circleId, String email) {
+		Set<ObjectId> shared = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject();
+		query.put("_id", circleId);
+		query.put("owner", email);
+		DBObject foundObject = Connection.getCollection(collection).findOne(query);
+		if (foundObject != null) {
+			BasicDBList sharedRecords = (BasicDBList) foundObject.get("shared");
+			for (Object obj : sharedRecords) {
+				shared.add((ObjectId) obj);
+			}
+		}
+		return shared;
 	}
 
 	/**

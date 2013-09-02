@@ -1,5 +1,10 @@
 package controllers;
 
+import java.util.Collections;
+import java.util.Set;
+
+import org.bson.types.ObjectId;
+
 import models.Circle;
 import models.Message;
 import models.Record;
@@ -58,7 +63,8 @@ public class Application extends Controller {
 	public static Result access() {
 		try {
 			User user = User.find(request().username());
-			return ok(access.render(Record.findOwnedBy(user), Circle.findOwnedBy(user), user));
+			Set<ObjectId> emptySet = Collections.emptySet();
+			return ok(access.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

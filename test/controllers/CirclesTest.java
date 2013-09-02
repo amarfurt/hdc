@@ -58,16 +58,16 @@ public class CirclesTest {
 	@Test
 	public void renameCircleSuccess() {
 		DBCollection circles = TestConnection.getCollection("circles");
-		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Test circle 2"));
+		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed circle"));
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		String owner = (String) circle.get("owner");
 		String circleId = id.toString();
 		Result result = callAction(controllers.routes.ref.Circles.rename(circleId), fakeRequest().withSession("email", owner)
-				.withFormUrlEncodedBody(ImmutableMap.of("name", "Test circle 2")));
+				.withFormUrlEncodedBody(ImmutableMap.of("name", "Renamed circle")));
 		assertEquals(200, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
-		assertEquals("Test circle 2", circles.findOne(idQuery).get("name"));
+		assertEquals("Renamed circle", circles.findOne(idQuery).get("name"));
 		assertEquals(owner, circles.findOne(idQuery).get("owner"));
 	}
 

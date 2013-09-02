@@ -1,0 +1,12 @@
+@(records: List[Record], shared: Set[org.bson.types.ObjectId])
+
+<div class="panel panel-default records hidden">
+	<div class="panel-heading">
+		<h3 class="panel-title">Records</h3>
+	</div>
+	<div class="panel-body">
+		@records.map { record =>
+			@views.html.elements.access.record(record, shared.contains(record._id))
+		}
+	</div>
+</div>

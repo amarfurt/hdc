@@ -9,6 +9,8 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.util.Set;
+
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
@@ -45,6 +47,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -60,6 +63,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -75,6 +79,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		assertNull(Circle.add(circle));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
@@ -89,12 +94,14 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		assertNull(Circle.add(circle));
 		assertEquals(1, circles.count());
 		Circle anotherCircle = new Circle();
 		anotherCircle.name = circle.name;
 		anotherCircle.owner = circle.owner;
 		anotherCircle.members = circle.members;
+		anotherCircle.shared = circle.shared;
 		assertEquals("A circle with this name already exists.", Circle.add(anotherCircle));
 		assertEquals(1, circles.count());
 	}
@@ -107,6 +114,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -124,6 +132,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
 		ObjectId circleId = ObjectId.get();
@@ -140,6 +149,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -157,6 +167,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -173,6 +184,7 @@ public class CircleTest {
 		circle.name = "Test circle";
 		circle.owner = "test1@example.com";
 		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -191,6 +203,7 @@ public class CircleTest {
 		circle.owner = emailAddresses[0];
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -210,6 +223,7 @@ public class CircleTest {
 		circle.owner = emailAddresses[0];
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -229,6 +243,7 @@ public class CircleTest {
 		circle.owner = emailAddresses[0];
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -249,6 +264,7 @@ public class CircleTest {
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
 		circle.members.add(emailAddresses[1]);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -269,6 +285,7 @@ public class CircleTest {
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
 		circle.members.add(emailAddresses[1]);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -289,6 +306,7 @@ public class CircleTest {
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
 		circle.members.add(emailAddresses[1]);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -308,6 +326,7 @@ public class CircleTest {
 		circle.owner = emailAddresses[0];
 		circle.members = new BasicDBList();
 		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
@@ -315,6 +334,30 @@ public class CircleTest {
 		assertEquals("User is not in this circle.", Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
+	}
+	
+	@Test
+	public void getShared() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		circle.shared.add(recordIds[1]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("shared")).size());
+		Set<ObjectId> shared = Circle.getShared((ObjectId) circleObject.get("_id"), emailAddresses[0]);
+		assertEquals(recordIds.length, shared.size());
+		assertTrue(shared.contains(recordIds[0]));
+		assertTrue(shared.contains(recordIds[1]));
 	}
 
 }
