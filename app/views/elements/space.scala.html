@@ -32,17 +32,15 @@
 					</div>
 					<div class="modal-body">
 						<form role="form">
-							<div class="btn-group-vertical" data-toggle="buttons">
-								@defining(getRecords(user, space._id)) { records =>
-									@if(records.size() > 0) {
-										@for(record <- records) {
-											@views.html.elements.spaces.checkbox(record)
-										}
-									} else {
-										<p>No records available for this space.</p>
+							@defining(getRecords(user, space._id)) { records =>
+								@if(records.size() > 0) {
+									@for(record <- records) {
+										@views.html.elements.spaces.checkbox(record)
 									}
+								} else {
+									<p>No records available for this space.</p>
 								}
-							</div>
+							}
 						</form>
 					</div>
 					<div class="modal-footer">
