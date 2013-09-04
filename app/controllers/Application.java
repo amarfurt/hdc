@@ -97,7 +97,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.removeMember(),
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
-				controllers.routes.javascript.Spaces.removeRecord()));
+				controllers.routes.javascript.Spaces.removeRecord(),
+				controllers.routes.javascript.Share.sharedRecords()));
 	}
 
 }

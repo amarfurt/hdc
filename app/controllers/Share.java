@@ -45,7 +45,7 @@ public class Share extends Controller {
 		}
 	}
 
-	public static Result update() {
+	public static Result share() {
 		return ok();
 	}
 

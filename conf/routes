@@ -21,7 +21,7 @@ PUT     /circles/:id                controllers.Circles.rename(id: String)
 PUT     /circles/member/:id         controllers.Circles.addMember(id: String)
 DELETE  /circles/member/:id         controllers.Circles.removeMember(id: String)
 GET     /share                      controllers.Application.share()
-POST    /share                      controllers.Share.update()
+POST    /share                      controllers.Share.share()
 GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 

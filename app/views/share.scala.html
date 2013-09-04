@@ -5,32 +5,34 @@
 		<h1>Share my data</h1>
 	</div>
 	
-	<h2>Create a rule for sharing your data...</h2>
+	<h4>Create a rule for sharing your data...</h4>
 	<button type="button" class="btn btn-lg btn-primary">Create rule</button>
 
-	<h2>... or share data with your circles manually.</h2>
-	<form role="form">
-		<!-- Columns 1/3 circles, 2/3 records; on mobile and desktop -->
-		<div class="row">
-			<div class="col-xs-4">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<h3 class="panel-title">Circles</h3>
-					</div>
-					<div class="panel-body">
-						@circles.map { circle => 
-							@views.html.elements.share.circle(circle)
-						}
+	<h4>... or share data with your circles manually.</h4>
+	@helper.form(routes.Share.share) {
+		<form role="form">
+			<!-- Columns 1/3 circles, 2/3 records; on mobile and desktop -->
+			<div id="share" class="row">
+				<div class="col-xs-4">
+					<div id="circles" class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Circles</h3>
+						</div>
+						<div class="panel-body" id="Test">
+							@circles.map { circle => 
+								@views.html.elements.share.circle(circle)
+							}
+						</div>
 					</div>
 				</div>
+				<div class="col-xs-8">
+					@views.html.elements.records(records, shared)
+				</div>
 			</div>
-			<div class="col-xs-8">
-				@views.html.elements.records(records, shared)
-			</div>
-		</div>
-		
-		<button type="submit" class="btn btn-lg btn-primary btn-block">Share</button>
-	</form>
+			
+			<button id="shareButton" type="submit" class="btn btn-lg btn-primary btn-block" disabled>Share</button>
+		</form>
+	}
 	
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/share.js")"></script>

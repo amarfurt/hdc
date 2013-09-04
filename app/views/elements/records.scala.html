@@ -1,12 +1,15 @@
 @(records: List[Record], shared: Set[org.bson.types.ObjectId])
 
-<div class="panel panel-default records hidden">
+<div id="records" class="panel panel-default">
 	<div class="panel-heading">
-		<h3 class="panel-title">Records</h3>
+		<button type="button" class="btn btn-primary pull-right panel-title">Change</button>
+		<h3 class="panel-title">Records <small>(click on "Change" to modify)</small></h3>
 	</div>
 	<div class="panel-body">
-		@records.map { record =>
-			@views.html.elements.share.record(record, shared.contains(record._id))
-		}
+		<fieldset disabled>
+			@records.map { record =>
+				@views.html.elements.share.record(record, shared.contains(record._id))
+			}
+		</fieldset>
 	</div>
 </div>
