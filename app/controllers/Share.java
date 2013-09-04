@@ -1,9 +1,11 @@
 package controllers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import models.Circle;
@@ -12,6 +14,7 @@ import models.User;
 
 import org.bson.types.ObjectId;
 
+import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -46,7 +49,28 @@ public class Share extends Controller {
 	}
 
 	public static Result share() {
-		return ok();
+		Map<String, String> data = Form.form().bindFromRequest().data();
+		List<ObjectId> circleIds = new ArrayList<ObjectId>();
+		List<ObjectId> recordIds = new ArrayList<ObjectId>();
+		for (String id : data.keySet()) {
+			if (data.get(id).equals("circle")) {
+				circleIds.add(new ObjectId(id));
+			} else {
+				recordIds.add(new ObjectId(id));
+			}
+		}
+		try {
+			for (ObjectId circleId : circleIds) {
+				for (ObjectId recordId : recordIds) {
+					String errorMessage = Circle.shareRecord(circleId, recordId);
+					// TODO "unshare" previously shared records?
+					return badRequest(errorMessage);
+				}
+			}
+			return ok();
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		}
 	}
 
 }

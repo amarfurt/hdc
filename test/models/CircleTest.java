@@ -359,5 +359,81 @@ public class CircleTest {
 		assertTrue(shared.contains(recordIds[0]));
 		assertTrue(shared.contains(recordIds[1]));
 	}
+	
+	@Test
+	public void shareRecord() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("shared")).size());
+		Circle.shareRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		assertEquals(1, circles.count());
+		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
+		assertEquals(2, shared.size());
+		assertTrue(shared.contains(recordIds[0]));
+		assertTrue(shared.contains(recordIds[1]));
+	}
+	
+	@Test
+	public void pullRecordSuccess() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		circle.shared.add(recordIds[1]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(2, ((BasicDBList) circles.findOne().get("shared")).size());
+		Circle.pullRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		assertEquals(1, circles.count());
+		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
+		assertEquals(1, shared.size());
+		assertTrue(shared.contains(recordIds[0]));
+		assertFalse(shared.contains(recordIds[1]));
+	}
+	
+	@Test
+	public void pullRecordNotShared() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("shared")).size());
+		Circle.pullRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		assertEquals(1, circles.count());
+		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
+		assertEquals(1, shared.size());
+		assertTrue(shared.contains(recordIds[0]));
+		assertFalse(shared.contains(recordIds[1]));
+	}
 
 }

@@ -127,7 +127,7 @@ public class Circle {
 			return result.getLastError().getErrorMessage();
 		}
 	}
-	
+
 	/**
 	 * Returns a list of all records shared with this circle.
 	 */
@@ -144,6 +144,28 @@ public class Circle {
 			}
 		}
 		return shared;
+	}
+
+	/**
+	 * Shares the given record with the given circle.
+	 */
+	public static String shareRecord(ObjectId circleId, ObjectId recordId) {
+		// TODO check whether circle owner is also record owner?
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
+	}
+
+	/**
+	 * Stops sharing the given record with the given circle.
+	 */
+	public static String pullRecord(ObjectId circleId, ObjectId recordId) {
+		// TODO check whether circle owner is also record owner?
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
 	}
 
 	/**

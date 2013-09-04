@@ -57,8 +57,8 @@ public class ShareTest {
 		}
 		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds), fakeRequest().withSession("email", owner));
 		assertEquals(200, status(result));
-		assertTrue(contentAsString(result).contains("name=\"" + recordIds[0].toString() + "\" checked"));
-		assertFalse(contentAsString(result).contains("name=\"" + recordIds[1].toString() + "\" checked"));
+		assertTrue(contentAsString(result).contains("name=\"" + recordIds[0].toString() + "\" value=\"record\" checked"));
+		assertFalse(contentAsString(result).contains("name=\"" + recordIds[1].toString() + "\" value=\"record\" checked"));
 	}
 
 	@Test

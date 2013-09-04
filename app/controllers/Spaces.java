@@ -83,6 +83,7 @@ public class Spaces extends Controller {
 					ObjectId rId = new ObjectId(recordId);
 					String errorMessage = Space.addRecord(sId, rId);
 					if (errorMessage != null) {
+						// TODO remove previously added records?
 						return badRequest(recordsAdded + errorMessage);
 					}
 					if (recordsAdded.isEmpty()) {
