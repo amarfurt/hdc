@@ -2,11 +2,11 @@
 
 <div id="records" class="panel panel-default">
 	<div class="panel-heading">
-		<button type="button" class="btn btn-primary pull-right panel-title">Change</button>
-		<h3 class="panel-title">Records <small>(click on "Change" to modify)</small></h3>
+		<button id="editButton" type="button" class="btn btn-primary pull-right panel-title">Edit</button>
+		<h3 class="panel-title">Records <small>(click on "Edit" to modify)</small></h3>
 	</div>
 	<div class="panel-body">
-		<fieldset disabled>
+		<fieldset id="recordFieldset" disabled="disabled">
 			@records.map { record =>
 				@views.html.elements.share.record(record, shared.contains(record._id))
 			}
