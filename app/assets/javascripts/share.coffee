@@ -4,11 +4,11 @@ class Records extends Backbone.View
 	toggleEditMode: ->
 		@editMode = not @editMode
 		if @editMode
-			$(recordFieldset).removeAttr("disabled")
-			$(shareButton).removeAttr("disabled")
+			$(recordFieldset).prop("disabled", false)
+			$(shareButton).prop("disabled", false)
 		else
-			$(recordFieldset).attr("disabled", "disabled")
-			$(shareButton).attr("disabled", "disabled")
+			$(recordFieldset).prop("disabled", true)
+			$(shareButton).prop("disabled", true)
 
 class Circles extends Backbone.View
 	initialize: ->
