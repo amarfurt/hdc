@@ -1,6 +1,5 @@
 package controllers;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,21 +23,14 @@ import views.html.elements.records;
 public class Share extends Controller {
 
 	public static Result sharedRecords(List<String> circleIds) {
-		Iterator<String> iterator = circleIds.iterator();
-		Set<ObjectId> checkedRecords;
-		if (iterator.hasNext()) {
-			ObjectId circleId = new ObjectId(iterator.next());
-			checkedRecords = new HashSet<ObjectId>(Circle.getShared(circleId, request().username()));
-			while (iterator.hasNext()) {
-				circleId = new ObjectId(iterator.next());
-				checkedRecords.retainAll(Circle.getShared(circleId, request().username()));
-			}
-		} else {
-			checkedRecords = Collections.emptySet();
+		Set<ObjectId> circleIdSet = new HashSet<ObjectId>();
+		for (String circleId : circleIds) {
+			circleIdSet.add(new ObjectId(circleId));
 		}
+		Set<ObjectId> recordsToCheck = findSharedRecords(circleIdSet);
 		try {
 			User user = User.find(request().username());
-			return ok(records.render(Record.findOwnedBy(user), checkedRecords));
+			return ok(records.render(Record.findOwnedBy(user), recordsToCheck));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
@@ -48,29 +40,64 @@ public class Share extends Controller {
 		}
 	}
 
+	/**
+	 * Returns a set of records that are shared with all given circles.
+	 */
+	private static Set<ObjectId> findSharedRecords(Set<ObjectId> circleIds) {
+		Iterator<ObjectId> iterator = circleIds.iterator();
+		Set<ObjectId> sharedRecords = Collections.emptySet();
+		if (iterator.hasNext()) {
+			sharedRecords = new HashSet<ObjectId>(Circle.getShared(iterator.next(), request().username()));
+			while (iterator.hasNext()) {
+				sharedRecords.retainAll(Circle.getShared(iterator.next(), request().username()));
+			}
+		}
+		return sharedRecords;
+	}
+
 	public static Result share() {
+		// get ids of circles and records
 		Map<String, String> data = Form.form().bindFromRequest().data();
-		List<ObjectId> circleIds = new ArrayList<ObjectId>();
-		List<ObjectId> recordIds = new ArrayList<ObjectId>();
+		Set<ObjectId> circleIds = new HashSet<ObjectId>();
+		Set<ObjectId> recordsToShare = new HashSet<ObjectId>();
 		for (String id : data.keySet()) {
 			if (data.get(id).equals("circle")) {
 				circleIds.add(new ObjectId(id));
 			} else {
-				recordIds.add(new ObjectId(id));
+				recordsToShare.add(new ObjectId(id));
 			}
 		}
-		try {
-			for (ObjectId circleId : circleIds) {
-				for (ObjectId recordId : recordIds) {
-					String errorMessage = Circle.shareRecord(circleId, recordId);
-					// TODO "unshare" previously shared records?
-					return badRequest(errorMessage);
-				}
+
+		// get records previously shared with all circles
+		Set<ObjectId> recordsToPull = findSharedRecords(circleIds);
+
+		// get the intersection of the checked records and the previously shared records
+		HashSet<ObjectId> intersection = new HashSet<ObjectId>(recordsToPull);
+		intersection.retainAll(recordsToShare);
+
+		// remove the intersection from both sets (these records remain shared with all circles)
+		recordsToPull.removeAll(intersection);
+		recordsToShare.removeAll(intersection);
+
+		// pull records that are no longer shared with all circles
+		for (ObjectId circleId : circleIds) {
+			String errorMessage = Circle.pullRecords(circleId, recordsToPull);
+			if (errorMessage != null) {
+				// TODO roll back changes until here?
+				return badRequest(errorMessage);
 			}
-			return ok();
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
 		}
+
+		// share records that are now shared with all circles
+		for (ObjectId circleId : circleIds) {
+			String errorMessage = Circle.shareRecords(circleId, recordsToShare);
+			if (errorMessage != null) {
+				// TODO roll back changes until here?
+				return badRequest(errorMessage);
+			}
+		}
+		flash("success", "Sharing settings updated.");
+		return ok();
 	}
 
 }

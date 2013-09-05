@@ -9,6 +9,8 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -273,7 +275,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
-	
+
 	@Test
 	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -294,7 +296,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
-	
+
 	@Test
 	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -315,7 +317,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
-	
+
 	@Test
 	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -335,7 +337,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
-	
+
 	@Test
 	public void getShared() throws IllegalArgumentException, IllegalAccessException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -359,7 +361,7 @@ public class CircleTest {
 		assertTrue(shared.contains(recordIds[0]));
 		assertTrue(shared.contains(recordIds[1]));
 	}
-	
+
 	@Test
 	public void shareRecord() throws IllegalArgumentException, IllegalAccessException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -377,14 +379,40 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("shared")).size());
-		Circle.shareRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		Circle.shareRecords((ObjectId) circleObject.get("_id"), new HashSet<ObjectId>(Arrays.asList(recordIds[1])));
 		assertEquals(1, circles.count());
 		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
 		assertEquals(2, shared.size());
 		assertTrue(shared.contains(recordIds[0]));
 		assertTrue(shared.contains(recordIds[1]));
 	}
-	
+
+	@Test
+	public void shareRecords() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(1, ((BasicDBList) circles.findOne().get("shared")).size());
+		ObjectId[] recordsToShare = new ObjectId[3];
+		System.arraycopy(recordIds, 1, recordsToShare, 0, recordsToShare.length);
+		Circle.shareRecords((ObjectId) circleObject.get("_id"), new HashSet<ObjectId>(Arrays.asList(recordsToShare)));
+		assertEquals(1, circles.count());
+		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
+		assertEquals(4, shared.size());
+		assertTrue(shared.containsAll(Arrays.asList(recordIds)));
+	}
+
 	@Test
 	public void pullRecordSuccess() throws IllegalArgumentException, IllegalAccessException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -403,14 +431,43 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("shared")).size());
-		Circle.pullRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		Circle.pullRecords((ObjectId) circleObject.get("_id"), new HashSet<ObjectId>(Arrays.asList(recordIds[1])));
 		assertEquals(1, circles.count());
 		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
 		assertEquals(1, shared.size());
 		assertTrue(shared.contains(recordIds[0]));
 		assertFalse(shared.contains(recordIds[1]));
 	}
-	
+
+	@Test
+	public void pullRecordsSuccess() throws IllegalArgumentException, IllegalAccessException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emailAddresses[0];
+		circle.members = new BasicDBList();
+		circle.members.add(circle.owner);
+		circle.shared = new BasicDBList();
+		circle.shared.addAll(Arrays.asList(recordIds));
+		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circleObject);
+		assertEquals(1, circles.count());
+		assertEquals(4, ((BasicDBList) circles.findOne().get("shared")).size());
+		ObjectId[] recordsToPull = new ObjectId[2];
+		System.arraycopy(recordIds, 2, recordsToPull, 0, recordsToPull.length);
+		Circle.pullRecords((ObjectId) circleObject.get("_id"), new HashSet<ObjectId>(Arrays.asList(recordsToPull)));
+		assertEquals(1, circles.count());
+		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
+		assertEquals(2, shared.size());
+		assertTrue(shared.contains(recordIds[0]));
+		assertTrue(shared.contains(recordIds[1]));
+		assertFalse(shared.contains(recordIds[2]));
+		assertFalse(shared.contains(recordIds[3]));
+	}
+
 	@Test
 	public void pullRecordNotShared() throws IllegalArgumentException, IllegalAccessException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
@@ -428,7 +485,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("shared")).size());
-		Circle.pullRecord((ObjectId) circleObject.get("_id"), recordIds[1]);
+		Circle.pullRecords((ObjectId) circleObject.get("_id"), new HashSet<ObjectId>(Arrays.asList(recordIds[1])));
 		assertEquals(1, circles.count());
 		BasicDBList shared = (BasicDBList) circles.findOne().get("shared");
 		assertEquals(1, shared.size());

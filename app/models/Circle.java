@@ -147,23 +147,23 @@ public class Circle {
 	}
 
 	/**
-	 * Shares the given record with the given circle.
+	 * Shares the given records with the given circle.
 	 */
-	public static String shareRecord(ObjectId circleId, ObjectId recordId) {
+	public static String shareRecords(ObjectId circleId, Set<ObjectId> recordIds) {
 		// TODO check whether circle owner is also record owner?
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", new BasicDBObject("$each", recordIds.toArray())));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
 	}
 
 	/**
-	 * Stops sharing the given record with the given circle.
+	 * Stops sharing the given records with the given circle.
 	 */
-	public static String pullRecord(ObjectId circleId, ObjectId recordId) {
+	public static String pullRecords(ObjectId circleId, Set<ObjectId> recordIds) {
 		// TODO check whether circle owner is also record owner?
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
+		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("shared", recordIds.toArray()));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
 	}

@@ -74,6 +74,16 @@
 		"data": "Ran 12.53km in 1.35h on 2010-01-01"
 	},
 	{
+		"creator": "test2@example.com",
+		"owner": "test1@example.com",
+		"data": "Dentist record."
+	},
+	{
+		"creator": "test2@example.com",
+		"owner": "test1@example.com",
+		"data": "X-ray image."
+	},
+	{
 		"creator": "test3@example.com",
 		"owner": "test2@example.com",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01"
@@ -94,6 +104,17 @@
 		"owner": "test1@example.com",
 		"members": [
 			"test1@example.com", 
+			"test3@example.com"
+		],
+		"shared": [ ]
+	},
+	{
+		"name": "Test circle 3",
+		"owner": "test1@example.com",
+		"members": [
+			"test1@example.com",
+			"test4@example.com",
+			"test2@example.com",
 			"test3@example.com"
 		],
 		"shared": [ ]
