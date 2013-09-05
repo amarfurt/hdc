@@ -6,6 +6,7 @@
 GET     /                           controllers.Application.index()
 GET     /welcome                    controllers.Application.welcome()
 POST    /welcome                    controllers.Application.authenticate()
+POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
 GET     /spaces                     controllers.Application.spaces()
 POST    /spaces                     controllers.Spaces.add()

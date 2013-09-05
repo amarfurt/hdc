@@ -21,6 +21,7 @@ import views.html.share;
 import views.html.spaces;
 import views.html.welcome;
 import controllers.forms.Login;
+import controllers.forms.Registration;
 import controllers.forms.SpaceForm;
 
 public class Application extends Controller {
@@ -36,7 +37,7 @@ public class Application extends Controller {
 	}
 
 	public static Result welcome() {
-		return ok(welcome.render(Form.form(Login.class)));
+		return ok(welcome.render(Form.form(Login.class), Form.form(Registration.class)));
 	}
 	
 	@Security.Authenticated(Secured.class)
@@ -73,11 +74,35 @@ public class Application extends Controller {
 	public static Result authenticate() {
 		Form<Login> loginForm = Form.form(Login.class).bindFromRequest();
 		if (loginForm.hasErrors()) {
-			return badRequest(welcome.render(loginForm));
+			return badRequest(welcome.render(loginForm, Form.form(Registration.class)));
 		} else {
 			session().clear();
 			session("email", loginForm.get().email);
 			return redirect(routes.Application.index());
+		}
+	}
+	
+	public static Result register() {
+		Form<Registration> registrationForm = Form.form(Registration.class).bindFromRequest();
+		if (registrationForm.hasErrors()) {
+			return badRequest(welcome.render(Form.form(Login.class), registrationForm));
+		} else {
+			Registration registration = registrationForm.get();
+			User newUser = new User();
+			newUser.email = registration.email;
+			newUser.name = registration.firstName + " " + registration.lastName;
+			newUser.password = registration.password;
+			try {
+				String errorMessage = User.add(newUser);
+				if (errorMessage != null) {
+					return badRequest(errorMessage);
+				}
+				session().clear();
+				session("email", registration.email);
+				return redirect(routes.Application.index());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			}
 		}
 	}
 

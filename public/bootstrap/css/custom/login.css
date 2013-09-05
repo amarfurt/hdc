@@ -23,3 +23,7 @@ body {
 .checkbox {
   font-weight: normal;
 }
+
+input.form-control {
+	margin-bottom: 5px;
+}

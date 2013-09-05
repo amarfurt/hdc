@@ -1,4 +1,4 @@
-@(form: Form[forms.Login])
+@(loginForm: Form[forms.Login], registrationForm: Form[forms.Registration])
 
 <html>
     <head>
@@ -29,38 +29,69 @@
 	        </div>
       	</div>
 		
-		<!-- Form -->
-		@helper.form(routes.Application.authenticate) {
-			<div class="container">
-				<div class="panel-container">
-					<div class="panel panel-default">
-		            	<div class="panel-heading">
-		              		<h3 class="panel-title">Sign in</h3>
-		            	</div>
-		            	<div class="panel-body">
-			            	@if(form.hasGlobalErrors) {
-			            		<div class="alert alert-danger">
-									@form.globalError.message
+		<div class="container">
+			<!-- Columns 1/2 login, 1/2 registration; on mobile and desktop -->
+			<div id="share" class="row">
+				<div class="col-xs-6">
+					<!-- Login -->
+					@helper.form(routes.Application.authenticate) {
+						<div class="panel-container">
+							<div class="panel panel-default">
+				            	<div class="panel-heading">
+				              		<h3 class="panel-title">Sign in</h3>
 				            	</div>
-							}
-							@if(flash.contains("success")) {
-								<div class="alert alert-success">
-									@flash.get("success")
-								</div>
-							}
-							<form class="form-signin">
-								<input type="email" class="form-control" placeholder="Email address" name="email" value="@form("email").value" autofocus>
-								<input type="password" class="form-control" placeholder="Password" name="password">
-								<label class="checkbox">
-									<input type="checkbox" value="remember-me"> Remember me
-								</label>
-								<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-							</form>
-		            	</div>
-					</div>
+				            	<div class="panel-body">
+					            	@if(loginForm.hasGlobalErrors) {
+					            		<div class="alert alert-danger">
+											@loginForm.globalError.message
+						            	</div>
+									}
+									@if(flash.contains("success")) {
+										<div class="alert alert-success">
+											@flash.get("success")
+										</div>
+									}
+									<form class="form-signin">
+										<input type="email" class="form-control" placeholder="Email address" name="email" value="@loginForm("email").value" autofocus>
+										<input type="password" class="form-control" placeholder="Password" name="password">
+										<label class="checkbox">
+											<input type="checkbox" value="remember-me"> Remember me
+										</label>
+										<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+									</form>
+				            	</div>
+							</div>
+						</div>
+					}
 				</div>
-			</div> <!-- /container -->
-		}
+				<div class="col-xs-6">
+					<!-- Registration -->
+					@helper.form(routes.Application.register) {
+						<div class="panel-container">
+							<div class="panel panel-default">
+				            	<div class="panel-heading">
+				              		<h3 class="panel-title">Sign up</h3>
+				            	</div>
+				            	<div class="panel-body">
+					            	@if(registrationForm.hasGlobalErrors) {
+					            		<div class="alert alert-danger">
+											@registrationForm.globalError.message
+						            	</div>
+									}
+									<form class="form-signup">
+										<input type="email" class="form-control" placeholder="Email address" name="email" value="@registrationForm("email").value">
+										<input type="text" class="form-control" placeholder="First name" name="firstName" value="@registrationForm("firstName").value">
+										<input type="text" class="form-control" placeholder="Last name" name="lastName" value="@registrationForm("lastName").value">
+										<input type="password" class="form-control" placeholder="Password" name="password">
+										<button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+									</form>
+				            	</div>
+							</div>
+						</div>
+					}
+				</div>
+			</div>
+		</div> <!-- /container -->
 		
 	    <!-- Include all compiled plugins (below), or include individual files as needed -->
 	    <script src="@routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>
