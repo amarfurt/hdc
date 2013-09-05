@@ -97,7 +97,7 @@ public class Share extends Controller {
 			}
 		}
 		flash("success", "Sharing settings updated.");
-		return ok();
+		return Application.share();
 	}
 
 }

@@ -2,8 +2,15 @@
 
 @main(user) {
 	<div class="page-header">
-		<h1>Share my data</h1>
+		<h1>My sharing settings</h1>
 	</div>
+	
+	@if(flash.contains("success")) {
+		<div class="alert alert-success alert-dismissable">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			@flash.get("success")
+		</div>
+	}
 	
 	<h4>Create a rule for sharing your data...</h4>
 	<button type="button" class="btn btn-lg btn-primary">Create rule</button>
