@@ -4,9 +4,11 @@ class Records extends Backbone.View
 	toggleEditMode: ->
 		@editMode = not @editMode
 		if @editMode
+			$(editButton).html("Finished editing")
 			$(recordFieldset).prop("disabled", false)
 			$(shareButton).prop("disabled", false)
 		else
+			$(editButton).html("Let me edit this")
 			$(recordFieldset).prop("disabled", true)
 			$(shareButton).prop("disabled", true)
 
