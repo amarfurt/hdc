@@ -103,7 +103,7 @@ class CirclesManager extends Backbone.View
 			new Circle el: $(circle)
 		$(".addCircle").click @addCircle
 	addCircle: (e) ->
-		$(noCircles).remove()
+		$("#noCircles").remove()
 		jsRoutes.controllers.Circles.add().ajax
 			context: this
 			success: (data) ->
