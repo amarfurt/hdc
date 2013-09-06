@@ -1,5 +1,8 @@
 package controllers.forms;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import models.User;
 
 public class Login {
@@ -20,6 +23,10 @@ public class Login {
 		} catch (IllegalAccessException e) {
 			return "Server error: " + e.getMessage();
 		} catch (InstantiationException e) {
+			return "Server error: " + e.getMessage();
+		} catch (NoSuchAlgorithmException e) {
+			return "Server error: " + e.getMessage();
+		} catch (InvalidKeySpecException e) {
 			return "Server error: " + e.getMessage();
 		}
 	}

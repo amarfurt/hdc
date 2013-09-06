@@ -1,6 +1,10 @@
 package models;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import utils.ModelConversion;
+import utils.PasswordHash;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -28,9 +32,9 @@ public class User {
 	}
 
 	public static User authenticate(String email, String password) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+			IllegalAccessException, InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		User user = find(email);
-		if (user != null && user.password.equals(password)) {
+		if (user != null && PasswordHash.validatePassword(password, user.password)) {
 			return user;
 		} else {
 			return null;

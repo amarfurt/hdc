@@ -1,5 +1,7 @@
 package controllers;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.PasswordHash;
 import views.html.circles;
 import views.html.index;
 import views.html.share;
@@ -81,7 +84,7 @@ public class Application extends Controller {
 			return redirect(routes.Application.index());
 		}
 	}
-	
+
 	public static Result register() {
 		Form<Registration> registrationForm = Form.form(Registration.class).bindFromRequest();
 		if (registrationForm.hasErrors()) {
@@ -91,8 +94,8 @@ public class Application extends Controller {
 			User newUser = new User();
 			newUser.email = registration.email;
 			newUser.name = registration.firstName + " " + registration.lastName;
-			newUser.password = registration.password;
 			try {
+				newUser.password = PasswordHash.createHash(registration.password);
 				String errorMessage = User.add(newUser);
 				if (errorMessage != null) {
 					return badRequest(errorMessage);
@@ -101,6 +104,10 @@ public class Application extends Controller {
 				session("email", registration.email);
 				return redirect(routes.Application.index());
 			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (NoSuchAlgorithmException e) {
+				return internalServerError(e.getMessage());
+			} catch (InvalidKeySpecException e) {
 				return internalServerError(e.getMessage());
 			}
 		}
