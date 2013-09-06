@@ -38,28 +38,34 @@
 		</div> <!-- /.modal -->
 	}
 	
-	
-	<!-- Space tabs -->
-	<ul id="spaceTabs" class="nav nav-tabs">
-		@spaces.map { space =>
-			<li tab-id="@space._id" class="spaceTab">
-				<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
+	@if(spaces.isEmpty()) {
+		<p>You have no spaces yet. Add one by clicking on the button below.</p>
+		<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
+			<span class="glyphicon glyphicon-plus"></span> Add a new space
+		</button>
+	} else {
+		<!-- Space tabs -->
+		<ul id="spaceTabs" class="nav nav-tabs">
+			@spaces.map { space =>
+				<li tab-id="@space._id" class="spaceTab">
+					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
+				</li>
+			}
+			<!-- Add new space button -->
+			<li>
+				<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
+					<span class="glyphicon glyphicon-plus"></span>
+				</button>
 			</li>
-		}
-		<!-- Add new space button -->
-		<li>
-			<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
-				<span class="glyphicon glyphicon-plus"></span>
-			</button>
-		</li>
-	</ul>
-	
-	<div id="spaceContent" class="tab-content">
-		@spaces.map { space =>
-			@views.html.elements.space(space, user)
-		}
-	</div>
-	
+		</ul>
+		
+		<div id="spaceContent" class="tab-content">
+			@spaces.map { space =>
+				@views.html.elements.space(space, user)
+			}
+		</div>
+	}
+
 	<!-- New space modal -->
 	@helper.form(routes.Spaces.add) {
 		<div class="modal fade" id="spaceForm" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">

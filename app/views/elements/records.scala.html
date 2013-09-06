@@ -6,10 +6,14 @@
 		<h3 class="panel-title">Records</h3>
 	</div>
 	<div class="panel-body">
-		<fieldset id="recordFieldset" disabled>
-			@records.map { record =>
-				@views.html.elements.share.record(record, shared.contains(record._id))
-			}
-		</fieldset>
+		@if(records.isEmpty()) {
+			<p>You have no records yet. You can also add them manually on your spaces page.</p>
+		} else {
+			<fieldset id="recordFieldset" disabled>
+				@records.map { record =>
+					@views.html.elements.share.record(record, shared.contains(record._id))
+				}
+			</fieldset>
+		}
 	</div>
 </div>

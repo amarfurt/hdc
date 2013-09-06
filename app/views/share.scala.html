@@ -26,8 +26,12 @@
 							<h3 class="panel-title">Circles</h3>
 						</div>
 						<div class="panel-body" id="Test">
-							@circles.map { circle => 
-								@views.html.elements.share.circle(circle)
+							@if(circles.isEmpty()) {
+								<p>You have no circles yet. Define them on your circles page.</p>
+							} else {
+								@circles.map { circle => 
+									@views.html.elements.share.circle(circle)
+								}
 							}
 						</div>
 					</div>

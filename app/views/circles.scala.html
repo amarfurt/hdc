@@ -6,8 +6,12 @@
 	</div>
 
 	<ul id="circles">
-		@circles.map { circle =>
-			@views.html.elements.circle(circle)
+		@if(circles.isEmpty()) {
+			<p id="noCircles">You have no circles yet. Add one by clicking on the button below.</p>
+		} else {
+			@circles.map { circle =>
+				@views.html.elements.circle(circle)
+			}
 		}
 	</ul>
 
