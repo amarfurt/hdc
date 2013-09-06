@@ -35,9 +35,9 @@ public class Spaces extends Controller {
 				return internalServerError(e.getMessage());
 			}
 		} else {
-			// TODO js ajax insertion
+			// TODO js ajax insertion, open newly added space
 			// return ok(space.render(newSpace));
-			return Application.spaces();
+			return redirect(routes.Application.spaces());
 		}
 	}
 
@@ -90,7 +90,7 @@ public class Spaces extends Controller {
 						recordsAdded = "Added some records, but then an error occurred: ";
 					}
 				}
-				return Application.spaces();
+				return redirect(routes.Application.spaces());
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
@@ -128,7 +128,7 @@ public class Spaces extends Controller {
 		try {
 			String errorMessage = Record.add(newRecord);
 			if (errorMessage == null) {
-				return Application.spaces();
+				return redirect(routes.Application.spaces());
 			} else {
 				return badRequest(errorMessage);
 			}

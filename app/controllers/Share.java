@@ -97,7 +97,7 @@ public class Share extends Controller {
 			}
 		}
 		flash("success", "Sharing settings updated.");
-		return Application.share();
+		return redirect(routes.Application.share());
 	}
 
 }
