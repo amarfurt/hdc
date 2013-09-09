@@ -110,7 +110,7 @@ public class ShareTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record",
 								recordIds[1].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	@Test
@@ -124,7 +124,7 @@ public class ShareTest {
 				controllers.routes.ref.Share.share(),
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class ShareTest {
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record",
 								recordIds[1].toString(), "record", recordIds[2].toString(), "record",
 								recordIds[3].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	@Test
@@ -156,7 +156,7 @@ public class ShareTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[1].toString(), "record",
 								recordIds[3].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	@Test
@@ -174,7 +174,7 @@ public class ShareTest {
 						ImmutableMap.of(circleIds[0].toString(), "circle", circleIds[1].toString(), "circle",
 								circleIds[2].toString(), "circle", recordIds[2].toString(), "record",
 								recordIds[3].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	@Test
@@ -195,7 +195,7 @@ public class ShareTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", circleIds[1].toString(), "circle",
 								recordIds[1].toString(), "record")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 	}
 
 	/**
