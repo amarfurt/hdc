@@ -140,7 +140,7 @@ public class CircleTest {
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
 		ObjectId circleId = ObjectId.get();
-		assertEquals("This circle doesn't exist.", Circle.rename(circleId, "New circle"));
+		assertEquals("No circle with this id exists.", Circle.rename(circleId, "New circle"));
 		assertEquals(1, circles.count());
 		assertEquals("Test circle", circles.findOne().get("name"));
 	}

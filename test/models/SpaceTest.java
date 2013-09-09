@@ -190,7 +190,7 @@ public class SpaceTest {
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId randomId = ObjectId.get();
-		assertNull(Space.delete(randomId));
+		assertEquals("No space with this id exists.", Space.delete(randomId));
 		assertEquals(1, spaces.count());
 	}
 

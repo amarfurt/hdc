@@ -1,11 +1,13 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
+import utils.OrderOperations;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -15,7 +17,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Space {
+public class Space implements Comparable<Space> {
 
 	static final String collection = "spaces";
 
@@ -23,7 +25,13 @@ public class Space {
 	public String name;
 	public String owner;
 	public String visualization;
+	public int order;
 	public BasicDBList records;
+
+	@Override
+	public int compareTo(Space o) {
+		return this.order - o.order;
+	}
 
 	public static boolean isOwner(ObjectId spaceId, String email) {
 		DBObject query = new BasicDBObject();
@@ -43,7 +51,8 @@ public class Space {
 			DBObject cur = result.next();
 			spaces.add(ModelConversion.mapToModel(Space.class, cur.toMap()));
 		}
-		// TODO possibly sort by creation timestamp or a specific order field (changeable)
+		// sort by order field
+		Collections.sort(spaces);
 		return spaces;
 	}
 
@@ -53,6 +62,7 @@ public class Space {
 	 */
 	public static String add(Space newSpace) throws IllegalArgumentException, IllegalAccessException {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
+			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Space.class, newSpace));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newSpace._id = (ObjectId) insert.get("_id");
@@ -85,9 +95,24 @@ public class Space {
 	 * Tries to delete the space with the given id and returns the error message (null in absence of errors).
 	 */
 	public static String delete(ObjectId spaceId) {
+		// find owner and order first
 		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject space = Connection.getCollection(collection).findOne(query);
+		if (space == null) {
+			return "No space with this id exists.";
+		}
+		String owner = (String) space.get("owner");
+		int order = (int) space.get("order");
+
+		// remove space
 		WriteResult result = Connection.getCollection(collection).remove(query);
-		return result.getLastError().getErrorMessage();
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// decrement all order fields greater than the removed space
+		return OrderOperations.decrement(collection, owner, order, 0);
 	}
 
 	/**

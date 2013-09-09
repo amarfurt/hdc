@@ -134,18 +134,21 @@
 		"name": "Test space 1",
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
+		"order": 1,
 		"records": [ ]
 	},
 	{
 		"name": "Test space 2",
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
+		"order": 2,
 		"records": [ ]
 	},
 	{
 		"name": "Test space 2",
 		"owner": "test2@example.com",
 		"visualization": "Simple List",
+		"order": 1,
 		"records": [ ]
 	}
 	],

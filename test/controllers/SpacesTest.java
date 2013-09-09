@@ -19,6 +19,7 @@ import org.junit.Test;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
+import utils.OrderOperations;
 import utils.TestConnection;
 
 import com.google.common.collect.ImmutableMap;
@@ -57,6 +58,7 @@ public class SpacesTest {
 		assertEquals("Test space", space.name);
 		assertEquals("test1@example.com", space.owner);
 		assertEquals("Test visualization", space.visualization);
+		assertEquals(OrderOperations.getMax("spaces", space.owner), space.order);
 		assertEquals(0, space.records.size());
 	}
 
@@ -140,6 +142,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String owner = (String) space.get("owner");
+		int order = (int) space.get("order");
 		BasicDBList records = (BasicDBList) space.get("records");
 		int oldSize = records.size();
 		String spaceId = id.toString();
@@ -148,7 +151,9 @@ public class SpacesTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(303, status(result));
-		assertEquals(oldSize + 1, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
+		assertEquals(order, foundSpace.get("order"));
+		assertEquals(oldSize + 1, ((BasicDBList) foundSpace.get("records")).size());
 	}
 
 	@Test
@@ -164,6 +169,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String owner = (String) space.get("owner");
+		int order = (int) space.get("order");
 
 		// insert that record into that space
 		DBObject updateQuery = new BasicDBObject("_id", id);
@@ -180,7 +186,9 @@ public class SpacesTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(400, status(result));
-		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
+		assertEquals(order, foundSpace.get("order"));
+		assertEquals(oldSize, ((BasicDBList) foundSpace.get("records")).size());
 	}
 
 	@Test
@@ -196,6 +204,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String owner = (String) space.get("owner");
+		int order = (int) space.get("order");
 
 		// insert that record into that space
 		DBObject updateQuery = new BasicDBObject("_id", id);
@@ -212,7 +221,9 @@ public class SpacesTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of("id", recordId.toString())));
 		assertEquals(200, status(result));
-		assertEquals(oldSize - 1, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
+		assertEquals(order, foundSpace.get("order"));
+		assertEquals(oldSize - 1, ((BasicDBList) foundSpace.get("records")).size());
 	}
 
 	@Test
@@ -228,6 +239,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String owner = (String) space.get("owner");
+		int order = (int) space.get("order");
 
 		// try to remove that record from that space
 		BasicDBList records = (BasicDBList) space.get("records");
@@ -238,7 +250,9 @@ public class SpacesTest {
 				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
 						ImmutableMap.of("id", recordId.toString())));
 		assertEquals(400, status(result));
-		assertEquals(oldSize, ((BasicDBList) spaces.findOne(new BasicDBObject("_id", id)).get("records")).size());
+		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
+		assertEquals(order, foundSpace.get("order"));
+		assertEquals(oldSize, ((BasicDBList) foundSpace.get("records")).size());
 	}
 
 	@Test

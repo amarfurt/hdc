@@ -71,7 +71,7 @@ public class Circle {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject foundCircle = Connection.getCollection(collection).findOne(query);
 		if (foundCircle == null) {
-			return "This circle doesn't exist.";
+			return "No circle with this id exists.";
 		}
 		String owner = (String) foundCircle.get("owner");
 		if (!circleWithSameNameExists(newName, owner)) {
@@ -98,7 +98,7 @@ public class Circle {
 	public static String addMember(ObjectId circleId, String newMember) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		if (User.find(newMember) == null) {
-			return "User doesn't exist.";
+			return "No user with this email address exists.";
 		} else if (Circle.isOwner(circleId, newMember)) {
 			return "Owner can't be added to own circle.";
 		} else if (Circle.userIsInCircle(circleId, newMember)) {
@@ -117,7 +117,7 @@ public class Circle {
 	public static String removeMember(ObjectId circleId, String member) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		if (User.find(member) == null) {
-			return "User doesn't exist.";
+			return "No user with this email address exists.";
 		} else if (!Circle.userIsInCircle(circleId, member)) {
 			return "User is not in this circle.";
 		} else {
