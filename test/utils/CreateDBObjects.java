@@ -1,6 +1,10 @@
 package utils;
 
 import static org.junit.Assert.assertEquals;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import models.Record;
 import models.User;
 
@@ -12,7 +16,8 @@ import com.mongodb.DBObject;
 
 public class CreateDBObjects {
 
-	public static String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException {
+	public static String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		long originalCount = users.count();
 		String[] emailAddresses = new String[numUsers];
@@ -20,7 +25,7 @@ public class CreateDBObjects {
 			User user = new User();
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
-			user.password = "secret";
+			user.password = PasswordHash.createHash("secret");
 			users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
 			emailAddresses[i] = user.email;
 		}
@@ -28,7 +33,8 @@ public class CreateDBObjects {
 		return emailAddresses;
 	}
 
-	public static ObjectId[] insertRecords(String creator, String owner, int numRecords) throws IllegalArgumentException, IllegalAccessException {
+	public static ObjectId[] insertRecords(String creator, String owner, int numRecords)
+			throws IllegalArgumentException, IllegalAccessException {
 		DBCollection records = TestConnection.getCollection("records");
 		long originalCount = records.count();
 		ObjectId[] recordIds = new ObjectId[numRecords];

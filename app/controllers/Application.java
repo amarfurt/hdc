@@ -5,19 +5,19 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.bson.types.ObjectId;
-
 import models.Circle;
 import models.Message;
 import models.Record;
 import models.Space;
 import models.User;
+
+import org.bson.types.ObjectId;
+
 import play.Routes;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.PasswordHash;
 import views.html.circles;
 import views.html.index;
 import views.html.share;
@@ -94,8 +94,8 @@ public class Application extends Controller {
 			User newUser = new User();
 			newUser.email = registration.email;
 			newUser.name = registration.firstName + " " + registration.lastName;
+			newUser.password = registration.password;
 			try {
-				newUser.password = PasswordHash.createHash(registration.password);
 				String errorMessage = User.add(newUser);
 				if (errorMessage != null) {
 					return badRequest(errorMessage);

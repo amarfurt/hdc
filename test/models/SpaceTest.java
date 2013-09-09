@@ -9,6 +9,9 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
@@ -192,7 +195,8 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void addRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
@@ -213,7 +217,8 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void addRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
@@ -234,8 +239,10 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void addRecordAlreadyInSpace() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+	public void addRecordAlreadyInSpace() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
+		String[] insertUsers = CreateDBObjects.insertUsers(2);
+		String[] emailAddresses = insertUsers;
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
@@ -250,13 +257,15 @@ public class SpaceTest {
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertEquals("Record is already in this space.", Space.addRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
+		assertEquals("Record is already in this space.",
+				Space.addRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
 	}
 
 	@Test
-	public void removeRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
@@ -278,7 +287,8 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void removeRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
@@ -300,7 +310,8 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void removeRecordNotInSpace() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeRecordNotInSpace() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
@@ -315,7 +326,8 @@ public class SpaceTest {
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertEquals("Record is not in this space.", Space.removeRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
+		assertEquals("Record is not in this space.",
+				Space.removeRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
 	}

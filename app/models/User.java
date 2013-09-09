@@ -41,10 +41,12 @@ public class User {
 		}
 	}
 
-	public static String add(User newUser) throws IllegalArgumentException, IllegalAccessException {
+	public static String add(User newUser) throws IllegalArgumentException, IllegalAccessException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		if (userWithSameEmailExists(newUser.email)) {
 			return "A user with this email address already exists.";
 		}
+		newUser.password = PasswordHash.createHash(newUser.password);
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(User.class, newUser));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		return result.getLastError().getErrorMessage();

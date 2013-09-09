@@ -7,12 +7,16 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
 import utils.ModelConversion;
+import utils.PasswordHash;
 import utils.TestConnection;
 
 import com.mongodb.BasicDBObject;
@@ -33,13 +37,14 @@ public class UserTest {
 	}
 
 	@Test
-	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		Person person = new Person();
 		person.email = "test1@example.com";
 		person.name = "Test User";
-		person.password = "secret";
+		person.password = PasswordHash.createHash("secret");
 		person.birthday = "2000-01-01";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
 		assertEquals(1, users.count());
@@ -48,13 +53,14 @@ public class UserTest {
 	}
 
 	@Test
-	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		Person person = new Person();
 		person.email = "test1@example.com";
 		person.name = "Test User";
-		person.password = "secret";
+		person.password = PasswordHash.createHash("secret");
 		person.birthday = "2000-01-01";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
 		assertEquals(1, users.count());
@@ -63,20 +69,22 @@ public class UserTest {
 	}
 
 	@Test
-	public void add() throws IllegalArgumentException, IllegalAccessException {
+	public void add() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = "secret";
+		user.password = PasswordHash.createHash("secret");
 		assertNull(User.add(user));
 		assertEquals(1, users.count());
 		assertEquals(user.email, users.findOne().get("email"));
 	}
 
 	@Test
-	public void addSameEmail() throws IllegalArgumentException, IllegalAccessException {
+	public void addSameEmail() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		String[] emailAddresses = CreateDBObjects.insertUsers(1);
@@ -84,13 +92,14 @@ public class UserTest {
 		User user = new User();
 		user.email = emailAddresses[0];
 		user.name = "Test User";
-		user.password = "secret";
+		user.password = PasswordHash.createHash("secret");
 		assertEquals("A user with this email address already exists.", User.add(user));
 		assertEquals(1, users.count());
 	}
 
 	@Test
-	public void remove() throws IllegalArgumentException, IllegalAccessException {
+	public void remove() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		String[] emailAddresses = CreateDBObjects.insertUsers(1);
@@ -100,7 +109,8 @@ public class UserTest {
 	}
 
 	@Test
-	public void removeNotExisting() throws IllegalArgumentException, IllegalAccessException {
+	public void removeNotExisting() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		String[] emailAddresses = CreateDBObjects.insertUsers(1);

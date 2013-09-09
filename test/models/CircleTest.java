@@ -9,6 +9,8 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -196,7 +198,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -216,7 +219,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -236,7 +240,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(1);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -250,13 +255,15 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertEquals("Owner can't be added to own circle.", Circle.addMember((ObjectId) circleObject.get("_id"), circle.owner));
+		assertEquals("Owner can't be added to own circle.",
+				Circle.addMember((ObjectId) circleObject.get("_id"), circle.owner));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
 
 	@Test
-	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -271,13 +278,15 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
-		assertEquals("User is already in this circle.", Circle.addMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals("User is already in this circle.",
+				Circle.addMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("members")).size());
 	}
 
 	@Test
-	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -298,7 +307,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -319,7 +329,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -333,13 +344,15 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertEquals("User is not in this circle.", Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertEquals("User is not in this circle.",
+				Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
 
 	@Test
-	public void getShared() throws IllegalArgumentException, IllegalAccessException {
+	public void getShared() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
@@ -363,7 +376,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void shareRecord() throws IllegalArgumentException, IllegalAccessException {
+	public void shareRecord() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
@@ -388,7 +402,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void shareRecords() throws IllegalArgumentException, IllegalAccessException {
+	public void shareRecords() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
@@ -414,7 +429,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void pullRecordSuccess() throws IllegalArgumentException, IllegalAccessException {
+	public void pullRecordSuccess() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
@@ -440,7 +456,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void pullRecordsSuccess() throws IllegalArgumentException, IllegalAccessException {
+	public void pullRecordsSuccess() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
@@ -469,7 +486,8 @@ public class CircleTest {
 	}
 
 	@Test
-	public void pullRecordNotShared() throws IllegalArgumentException, IllegalAccessException {
+	public void pullRecordNotShared() throws IllegalArgumentException, IllegalAccessException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		String[] emailAddresses = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
