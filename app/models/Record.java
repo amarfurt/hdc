@@ -2,8 +2,10 @@ package models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 
@@ -46,6 +48,7 @@ public class Record {
 			DBObject cur = result.next();
 			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
 		}
+		// TODO sort by created field
 		return records;
 	}
 
@@ -61,7 +64,7 @@ public class Record {
 		}
 		
 		// find all records in the given space
-		List<ObjectId> recordsInSpace = new ArrayList<ObjectId>();
+		Set<ObjectId> recordsInSpace = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject projection = new BasicDBObject("records", 1);
 		Object result = Connection.getCollection(Space.collection).findOne(query, projection).get("records");
@@ -73,9 +76,9 @@ public class Record {
 		}
 		
 		// remove all records already in the space from the map
-		for (ObjectId recordId : recordsInSpace) {
-			records.remove(recordId);
-		}
+		records.keySet().removeAll(recordsInSpace);
+		
+		// TODO sort by created field
 		return new ArrayList<Record>(records.values());
 	}
 

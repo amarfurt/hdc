@@ -9,14 +9,20 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.List;
+
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.CreateDBObjects;
 import utils.ModelConversion;
 import utils.TestConnection;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -125,6 +131,53 @@ public class RecordTest {
 		assertEquals(1, records.count());
 		assertNull(Record.delete(ObjectId.get()));
 		assertEquals(1, records.count());
+	}
+
+	@Test
+	public void findOwned() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
+		DBCollection records = TestConnection.getCollection("records");
+		assertEquals(0, records.count());
+		String[] emails = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 2);
+		List<Record> foundRecords = Record.findOwnedBy(User.find(emails[0]));
+		assertEquals(2, foundRecords.size());
+		assertTrue(containsId(recordIds[0], foundRecords));
+		assertTrue(containsId(recordIds[1], foundRecords));
+	}
+
+	@Test
+	public void findNotInSpace() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InstantiationException {
+		DBCollection records = TestConnection.getCollection("records");
+		assertEquals(0, records.count());
+		String[] emails = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 3);
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		Space space = new Space();
+		space.name = "Test space";
+		space.owner = emails[0];
+		space.visualization = "Simple List";
+		space.order = 1;
+		space.records = new BasicDBList();
+		space.records.add(recordIds[1]);
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		spaces.insert(spaceObject);
+		List<Record> foundRecords = Record.findNotInSpace(User.find(emails[0]), (ObjectId) spaceObject.get("_id"));
+		assertEquals(2, foundRecords.size());
+		assertTrue(containsId(recordIds[0], foundRecords));
+		assertTrue(containsId(recordIds[2], foundRecords));
+
+	}
+
+	private boolean containsId(ObjectId id, List<Record> recordList) {
+		boolean found = false;
+		for (Record record : recordList) {
+			if (id.equals(record._id)) {
+				return true;
+			}
+		}
+		return found;
 	}
 
 }
