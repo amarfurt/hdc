@@ -75,6 +75,7 @@ public class CircleTest {
 		assertFalse(Circle.isOwner(circleId, "wrong@example.com"));
 	}
 
+	// not testing order any further, has already been done in SpaceTest
 	@Test
 	public void addCircle() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection circles = TestConnection.getCollection("circles");
@@ -193,7 +194,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		ObjectId randomId = ObjectId.get();
-		assertNull(Circle.delete(randomId));
+		assertEquals("No circle with this id exists.", Circle.delete(randomId));
 		assertEquals(1, circles.count());
 	}
 

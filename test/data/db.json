@@ -93,6 +93,7 @@
 	{
 		"name": "Test circle 1",
 		"owner": "test1@example.com",
+		"order": 1,
 		"members": [
 			"test1@example.com", 
 			"test2@example.com"
@@ -102,6 +103,7 @@
 	{
 		"name": "Test circle 2",
 		"owner": "test1@example.com",
+		"order": 2,
 		"members": [
 			"test1@example.com", 
 			"test3@example.com"
@@ -111,6 +113,7 @@
 	{
 		"name": "Test circle 3",
 		"owner": "test1@example.com",
+		"order": 3,
 		"members": [
 			"test1@example.com",
 			"test4@example.com",
@@ -122,6 +125,7 @@
 	{
 		"name": "Test circle 2",
 		"owner": "test2@example.com",
+		"order": 1,
 		"members": [
 			"test2@example.com",
 			"test3@example.com"
