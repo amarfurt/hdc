@@ -27,7 +27,8 @@ public class Record {
 	public String owner; // any user of type person
 	public String data;
 
-	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject result = Connection.getCollection(collection).findOne(query);
 		if (result != null) {
@@ -40,7 +41,8 @@ public class Record {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static List<Record> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<Record> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		List<Record> records = new ArrayList<Record>();
 		DBObject query = new BasicDBObject("owner", user.email);
 		DBCursor result = Connection.getCollection(collection).find(query);
@@ -55,14 +57,14 @@ public class Record {
 	/**
 	 * Find the records that are owned by the given user and not already in the given space.
 	 */
-	public static List<Record> findNotInSpace(User user, ObjectId spaceId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static List<Record> findNotInSpace(User user, ObjectId spaceId) throws IllegalArgumentException,
+			IllegalAccessException, InstantiationException {
 		// find all records of this user
 		Map<ObjectId, Record> records = new HashMap<ObjectId, Record>();
-		for (Record record : Record.findOwnedBy(user)) {
+		for (Record record : Record.findSharedWith(user)) {
 			records.put(record._id, record);
 		}
-		
+
 		// find all records in the given space
 		Set<ObjectId> recordsInSpace = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", spaceId);
@@ -74,12 +76,36 @@ public class Record {
 				recordsInSpace.add((ObjectId) recordId);
 			}
 		}
-		
-		// remove all records already in the space from the map
+
+		// remove all records already in the space
 		records.keySet().removeAll(recordsInSpace);
-		
+
 		// TODO sort by created field
 		return new ArrayList<Record>(records.values());
+	}
+
+	/**
+	 * Find all records shared with the given user (including own records).
+	 */
+	public static List<Record> findSharedWith(User user) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		// get records of this user
+		List<Record> records = findOwnedBy(user);
+
+		// get shared records of all circles this user is a member of
+		List<Circle> memberCircles = Circle.findMemberOf(user);
+		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
+		for (Circle circle : memberCircles) {
+			for (Object recordId : circle.shared) {
+				sharedRecords.add((ObjectId) recordId);
+			}
+		}
+		
+		// add all of these records (there is no intersection because only owners can share records)
+		for (ObjectId recordId : sharedRecords) {
+			records.add(find(recordId));
+		}
+		return records;
 	}
 
 	/**

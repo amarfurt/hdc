@@ -1,10 +1,7 @@
 @(space_id: Object, record_id: org.bson.types.ObjectId)
-@getRecord(id: org.bson.types.ObjectId) = @{
-	Record.find(id)
-}
 
 <a href="" space-id="@space_id" id="@record_id" class="record list-group-item">
-	@getRecord(record_id).data
+	@Record.find(record_id).data
 	<button class="btn btn-xs btn-warning removeRecord">
 		<span class="glyphicon glyphicon-remove"></span>
 	</button>

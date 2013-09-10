@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -510,6 +511,35 @@ public class CircleTest {
 		assertEquals(1, shared.size());
 		assertTrue(shared.contains(recordIds[0]));
 		assertFalse(shared.contains(recordIds[1]));
+	}
+
+	@Test
+	public void findMemberOf() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InstantiationException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle 1";
+		circle.owner = emailAddresses[0];
+		circle.order = 1;
+		circle.members = new BasicDBList();
+		circle.members.add(emailAddresses[0]);
+		circle.members.add(emailAddresses[1]);
+		circle.shared = new BasicDBList();
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		circle = new Circle();
+		circle.name = "Test circle 2";
+		circle.owner = emailAddresses[0];
+		circle.order = 2;
+		circle.members = new BasicDBList();
+		circle.members.add(emailAddresses[0]);
+		circle.shared = new BasicDBList();
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		assertEquals(2, circles.count());
+		List<Circle> memberCircles = Circle.findMemberOf(User.find(emailAddresses[1]));
+		assertEquals(1, memberCircles.size());
+		assertEquals("Test circle 1", memberCircles.get(0).name);
 	}
 
 }

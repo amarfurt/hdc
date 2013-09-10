@@ -60,6 +60,21 @@ public class Circle implements Comparable<Circle> {
 	}
 
 	/**
+	 * Find the circles this user is a member of.
+	 */
+	public static List<Circle> findMemberOf(User user) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		List<Circle> circles = new ArrayList<Circle>();
+		DBObject query = new BasicDBObject("members", user.email);
+		DBCursor result = Connection.getCollection(collection).find(query);
+		while (result.hasNext()) {
+			DBObject cur = result.next();
+			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+		}
+		return circles;
+	}
+
+	/**
 	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle
 	 * object.
 	 */

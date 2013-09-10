@@ -1,7 +1,4 @@
 @(space: Space, user: User)
-@getRecords(user: User, spaceId: org.bson.types.ObjectId) = @{
-	Record.findNotInSpace(user, spaceId)
-}
 
 <div class="space tab-pane fade" id="@space._id">
 	<div class="list-group">
@@ -32,7 +29,7 @@
 					</div>
 					<div class="modal-body">
 						<form role="form">
-							@defining(getRecords(user, space._id)) { records =>
+							@defining(Record.findNotInSpace(user, space._id)) { records =>
 								@if(records.size() > 0) {
 									@for(record <- records) {
 										@views.html.elements.spaces.checkbox(record)

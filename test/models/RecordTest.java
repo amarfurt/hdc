@@ -167,7 +167,34 @@ public class RecordTest {
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));
+	}
 
+	@Test
+	public void findSharedWith() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InstantiationException {
+		DBCollection records = TestConnection.getCollection("records");
+		assertEquals(0, records.count());
+		String[] emails = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordId = CreateDBObjects.insertRecords(emails[1], emails[1], 1);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 3);
+		DBCollection circles = TestConnection.getCollection("circles");
+		Circle circle = new Circle();
+		circle.name = "Test circle";
+		circle.owner = emails[0];
+		circle.order = 1;
+		circle.members = new BasicDBList();
+		circle.members.add(emails[0]);
+		circle.members.add(emails[1]);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		circle.shared.add(recordIds[2]);
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		assertEquals(1, circles.count());
+		List<Record> foundRecords = Record.findSharedWith(User.find(emails[1]));
+		assertEquals(3, foundRecords.size());
+		assertTrue(containsId(recordId[0], foundRecords));
+		assertTrue(containsId(recordIds[0], foundRecords));
+		assertTrue(containsId(recordIds[2], foundRecords));
 	}
 
 	private boolean containsId(ObjectId id, List<Record> recordList) {
