@@ -29,6 +29,7 @@ public class Circle implements Comparable<Circle> {
 	public int order;
 	public BasicDBList members;
 	public BasicDBList shared; // records shared with this circle
+	public BasicDBList tags;
 
 	@Override
 	public int compareTo(Circle o) {
@@ -60,12 +61,13 @@ public class Circle implements Comparable<Circle> {
 	}
 
 	/**
-	 * Find the circles this user is a member of.
+	 * Find the circles this user is a member of (excluding own circles).
 	 */
 	public static List<Circle> findMemberOf(User user) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
 		DBObject query = new BasicDBObject("members", user.email);
+		query.put("owner", new BasicDBObject("$ne", user.email));
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();

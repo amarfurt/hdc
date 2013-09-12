@@ -1,4 +1,4 @@
-@(space: Space, user: User)
+@(records: List[Record], space: Space, user: User)
 
 <div class="space tab-pane fade" id="@space._id">
 	<div class="list-group">
@@ -28,7 +28,7 @@
 						<h4 class="modal-title" id="recordFormLabel@space._id">Add records to this space</h4>
 					</div>
 					<div class="modal-body">
-						@views.html.elements.spaces.recordForm(Record.findNotInSpace(user, space._id), user, space._id)
+						@views.html.elements.spaces.recordForm(Space.makeDisjoint(space._id, records), user, space._id)
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

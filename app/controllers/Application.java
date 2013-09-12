@@ -57,7 +57,7 @@ public class Application extends Controller {
 	public static Result spaces() {
 		try {
 			User user = User.find(request().username());
-			return ok(spaces.render(Form.form(SpaceForm.class), Space.findOwnedBy(user), user));
+			return ok(spaces.render(Form.form(SpaceForm.class), Record.findSharedWith(user), Space.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
@@ -130,8 +130,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.removeRecord(),
-				controllers.routes.javascript.Share.sharedRecords(),
-				controllers.routes.javascript.Search.searchRecords()));
+				controllers.routes.javascript.Spaces.searchRecords(),
+				controllers.routes.javascript.Share.sharedRecords()));
 	}
 
 }

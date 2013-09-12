@@ -2,7 +2,10 @@ package models;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 
@@ -19,7 +22,7 @@ import controllers.database.Connection;
 
 public class Space implements Comparable<Space> {
 
-	static final String collection = "spaces";
+	private static final String collection = "spaces";
 
 	public ObjectId _id;
 	public String name;
@@ -27,6 +30,7 @@ public class Space implements Comparable<Space> {
 	public String visualization;
 	public int order;
 	public BasicDBList records;
+	public BasicDBList tags;
 
 	@Override
 	public int compareTo(Space o) {
@@ -147,6 +151,28 @@ public class Space implements Comparable<Space> {
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
+	}
+	
+	/**
+	 * Creates a new list without the records that are already in the given space.
+	 */
+	public static List<Record> makeDisjoint(ObjectId spaceId, List<Record> recordList) {
+		List<Record> newRecordList = new ArrayList<Record>(recordList);
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject projection = new BasicDBObject("records", 1);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		BasicDBList records = (BasicDBList) result.get("records");
+		Set<ObjectId> recordIds = new HashSet<ObjectId>();
+		for (Object recordId : records) {
+			recordIds.add((ObjectId) recordId);
+		}
+		Iterator<Record> iterator = newRecordList.iterator();
+		while (iterator.hasNext()) {
+			if (recordIds.contains(iterator.next()._id)) {
+				iterator.remove();
+			}
+		}
+		return newRecordList;
 	}
 
 	/**

@@ -1,4 +1,4 @@
-@(spaceForm: Form[forms.SpaceForm], spaces: List[Space], user: User)
+@(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], user: User)
 
 @main(user) {
 	<div class="page-header">
@@ -25,9 +25,7 @@
 						<h4 class="modal-title" id="newRecordFormLabel">Create a new space</h4>
 					</div>
 					<div class="modal-body">
-						<form role="form">
-							<textarea class="form-control" rows="3" placeholder="Record data" name="data" autofocus></textarea>
-						</form>
+						<textarea class="form-control" rows="3" placeholder="Record data" name="data" autofocus></textarea>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -61,7 +59,7 @@
 		
 		<div id="spaceContent" class="tab-content">
 			@spaces.map { space =>
-				@views.html.elements.space(space, user)
+				@views.html.elements.space(records, space, user)
 			}
 		</div>
 	}
@@ -76,10 +74,8 @@
 						<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
 					</div>
 					<div class="modal-body">
-						<form role="form">
-							<input type="text" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
-							<input type="text" class="form-control" placeholder="Visualization (to be replaced by dropdown list)" name="visualization">
-						</form>
+						<input type="text" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
+						<input type="text" class="form-control" placeholder="Visualization (to be replaced by dropdown list)" name="visualization">
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

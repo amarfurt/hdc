@@ -55,7 +55,7 @@ class Space extends Backbone.View
 			@el.children(".deleteSpace").show()
 	recordSearch: (e) ->
 		search = $(".recordSearch", @el).val()
-		jsRoutes.controllers.Search.searchRecords(@id, search).ajax
+		jsRoutes.controllers.Spaces.searchRecords(@id, search).ajax
 			context: this
 			success: (data) ->
 				$(".recordForm", @el).replaceWith(data)

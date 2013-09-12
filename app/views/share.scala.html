@@ -17,32 +17,29 @@
 
 	<h4>... or share data with your circles manually.</h4>
 	@helper.form(routes.Share.share) {
-		<form role="form">
-			<!-- Columns 1/3 circles, 2/3 records; on mobile and desktop -->
-			<div id="share" class="row">
-				<div class="col-xs-4">
-					<div id="circles" class="panel panel-default">
-						<div class="panel-heading">
-							<h3 class="panel-title">Circles</h3>
-						</div>
-						<div class="panel-body" id="Test">
-							@if(circles.isEmpty()) {
-								<p>You have no circles yet. Define them on your circles page.</p>
-							} else {
-								@circles.map { circle => 
-									@views.html.elements.share.circle(circle)
-								}
+		<!-- Columns 1/3 circles, 2/3 records; on mobile and desktop -->
+		<div id="share" class="row">
+			<div class="col-xs-4">
+				<div id="circles" class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">Circles</h3>
+					</div>
+					<div class="panel-body" id="Test">
+						@if(circles.isEmpty()) {
+							<p>You have no circles yet. Define them on your circles page.</p>
+						} else {
+							@circles.map { circle => 
+								@views.html.elements.share.circle(circle)
 							}
-						</div>
+						}
 					</div>
 				</div>
-				<div class="col-xs-8">
-					@views.html.elements.records(records, shared)
-				</div>
 			</div>
-			
-			<button id="shareButton" type="submit" class="btn btn-lg btn-primary btn-block" disabled>Share</button>
-		</form>
+			<div class="col-xs-8">
+				@views.html.elements.records(records, shared)
+			</div>
+		</div>
+		<button id="shareButton" type="submit" class="btn btn-lg btn-primary btn-block" disabled>Share</button>
 	}
 	
 	<!-- Load specific js -->

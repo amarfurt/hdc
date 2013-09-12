@@ -1,5 +1,7 @@
 package controllers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import models.Record;
@@ -12,7 +14,9 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.KeywordSearch;
 import views.html.spaces;
+import views.html.elements.spaces.recordForm;
 
 import com.mongodb.BasicDBList;
 
@@ -26,7 +30,7 @@ public class Spaces extends Controller {
 		if (spaceForm.hasErrors()) {
 			try {
 				User user = User.find(request().username());
-				return badRequest(spaces.render(spaceForm, Space.findOwnedBy(user), user));
+				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), user));
 			} catch (IllegalArgumentException e) {
 				return internalServerError(e.getMessage());
 			} catch (IllegalAccessException e) {
@@ -80,6 +84,10 @@ public class Spaces extends Controller {
 			try {
 				String recordsAdded = "";
 				for (String recordId : data.keySet()) {
+					// skip search input field
+					if (recordId.equals("recordSearch")) {
+						continue;
+					}
 					ObjectId rId = new ObjectId(recordId);
 					String errorMessage = Space.addRecord(sId, rId);
 					if (errorMessage != null) {
@@ -136,6 +144,31 @@ public class Spaces extends Controller {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
 			return internalServerError(e.getMessage());
+		}
+	}
+
+	/**
+	 * Return a list of records whose data contains the current search term and is not in the space already.
+	 */
+	public static Result searchRecords(String spaceId, String search) {
+		List<Record> response = new ArrayList<Record>();
+		try {
+			// TODO use caching
+			User user = User.find(request().username());
+			ObjectId sId = new ObjectId(spaceId);
+			if (search == null || search.isEmpty()) {
+				response = Record.findSharedWith(user);
+			} else {
+				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
+			}
+			response = Space.makeDisjoint(sId, response);
+			return ok(recordForm.render(response, user, sId));
+		} catch (IllegalArgumentException e) {
+			return badRequest(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return badRequest(e.getMessage());
+		} catch (InstantiationException e) {
+			return badRequest(e.getMessage());
 		}
 	}
 

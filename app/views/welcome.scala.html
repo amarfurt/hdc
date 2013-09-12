@@ -52,14 +52,12 @@
 											@flash.get("success")
 										</div>
 									}
-									<form class="form-signin">
-										<input type="email" class="form-control" placeholder="Email address" name="email" value="@loginForm("email").value" autofocus>
-										<input type="password" class="form-control" placeholder="Password" name="password">
-										<label class="checkbox">
-											<input type="checkbox" value="remember-me"> Remember me
-										</label>
-										<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-									</form>
+									<input type="email" class="form-control" placeholder="Email address" name="email" value="@loginForm("email").value" autofocus>
+									<input type="password" class="form-control" placeholder="Password" name="password">
+									<label class="checkbox">
+										<input type="checkbox" value="remember-me"> Remember me
+									</label>
+									<button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 				            	</div>
 							</div>
 						</div>
@@ -79,13 +77,11 @@
 											@registrationForm.globalError.message
 						            	</div>
 									}
-									<form class="form-signup">
-										<input type="email" class="form-control" placeholder="Email address" name="email" value="@registrationForm("email").value">
-										<input type="text" class="form-control" placeholder="First name" name="firstName" value="@registrationForm("firstName").value">
-										<input type="text" class="form-control" placeholder="Last name" name="lastName" value="@registrationForm("lastName").value">
-										<input type="password" class="form-control" placeholder="Password" name="password">
-										<button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
-									</form>
+									<input type="email" class="form-control" placeholder="Email address" name="email" value="@registrationForm("email").value">
+									<input type="text" class="form-control" placeholder="First name" name="firstName" value="@registrationForm("firstName").value">
+									<input type="text" class="form-control" placeholder="Last name" name="lastName" value="@registrationForm("lastName").value">
+									<input type="password" class="form-control" placeholder="Password" name="password">
+									<button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
 				            	</div>
 							</div>
 						</div>

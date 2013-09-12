@@ -6,6 +6,7 @@ import java.security.spec.InvalidKeySpecException;
 import utils.ModelConversion;
 import utils.PasswordHash;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
@@ -19,6 +20,7 @@ public class User {
 	public String email; // serves as id
 	public String name;
 	public String password;
+	public BasicDBList tags;
 
 	public static User find(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {

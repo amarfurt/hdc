@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -23,6 +24,7 @@ public class Message {
 	public String datetime;
 	public String title;
 	public String content;
+	public BasicDBList tags;
 
 	public static List<Message> findSentTo(User user) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<Message> messages = new ArrayList<Message>();

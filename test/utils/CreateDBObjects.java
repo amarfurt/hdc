@@ -10,6 +10,7 @@ import models.User;
 
 import org.bson.types.ObjectId;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -43,6 +44,7 @@ public class CreateDBObjects {
 			record.creator = creator;
 			record.owner = owner;
 			record.data = "Random data.";
+			record.tags = new BasicDBList();
 			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 			records.insert(recordObject);
 			recordIds[i] = (ObjectId) recordObject.get("_id");

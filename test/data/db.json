@@ -4,25 +4,29 @@
 		"email" : "test1@example.com",
 		"name" : "Test User 1",
 		"password" : "1000:8325165e85492ff15e59c525a5f66088df4847d8d5fe2536:4d0959338760205bddd3098ad7681259ad1f1a3334473bbc",
-		"birthday" : "2000-01-01"
+		"birthday" : "2000-01-01",
+		"tags": [ ]
 	},
 	{
 		"email" : "test2@example.com",
 		"name" : "Test User 2",
 		"password" : "1000:6203f51737eebf6052f2d93fae1844d3400a2c731cb7cdba:0806ec1604e33b0d09fc51c2320eebb85ff93d334bd81975",
-		"birthday" : "2000-01-01"
+		"birthday" : "2000-01-01",
+		"tags": [ ]
 	},
 	{
 		"email" : "test3@example.com",
 		"name" : "Test User 3",
 		"password" : "1000:c9baf5689c8e7f5842de0bf3f1bc7c4c2fa0dff8d95425e8:3677f28113a374471c0c86aad602d3ef4ed6628111c18798",
-		"birthday" : "2000-01-01"
+		"birthday" : "2000-01-01",
+		"tags": [ ]
 	},
 	{
 		"email" : "test4@example.com",
 		"name" : "Test User 4",
 		"password" : "1000:cb0a03eddf8846e0da1152ece93a1dc7c1e1909388c003c5:d019303e8b826faf2a2d76290b66ae6fa444577b478a6572",
-		"birthday" : "2000-01-01"
+		"birthday" : "2000-01-01",
+		"tags": [ ]
 	}
 	],
 	"messages" : [
@@ -31,62 +35,72 @@
 		"receiver": "test2@example.com",
 		"datetime": "2001-01-01-120000Z",
 		"title": "How are you?",
-		"content": "I'm fine. How are you today?"
+		"content": "I'm fine. How are you today?",
+		"tags": [ ]
 	},
 	{
 		"sender": "test2@example.com",
 		"receiver": "test3@example.com",
 		"datetime": "2001-01-01-130000Z",
 		"title": "How are you?",
-		"content": "I'm fine. How are you today?"
+		"content": "I'm fine. How are you today?",
+		"tags": [ ]
 	},
 	{
 		"sender": "test3@example.com",
 		"receiver": "test4@example.com",
 		"datetime": "2001-01-01-140000Z",
 		"title": "How are you?",
-		"content": "I'm fine. How are you today?"
+		"content": "I'm fine. How are you today?",
+		"tags": [ ]
 	},
 	{
 		"sender": "test4@example.com",
 		"receiver": "test1@example.com",
 		"datetime": "2001-01-01-150000Z",
 		"title": "How are you?",
-		"content": "I'm fine. How are you today?"
+		"content": "I'm fine. How are you today?",
+		"tags": [ ]
 	},
 	{
 		"sender": "test2@example.com",
 		"receiver": "test1@example.com",
 		"datetime": "2001-01-01-160000Z",
 		"title": "RE: How are you?",
-		"content": "Thanks I'm fine."
+		"content": "Thanks I'm fine.",
+		"tags": [ ]
 	}
 	],
 	"records" : [
 	{
 		"creator": "test4@example.com",
 		"owner": "test1@example.com",
-		"data": "Ran 11.53km in 1.35h on 2010-01-01"
+		"data": "Ran 11.53km in 1.35h on 2010-01-01",
+		"tags": [ ]
 	},
 	{
 		"creator": "test3@example.com",
 		"owner": "test1@example.com",
-		"data": "Ran 12.53km in 1.35h on 2010-01-01"
+		"data": "Ran 12.53km in 1.35h on 2010-01-01",
+		"tags": [ ]
 	},
 	{
 		"creator": "test2@example.com",
 		"owner": "test1@example.com",
-		"data": "Dentist record."
+		"data": "Dentist record.",
+		"tags": [ ]
 	},
 	{
 		"creator": "test2@example.com",
 		"owner": "test1@example.com",
-		"data": "X-ray image."
+		"data": "X-ray image.",
+		"tags": [ ]
 	},
 	{
 		"creator": "test3@example.com",
 		"owner": "test2@example.com",
-		"data": "Ran 13.53km in 1.35h on 2010-01-01"
+		"data": "Ran 13.53km in 1.35h on 2010-01-01",
+		"tags": [ ]
 	}
 	],
 	"circles" : [
@@ -108,7 +122,8 @@
 			"test1@example.com", 
 			"test3@example.com"
 		],
-		"shared": [ ]
+		"shared": [ ],
+		"tags": [ ]
 	},
 	{
 		"name": "Test circle 3",
@@ -120,7 +135,8 @@
 			"test2@example.com",
 			"test3@example.com"
 		],
-		"shared": [ ]
+		"shared": [ ],
+		"tags": [ ]
 	},
 	{
 		"name": "Test circle 2",
@@ -130,7 +146,8 @@
 			"test2@example.com",
 			"test3@example.com"
 		],
-		"shared": [ ]
+		"shared": [ ],
+		"tags": [ ]
 	}
 	],
 	"spaces" : [
@@ -139,33 +156,38 @@
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
 		"order": 1,
-		"records": [ ]
+		"records": [ ],
+		"tags": [ ]
 	},
 	{
 		"name": "Test space 2",
 		"owner": "test1@example.com",
 		"visualization": "Simple List",
 		"order": 2,
-		"records": [ ]
+		"records": [ ],
+		"tags": [ ]
 	},
 	{
 		"name": "Test space 2",
 		"owner": "test2@example.com",
 		"visualization": "Simple List",
 		"order": 1,
-		"records": [ ]
+		"records": [ ],
+		"tags": [ ]
 	}
 	],
 	"visualizations": [
 	{
 		"name": "Simple List",
-		"description": "This simple visualization shows all records in a list."
+		"description": "This simple visualization shows all records in a list.",
+		"tags": [ ]
 	}
 	],
 	"apps": [
 	{
 		"name": "Runtastic",
-		"description": "Shows statistics of its owners running performances."
+		"description": "Shows statistics of its owners running performances.",
+		"tags": [ ]
 	}
 	]
 }
