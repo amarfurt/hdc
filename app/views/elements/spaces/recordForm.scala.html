@@ -1,0 +1,13 @@
+@(records: List[Record], user: User, spaceId: org.bson.types.ObjectId)
+<div class="recordForm">
+	<input type="text" class="recordSearch" name="recordSearch" placeholder="Search in your records">
+	<form role="form">
+		@if(records.size() > 0) {
+			@records.map { record =>
+				@views.html.elements.spaces.checkbox(record)
+			}
+		} else {
+			<p>No records available for this space.</p>
+		}
+	</form>
+</div>

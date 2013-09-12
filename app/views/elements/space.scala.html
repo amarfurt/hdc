@@ -18,7 +18,7 @@
 		<span class="glyphicon glyphicon-remove"></span> Delete space
 	</button>
 	
-	<!-- Modal -->
+	<!-- Add records modal -->
 	@helper.form(routes.Spaces.addRecords(space._id.toString())) {
 		<div class="modal fade" id="recordForm@space._id" role="dialog" aria-labelledby="recordFormLabel@space._id" aria-hidden="true">
 			<div class="modal-dialog">
@@ -28,17 +28,7 @@
 						<h4 class="modal-title" id="recordFormLabel@space._id">Add records to this space</h4>
 					</div>
 					<div class="modal-body">
-						<form role="form">
-							@defining(Record.findNotInSpace(user, space._id)) { records =>
-								@if(records.size() > 0) {
-									@for(record <- records) {
-										@views.html.elements.spaces.checkbox(record)
-									}
-								} else {
-									<p>No records available for this space.</p>
-								}
-							}
-						</form>
+						@views.html.elements.spaces.recordForm(Record.findNotInSpace(user, space._id), user, space._id)
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

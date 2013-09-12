@@ -8,6 +8,7 @@ GET     /welcome                    controllers.Application.welcome()
 POST    /welcome                    controllers.Application.authenticate()
 POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
+# Spaces
 GET     /spaces                     controllers.Application.spaces()
 POST    /spaces                     controllers.Spaces.add()
 DELETE  /spaces/:id                 controllers.Spaces.delete(id: String)
@@ -15,15 +16,21 @@ PUT     /spaces/:id                 controllers.Spaces.rename(id: String)
 POST    /spaces/record/:id          controllers.Spaces.addRecords(id: String)
 DELETE  /spaces/record/:id          controllers.Spaces.removeRecord(id: String)
 POST    /spaces/record              controllers.Spaces.manuallyAddRecord()
+# Circles
 GET     /circles                    controllers.Application.circles()
 POST    /circles                    controllers.Circles.add()
 DELETE  /circles/:id                controllers.Circles.delete(id: String)
 PUT     /circles/:id                controllers.Circles.rename(id: String)
 PUT     /circles/member/:id         controllers.Circles.addMember(id: String)
 DELETE  /circles/member/:id         controllers.Circles.removeMember(id: String)
+# Share
 GET     /share                      controllers.Application.share()
 POST    /share                      controllers.Share.share()
 GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
+# Search
+GET     /search/records/:id/:search controllers.Search.searchRecords(id: String, search: String)
+GET     /search/records/:id/        controllers.Search.searchRecords(id: String, search: String = "")
+# JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
 # Map static resources from the /public folder to the /assets URL path

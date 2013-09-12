@@ -31,6 +31,7 @@ class Space extends Backbone.View
 			new Record el: $(record)
 	events:
 		"click .deleteSpace": "deleteSpace"
+		"keyup .recordSearch": "recordSearch"
 	deleteSpace: (e) ->
 		e.preventDefault()
 		@loading(true)
@@ -52,6 +53,16 @@ class Space extends Backbone.View
 		else
 			@el.children(".addRecord").show()
 			@el.children(".deleteSpace").show()
+	recordSearch: (e) ->
+		search = $(".recordSearch", @el).val()
+		jsRoutes.controllers.Search.searchRecords(@id, search).ajax
+			context: this
+			success: (data) ->
+				$(".recordForm", @el).replaceWith(data)
+				$(".recordSearch", @el).val(search).focus()
+			error: (err) ->
+				console.log("Record search failed.")
+				console.log(err)
 
 class SpaceTab extends Backbone.View
 	initialize: ->
@@ -81,8 +92,8 @@ class SpaceContent extends Backbone.View
 		@el.children("div:first").addClass("active in")
 		@el.children(".space").each (i, space) ->
 			new Space el: $(space)
-
+			
 # Instantiate views
 $ ->
-	tabs = new SpaceTabs el: $("#spaceTabs")
-	cont = new SpaceContent el: $("#spaceContent")
+	new SpaceTabs el: $("#spaceTabs")
+	new SpaceContent el: $("#spaceContent")

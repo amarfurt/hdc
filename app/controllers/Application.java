@@ -130,7 +130,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.removeRecord(),
-				controllers.routes.javascript.Share.sharedRecords()));
+				controllers.routes.javascript.Share.sharedRecords(),
+				controllers.routes.javascript.Search.searchRecords()));
 	}
 
 }
