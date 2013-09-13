@@ -1,23 +1,40 @@
-@(circles: List[Circle], user: User)
+@(circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: User)
+@active(circleId: org.bson.types.ObjectId) = @{
+	circleId.equals(activeCircle)
+}
 
 @main(user) {
 	<div class="page-header">
 		<h1>My circles</h1>
 	</div>
 
-	<ul id="circles">
-		@if(circles.isEmpty()) {
-			<p id="noCircles">You have no circles yet. Add one by clicking on the button below.</p>
-		} else {
+	@if(circles.isEmpty()) {
+		<p>You have no circles yet. Add one by clicking on the button below.</p>
+		<button id="addCircle" class="btn btn-default">
+			<span class="glyphicon glyphicon-plus-sign"></span> Add a new circle
+		</button>
+	} else {
+		<!-- Circle tabs -->
+		<ul id="circleTabs" class="nav nav-tabs">
 			@circles.map { circle =>
-				@views.html.elements.circle(circle)
+				<li tab-id="@circle._id" class="circleTab @if(active(circle._id)){active}">
+					<a href="#@circle._id" data-toggle="tab"><span class="circleName">@circle.name</span></a>
+				</li>
 			}
-		}
-	</ul>
-
-	<button class="btn btn-default addCircle">
-		<span class="glyphicon glyphicon-plus-sign"></span> Add circle
-	</button>
+			<!-- Add new circle button -->
+			<li>
+				<button id="addCircle" class="btn btn-default">
+					<span class="glyphicon glyphicon-plus-sign"></span>
+				</button>
+			</li>
+		</ul>
+		
+		<div id="circleContent" class="tab-content">
+			@circles.map { circle =>
+				@views.html.elements.circle(circle, active(circle._id))
+			}
+		</div>
+	}
 	
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/circles.js")"></script>

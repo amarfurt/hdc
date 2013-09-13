@@ -69,7 +69,7 @@ public class Spaces extends Controller {
 			if (errorMessage == null) {
 				return ok();
 			} else {
-				return internalServerError(errorMessage);
+				return badRequest(errorMessage);
 			}
 		} else {
 			return forbidden();

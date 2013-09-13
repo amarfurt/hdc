@@ -8,7 +8,6 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.elements.circle;
 import views.html.elements.circles.member;
 
 import com.mongodb.BasicDBList;
@@ -26,7 +25,7 @@ public class Circles extends Controller {
 		try {
 			String errorMessage = Circle.add(newCircle);
 			if (errorMessage == null) {
-				return ok(circle.render(newCircle));
+				return Application.circles();
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -61,9 +60,9 @@ public class Circles extends Controller {
 		if (Secured.isOwnerOfCircle(id)) {
 			String errorMessage = Circle.delete(id);
 			if (errorMessage == null) {
-				return ok();
+				return Application.circles();
 			} else {
-				return internalServerError(errorMessage);
+				return badRequest(errorMessage);
 			}
 		} else {
 			return forbidden();

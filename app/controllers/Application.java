@@ -3,6 +3,7 @@ package controllers;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import models.Circle;
@@ -47,7 +48,12 @@ public class Application extends Controller {
 	public static Result circles() {
 		try {
 			User user = User.find(request().username());
-			return ok(circles.render(Circle.findOwnedBy(user), user));
+			List<Circle> circleList = Circle.findOwnedBy(user);
+			ObjectId activeCircle = null;
+			if (circleList.size() > 0) {
+				activeCircle = circleList.get(0)._id;
+			}
+			return ok(circles.render(circleList, activeCircle, user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

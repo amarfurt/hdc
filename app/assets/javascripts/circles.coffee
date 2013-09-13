@@ -1,30 +1,4 @@
-class CircleMember extends Backbone.View
-	initialize: ->
-		@circle_id = @el.attr("circle-id")
-		@id = @el.attr("id")
-	events:
-		"click .removeMember": "removeMember"
-	removeMember: (e) ->
-		e.preventDefault()
-		@loading(true)
-		jsRoutes.controllers.Circles.removeMember(@circle_id).ajax
-			context: this
-			data:
-				name: @id
-			success: (data) ->
-				@el.remove()
-				@loading(false)
-			error: (err) ->
-				@loading(false)
-				alert err.responseText
-				$.error("Error: " + err.responseText)
-	loading: (display) ->
-		if (display)
-			@el.children(".removeMember").hide()
-		else
-			@el.children(".removeMember").show()
-
-class Circle extends Backbone.View
+class oldCircle extends Backbone.View
 	initialize: ->
 		@id = @el.attr("circle-id")
 		@name = $(".circleName", @el).editInPlace
@@ -97,22 +71,82 @@ class Circle extends Backbone.View
 			$(".newMember", @el).hide()
 			$(".addMember", @el).show()
 
-class CirclesManager extends Backbone.View
+### NEW ###	
+class Member extends Backbone.View
 	initialize: ->
-		@el.children(".circle").each (i, circle) ->
-			new Circle el: $(circle)
-		$(".addCircle").click @addCircle
-	addCircle: (e) ->
-		$("#noCircles").remove()
-		jsRoutes.controllers.Circles.add().ajax
+		@circleId = @el.attr("circle-id")
+		@id = @el.attr("id")
+	events:
+		"click .removeMember": "removeMember"
+	removeMember: (e) ->
+		@loading(true)
+		jsRoutes.controllers.Circles.removeMember(@circleId).ajax
+			context: this
+			data:
+				name: @id
+			success: (data) ->
+				@el.remove()
+				@loading(false)
+			error: (err) ->
+				@loading(false)
+				console.error("Failed to remove member.")
+				console.error(err.responseText)
+	loading: (display) ->
+		if (display)
+			@el.children(".removeMember").hide()
+		else
+			@el.children(".removeMember").show()
+
+class Circle extends Backbone.View
+	initialize: ->
+		@id = @el.attr("id")
+		$(".member", @el).each (i, member) ->
+			new Member el: $(member)
+	events:
+		"click .deleteCircle": "deleteCircle"
+		"keyup .memberSearch": "memberSearch"
+	deleteCircle: (e) ->
+		@loading(true)
+		jsRoutes.controllers.Circles.delete(@id).ajax
+			context: this
+			error: (err) ->
+				@loading(false)
+				$.error("Error: " + err)
+	loading: (display) ->
+		if (display)
+			@el.children(".addMember").hide()
+			@el.children(".deleteCircle").hide()
+		else
+			@el.children(".addMember").show()
+			@el.children(".deleteCircle").show()
+	memberSearch: (e) ->
+		search = $(".memberSearch", @el).val()
+		jsRoutes.controllers.Circles.searchMembers(@id, search).ajax
 			context: this
 			success: (data) ->
-				_view = new Circle
-					el: $(data).appendTo("#circles")
-				_view.el.find(".circleName").editInPlace("edit")
+				$(".memberForm", @el).replaceWith(data)
 			error: (err) ->
-				$.error("Error: " + err)
+				console.error("Member search failed.")
+				console.error(err)
+
+class CircleTab extends Backbone.View
+	initialize: ->
+		@id = @el.attr("tab-id")
+		@name = $(".circleName", @el).editInPlace
+			context: this
+			onChange: @renameCircle
+	renameCircle: (name) ->
+		jsRoutes.controllers.Circles.rename(@id).ajax
+			context: this
+			data:
+				name: name
+			success: (data) ->
+				@name.editInPlace("close", data)
+			error: (err) ->
+				console.error("Renaming circle failed.")
+				console.error(err)
 
 # Instantiate views
 $ ->
-	mngr = new CirclesManager el: $("#circles")
+	_.map($(".circleTab"), (circleTab) -> new CircleTab el: $ circleTab)
+	_.map($(".circle"), (circle) -> new Circle el: $ circle)

@@ -123,6 +123,8 @@ public class Record {
 	 * Tries to delete the record with the given id and returns the error message (null in absence of errors).
 	 */
 	public static String delete(ObjectId recordId) {
+		// TODO remove from spaces
+		
 		DBObject query = new BasicDBObject("_id", recordId);
 		WriteResult result = Connection.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
