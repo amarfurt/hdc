@@ -22,6 +22,12 @@ public class User {
 	public String password;
 	public BasicDBList tags;
 
+	public static String getName(String email) {
+		DBObject query = new BasicDBObject("email", email);
+		DBObject projection = new BasicDBObject("name", 1);
+		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
+	}
+
 	public static User find(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("email", email);
@@ -49,6 +55,11 @@ public class User {
 			return "A user with this email address already exists.";
 		}
 		newUser.password = PasswordHash.createHash(newUser.password);
+		newUser.tags = new BasicDBList();
+		newUser.tags.add(newUser.email);
+		for (String namePart : newUser.name.split(" ")) {
+			newUser.tags.add(namePart);
+		}
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(User.class, newUser));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		return result.getLastError().getErrorMessage();
@@ -58,6 +69,8 @@ public class User {
 		if (!userWithSameEmailExists(email)) {
 			return "No user with this email address exists.";
 		}
+		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
+		// the marketplace), ...
 		DBObject query = new BasicDBObject("email", email);
 		WriteResult result = Connection.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();

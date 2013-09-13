@@ -1,17 +1,5 @@
 @(messages: List[Message], user: User)
 
-@*** TODO ***
-Can't do one call for every request to the User object.
-
-Do this by loading the user in the message class.
---- OR ---
-Provide general "get(collection, id, key)" method that retrieves 
-the value of the key of the document with this id in the given collection.
-***@
-@getUser(email: String) = @{
-	User.find(email)
-}
-
 @main(user) {
 	<div class="page-header">
 		<h1>My messages</h1>
@@ -24,7 +12,7 @@ the value of the key of the document with this id in the given collection.
 		    case (sender, messages) => {
 	   			<div class="panel panel-default">
 	   				<div class="panel-heading">
-	   					<h3 class="panel-title">@getUser(sender).name</h3>
+	   					<h3 class="panel-title">User.getName(sender)</h3>
 	            	</div>
 	            	<div class="panel-body">
 	            		<ul id="messages">

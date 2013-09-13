@@ -30,6 +30,19 @@ public class Record {
 	public static String getCollection() {
 		return collection;
 	}
+	
+	/**
+	 * Return the first few words of the data up to a maximum of 40 characters.
+	 */
+	public static String dataToString(String data) {
+		int maxChars = 40;
+		if (data.length() < maxChars) {
+			return data;
+		} else {
+			int lastIndex = data.lastIndexOf(" ", maxChars);
+			return data.substring(0, lastIndex + 1) + "...";
+		}
+	}
 
 	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {

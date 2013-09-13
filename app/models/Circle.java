@@ -83,6 +83,10 @@ public class Circle implements Comparable<Circle> {
 	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
 			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
+			newCircle.tags = new BasicDBList();
+			for (String namePart : newCircle.name.split(" ")) {
+				newCircle.tags.add(namePart);
+			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newCircle._id = (ObjectId) insert.get("_id");
@@ -103,7 +107,13 @@ public class Circle implements Comparable<Circle> {
 		}
 		String owner = (String) foundCircle.get("owner");
 		if (!circleWithSameNameExists(newName, owner)) {
-			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
+			DBObject setFields = new BasicDBObject("name", newName);
+			BasicDBList newTags = new BasicDBList();
+			for (String namePart : newName.split(" ")) {
+				newTags.add(namePart);
+			}
+			setFields.put("tags", newTags);
+			DBObject update = new BasicDBObject("$set", setFields);
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		} else {

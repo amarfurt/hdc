@@ -24,8 +24,8 @@ public class KeywordSearch {
 		return results;
 	}
 
-	private static String[] split(String search) {
-		return search.toLowerCase().split(" ");
+	public static String[] split(String search) {
+		return search.toLowerCase().split("[ ,\\+]+");
 	}
 
 }

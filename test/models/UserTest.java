@@ -76,7 +76,7 @@ public class UserTest {
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = PasswordHash.createHash("secret");
+		user.password = "secret";
 		assertNull(User.add(user));
 		assertEquals(1, users.count());
 		assertEquals(user.email, users.findOne().get("email"));
@@ -92,7 +92,7 @@ public class UserTest {
 		User user = new User();
 		user.email = emailAddresses[0];
 		user.name = "Test User";
-		user.password = PasswordHash.createHash("secret");
+		user.password = "secret";
 		assertEquals("A user with this email address already exists.", User.add(user));
 		assertEquals(1, users.count());
 	}

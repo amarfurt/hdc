@@ -67,6 +67,10 @@ public class Space implements Comparable<Space> {
 	public static String add(Space newSpace) throws IllegalArgumentException, IllegalAccessException {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
 			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
+			newSpace.tags = new BasicDBList();
+			for (String namePart : newSpace.name.split(" ")) {
+				newSpace.tags.add(namePart);
+			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Space.class, newSpace));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newSpace._id = (ObjectId) insert.get("_id");

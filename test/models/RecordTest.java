@@ -146,6 +146,16 @@ public class RecordTest {
 		assertTrue(containsId(recordIds[1], foundRecords));
 	}
 
+	private boolean containsId(ObjectId id, List<Record> recordList) {
+		boolean found = false;
+		for (Record record : recordList) {
+			if (id.equals(record._id)) {
+				return true;
+			}
+		}
+		return found;
+	}
+
 	@Test
 	public void findNotInSpace() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
@@ -199,8 +209,8 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findSharedWithOwnCircle() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException {
+	public void findSharedWithOwnCircle() throws IllegalArgumentException, IllegalAccessException,
+			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
 		String[] emails = CreateDBObjects.insertUsers(2);
@@ -229,15 +239,21 @@ public class RecordTest {
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));
 	}
-
-	private boolean containsId(ObjectId id, List<Record> recordList) {
-		boolean found = false;
-		for (Record record : recordList) {
-			if (id.equals(record._id)) {
-				return true;
-			}
-		}
-		return found;
+	
+	@Test
+	public void dataToString() {
+		String shortString = "Some medical data.";
+		String longString = "Doctor Frankenstein detected a fracture of the bone in the patient's lower left leg.";
+		String noSpacesString = "DoctorFrankensteindetectedafractureoftheboneinthepatient'slowerleftleg."; 
+		String splitAt39 = "10letters 10letters 10letters 10letters no longer shown";
+		String splitAt40 = "10letters 10letters 10letters 10letters1 no longer shown";
+		String splitAt41 = "10letters 10letters 10letters 10letters11 no longer shown";
+		assertEquals(shortString, Record.dataToString(shortString));
+		assertEquals("Doctor Frankenstein detected a fracture ...", Record.dataToString(longString));
+		assertEquals("...", Record.dataToString(noSpacesString));
+		assertEquals("10letters 10letters 10letters 10letters ...", Record.dataToString(splitAt39));
+		assertEquals("10letters 10letters 10letters 10letters1 ...", Record.dataToString(splitAt40));
+		assertEquals("10letters 10letters 10letters ...", Record.dataToString(splitAt41));
 	}
 
 }

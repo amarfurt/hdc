@@ -264,7 +264,7 @@ public class SpacesTest {
 		Result result = callAction(
 				controllers.routes.ref.Spaces.manuallyAddRecord(),
 				fakeRequest().withSession("email", username).withFormUrlEncodedBody(
-						ImmutableMap.of("data", "Test data")));
+						ImmutableMap.of("data", "Test data", "tags", "test")));
 		assertEquals(303, status(result));
 		assertEquals(oldSize + 1, records.count());
 	}

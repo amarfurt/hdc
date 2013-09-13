@@ -133,6 +133,10 @@ public class Spaces extends Controller {
 		newRecord.creator = request().username();
 		newRecord.owner = newRecord.creator;
 		newRecord.data = Form.form().bindFromRequest().get("data");
+		newRecord.tags = new BasicDBList();
+		for (String tag : Form.form().bindFromRequest().get("tags").toLowerCase().split("[ ,\\+]+")) {
+			newRecord.tags.add(tag);
+		}
 		try {
 			String errorMessage = Record.add(newRecord);
 			if (errorMessage == null) {
