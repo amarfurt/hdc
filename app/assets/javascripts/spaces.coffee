@@ -59,7 +59,6 @@ class Space extends Backbone.View
 			context: this
 			success: (data) ->
 				$(".recordForm", @el).replaceWith(data)
-				$(".recordSearch", @el).val(search).focus()
 			error: (err) ->
 				console.log("Record search failed.")
 				console.log(err)
