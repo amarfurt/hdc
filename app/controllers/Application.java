@@ -53,7 +53,7 @@ public class Application extends Controller {
 			if (circleList.size() > 0) {
 				activeCircle = circleList.get(0)._id;
 			}
-			return ok(circles.render(circleList, activeCircle, user));
+			return ok(circles.render(User.findAll(), circleList, activeCircle, user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
@@ -128,11 +128,10 @@ public class Application extends Controller {
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
 		return ok(Routes.javascriptRouter("jsRoutes", 
-				controllers.routes.javascript.Circles.add(),
 				controllers.routes.javascript.Circles.rename(), 
 				controllers.routes.javascript.Circles.delete(),
-				controllers.routes.javascript.Circles.addMember(),
 				controllers.routes.javascript.Circles.removeMember(),
+				controllers.routes.javascript.Circles.searchUsers(),
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.removeRecord(),

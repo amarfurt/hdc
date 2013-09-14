@@ -3,6 +3,7 @@ package models;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -220,6 +221,28 @@ public class Circle implements Comparable<Circle> {
 		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("shared", recordIds.toArray()));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
+	}
+
+	/**
+	 * Creates a new list without the members of the given circle.
+	 */
+	public static List<User> makeDisjoint(ObjectId circleId, List<User> userList) {
+		List<User> newUserList = new ArrayList<User>(userList);
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("members", 1);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		BasicDBList members = (BasicDBList) result.get("members");
+		Set<String> emails = new HashSet<String>();
+		for (Object email : members) {
+			emails.add((String) email);
+		}
+		Iterator<User> iterator = newUserList.iterator();
+		while (iterator.hasNext()) {
+			if (emails.contains(iterator.next().email)) {
+				iterator.remove();
+			}
+		}
+		return newUserList;
 	}
 
 	/**

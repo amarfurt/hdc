@@ -1,4 +1,4 @@
-@(records: List[Record], user: User, spaceId: org.bson.types.ObjectId)
+@(records: List[Record])
 <div class="recordForm">
 	@if(records.size() > 0) {
 		@records.map { record =>

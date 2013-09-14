@@ -1,4 +1,4 @@
-@(records: List[Record], space: Space, user: User)
+@(records: List[Record], space: Space)
 
 <div class="space tab-pane fade" id="@space._id">
 	<div class="list-group">
@@ -29,7 +29,7 @@
 					</div>
 					<div class="modal-body">
 						<input type="text" class="recordSearch" name="recordSearch" placeholder="Search in your records">
-						@views.html.elements.spaces.recordForm(Space.makeDisjoint(space._id, records), user, space._id)
+						@views.html.elements.spaces.recordForm(Space.makeDisjoint(space._id, records))
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

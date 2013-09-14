@@ -166,7 +166,7 @@ public class Spaces extends Controller {
 				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
 			}
 			response = Space.makeDisjoint(sId, response);
-			return ok(recordForm.render(response, user, sId));
+			return ok(recordForm.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {

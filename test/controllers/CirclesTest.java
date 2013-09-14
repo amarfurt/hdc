@@ -117,7 +117,7 @@ public class CirclesTest {
 
 	// forbidden requests are blocked by this controller, no longer testing this
 	@Test
-	public void addMemberSuccess() {
+	public void addUserSuccess() {
 		DBCollection circles = TestConnection.getCollection("circles");
 		DBObject query = new BasicDBObject();
 		query.put("members", new BasicDBObject("$nin", new String[] { "test3@example.com" }));
@@ -127,14 +127,14 @@ public class CirclesTest {
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(controllers.routes.ref.Circles.addMember(circleId), fakeRequest().withSession("email", owner)
-				.withFormUrlEncodedBody(ImmutableMap.of("name", "test3@example.com")));
-		assertEquals(200, status(result));
+		Result result = callAction(controllers.routes.ref.Circles.addUsers(circleId), fakeRequest().withSession("email", owner)
+				.withFormUrlEncodedBody(ImmutableMap.of("test3@example.com", "on")));
+		assertEquals(303, status(result));
 		assertEquals(oldSize + 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 
 	@Test
-	public void addMemberInvalidUser() {
+	public void addUserInvalidUser() {
 		DBCollection users = TestConnection.getCollection("users");
 		assertNull(users.findOne(new BasicDBObject("members", "test5@example.com")));
 		DBCollection circles = TestConnection.getCollection("circles");
@@ -144,7 +144,7 @@ public class CirclesTest {
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(controllers.routes.ref.Circles.addMember(circleId), fakeRequest().withSession("email", owner)
+		Result result = callAction(controllers.routes.ref.Circles.addUsers(circleId), fakeRequest().withSession("email", owner)
 				.withFormUrlEncodedBody(ImmutableMap.of("name", "test5@example.com")));
 		assertEquals(400, status(result));
 		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());

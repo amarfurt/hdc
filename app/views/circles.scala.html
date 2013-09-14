@@ -1,4 +1,4 @@
-@(circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: User)
+@(users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: User)
 @active(circleId: org.bson.types.ObjectId) = @{
 	circleId.equals(activeCircle)
 }
@@ -10,7 +10,7 @@
 
 	@if(circles.isEmpty()) {
 		<p>You have no circles yet. Add one by clicking on the button below.</p>
-		<button id="addCircle" class="btn btn-default">
+		<button data-toggle="modal" data-target="#circleForm" class="btn btn-default">
 			<span class="glyphicon glyphicon-plus-sign"></span> Add a new circle
 		</button>
 	} else {
@@ -23,7 +23,7 @@
 			}
 			<!-- Add new circle button -->
 			<li>
-				<button id="addCircle" class="btn btn-default">
+				<button data-toggle="modal" data-target="#circleForm" class="btn btn-default">
 					<span class="glyphicon glyphicon-plus-sign"></span>
 				</button>
 			</li>
@@ -31,9 +31,30 @@
 		
 		<div id="circleContent" class="tab-content">
 			@circles.map { circle =>
-				@views.html.elements.circle(circle, active(circle._id))
+				@views.html.elements.circle(users, circle, active(circle._id))
 			}
 		</div>
+	}
+	
+	<!-- New circle modal -->
+	@helper.form(routes.Circles.add) {
+		<div class="modal fade" id="circleForm" role="dialog" aria-labelledby="circleFormLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="circleFormLabel">Create a new circle</h4>
+					</div>
+					<div class="modal-body">
+						<input type="text" class="form-control" placeholder="Name" name="name" autofocus>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary">Create</button>
+					</div>
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
 	}
 	
 	<!-- Load specific js -->

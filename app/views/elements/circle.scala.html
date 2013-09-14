@@ -1,4 +1,4 @@
-@(circle: Circle, active: Boolean)
+@(users: List[User], circle: Circle, active: Boolean)
 
 <div id="@circle._id" class="circle tab-pane fade @if(active){in active}">
 	<div class="list-group">
@@ -13,11 +13,32 @@
 			<p class="list-group-item">This circle has no members yet.</p>
 		}
    	</div>
-	<button class="btn btn-sm btn-primary addMember">
-		<span class="glyphicon glyphicon-plus"></span> Add member
+   	<button data-toggle="modal" data-target="#userForm@circle._id" class="btn btn-sm btn-primary addUser">
+		<span class="glyphicon glyphicon-plus"></span> Add user
 	</button>
-	<span class="newMember">New member</span>
     <button class="btn btn-sm btn-danger deleteCircle">
     	<span class="glyphicon glyphicon-remove-circle"></span> Delete circle
     </button>
+    
+    <!-- Add users modal -->
+	@helper.form(routes.Circles.addUsers(circle._id.toString())) {
+		<div class="modal fade" id="userForm@circle._id" role="dialog" aria-labelledby="userFormLabel@circle._id" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="userFormLabel@circle._id">Add users to this circle</h4>
+					</div>
+					<div class="modal-body">
+						<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
+						@views.html.elements.circles.userForm(Circle.makeDisjoint(circle._id, users))
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary">Add</button>
+					</div>
+				</div> <!-- /.modal-content -->
+			</div> <!-- /.modal-dialog -->
+		</div> <!-- /.modal -->
+	}
 </div>

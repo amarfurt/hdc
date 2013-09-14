@@ -2,12 +2,15 @@ package models;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 
 import utils.ModelConversion;
 import utils.PasswordHash;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
@@ -21,6 +24,10 @@ public class User {
 	public String name;
 	public String password;
 	public BasicDBList tags;
+
+	public static String getCollection() {
+		return collection;
+	}
 
 	public static String getName(String email) {
 		DBObject query = new BasicDBObject("email", email);
@@ -37,6 +44,15 @@ public class User {
 		} else {
 			return null;
 		}
+	}
+
+	public static List<User> findAll() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		List<User> userList = new ArrayList<User>();
+		DBCursor result = Connection.getCollection(collection).find();
+		while (result.hasNext()) {
+			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
+		}
+		return userList;
 	}
 
 	public static User authenticate(String email, String password) throws IllegalArgumentException,
@@ -56,8 +72,8 @@ public class User {
 		}
 		newUser.password = PasswordHash.createHash(newUser.password);
 		newUser.tags = new BasicDBList();
-		newUser.tags.add(newUser.email);
-		for (String namePart : newUser.name.split(" ")) {
+		newUser.tags.add(newUser.email.toLowerCase());
+		for (String namePart : newUser.name.toLowerCase().split(" ")) {
 			newUser.tags.add(namePart);
 		}
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(User.class, newUser));

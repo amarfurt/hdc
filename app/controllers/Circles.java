@@ -1,6 +1,11 @@
 package controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import models.Circle;
+import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -8,7 +13,9 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.elements.circles.member;
+import utils.KeywordSearch;
+import views.html.circles;
+import views.html.elements.circles.userForm;
 
 import com.mongodb.BasicDBList;
 
@@ -25,7 +32,9 @@ public class Circles extends Controller {
 		try {
 			String errorMessage = Circle.add(newCircle);
 			if (errorMessage == null) {
-				return Application.circles();
+				User user = User.find(request().username());
+				List<Circle> circleList = Circle.findOwnedBy(user);
+				return ok(circles.render(User.findAll(), circleList, newCircle._id, user));
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -34,6 +43,8 @@ public class Circles extends Controller {
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -60,7 +71,7 @@ public class Circles extends Controller {
 		if (Secured.isOwnerOfCircle(id)) {
 			String errorMessage = Circle.delete(id);
 			if (errorMessage == null) {
-				return Application.circles();
+				return ok(routes.Application.circles().url());
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -69,18 +80,28 @@ public class Circles extends Controller {
 		}
 	}
 
-	public static Result addMember(String circleId) {
+	public static Result addUsers(String circleId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOfCircle(id)) {
-			String newMember = Form.form().bindFromRequest().get("name");
+			Map<String, String> data = Form.form().bindFromRequest().data();
 			try {
-				String errorMessage = Circle.addMember(id, newMember);
-				if (errorMessage == null) {
-					return ok(member.render(circleId, newMember));
-				} else {
-					return badRequest(errorMessage);
+				String usersAdded = "";
+				for (String email : data.keySet()) {
+					// skip search input field
+					if (email.equals("userSearch")) {
+						continue;
+					}
+					String errorMessage = Circle.addMember(id, email);
+					if (errorMessage != null) {
+						// TODO remove previously added users?
+						return badRequest(usersAdded + errorMessage);
+					}
+					if (usersAdded.isEmpty()) {
+						usersAdded = "Added some users, but then an error occurred: ";
+					}
 				}
+				return redirect(routes.Application.circles());
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
@@ -106,6 +127,30 @@ public class Circles extends Controller {
 			}
 		} else {
 			return forbidden();
+		}
+	}
+
+	/**
+	 * Return a list of users whose name or email address matches the current search term and is not in the circle already.
+	 */
+	public static Result searchUsers(String circleId, String search) {
+		List<User> response = new ArrayList<User>();
+		try {
+			// TODO use caching
+			ObjectId id = new ObjectId(circleId);
+			if (search == null || search.isEmpty()) {
+				response = User.findAll();
+			} else {
+				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
+			}
+			response = Circle.makeDisjoint(id, response);
+			return ok(userForm.render(response));
+		} catch (IllegalArgumentException e) {
+			return badRequest(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return badRequest(e.getMessage());
+		} catch (InstantiationException e) {
+			return badRequest(e.getMessage());
 		}
 	}
 

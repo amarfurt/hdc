@@ -1,0 +1,10 @@
+@(users: List[User])
+<div class="userForm">
+	@if(users.size() > 0) {
+		@users.map { user =>
+			@views.html.elements.circles.userCheckbox(user)
+		}
+	} else {
+		<p>No users available for this circle.</p>
+	}
+</div>
