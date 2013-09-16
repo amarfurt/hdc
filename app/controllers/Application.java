@@ -53,7 +53,7 @@ public class Application extends Controller {
 			if (circleList.size() > 0) {
 				activeCircle = circleList.get(0)._id;
 			}
-			return ok(circles.render(User.findAll(), circleList, activeCircle, user));
+			return ok(circles.render(User.findAllExcept(user), circleList, activeCircle, user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}

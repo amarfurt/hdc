@@ -101,7 +101,7 @@ public class Circle implements Comparable<Circle> {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
 			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
 			newCircle.tags = new BasicDBList();
-			for (String namePart : newCircle.name.split(" ")) {
+			for (String namePart : newCircle.name.toLowerCase().split(" ")) {
 				newCircle.tags.add(namePart);
 			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));

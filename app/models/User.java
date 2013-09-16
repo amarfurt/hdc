@@ -46,9 +46,10 @@ public class User {
 		}
 	}
 
-	public static List<User> findAll() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<User> findAllExcept(String... users) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<User> userList = new ArrayList<User>();
-		DBCursor result = Connection.getCollection(collection).find();
+		DBObject query = new BasicDBObject("email", new BasicDBObject("$nin", users));
+		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}

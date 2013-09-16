@@ -33,7 +33,7 @@ public class Circles extends Controller {
 			if (errorMessage == null) {
 				String user = request().username();
 				List<Circle> circleList = Circle.findOwnedBy(user);
-				return ok(circles.render(User.findAll(), circleList, newCircle._id, user));
+				return ok(circles.render(User.findAllExcept(user), circleList, newCircle._id, user));
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -130,7 +130,8 @@ public class Circles extends Controller {
 	}
 
 	/**
-	 * Return a list of users whose name or email address matches the current search term and is not in the circle already.
+	 * Return a list of users whose name or email address matches the current search term and is not in the circle
+	 * already.
 	 */
 	public static Result searchUsers(String circleId, String search) {
 		List<User> response = new ArrayList<User>();
@@ -138,7 +139,7 @@ public class Circles extends Controller {
 			// TODO use caching
 			ObjectId id = new ObjectId(circleId);
 			if (search == null || search.isEmpty()) {
-				response = User.findAll();
+				response = User.findAllExcept(request().username());
 			} else {
 				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
 			}

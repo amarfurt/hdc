@@ -68,7 +68,7 @@ public class Space implements Comparable<Space> {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
 			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
 			newSpace.tags = new BasicDBList();
-			for (String namePart : newSpace.name.split(" ")) {
+			for (String namePart : newSpace.name.toLowerCase().split(" ")) {
 				newSpace.tags.add(namePart);
 			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Space.class, newSpace));
