@@ -51,8 +51,7 @@ public class CirclesTest {
 		assertNotNull(circle);
 		assertEquals("Test circle", circle.name);
 		assertEquals("test1@example.com", circle.owner);
-		assertEquals(1, circle.members.size());
-		assertEquals("test1@example.com", circle.members.get(0));
+		assertEquals(0, circle.members.size());
 	}
 
 	@Test

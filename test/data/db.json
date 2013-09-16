@@ -109,7 +109,6 @@
 		"owner": "test1@example.com",
 		"order": 1,
 		"members": [
-			"test1@example.com", 
 			"test2@example.com"
 		],
 		"shared": [ ]
@@ -119,7 +118,6 @@
 		"owner": "test1@example.com",
 		"order": 2,
 		"members": [
-			"test1@example.com", 
 			"test3@example.com"
 		],
 		"shared": [ ],
@@ -130,7 +128,6 @@
 		"owner": "test1@example.com",
 		"order": 3,
 		"members": [
-			"test1@example.com",
 			"test4@example.com",
 			"test2@example.com",
 			"test3@example.com"
@@ -143,7 +140,6 @@
 		"owner": "test2@example.com",
 		"order": 1,
 		"members": [
-			"test2@example.com",
 			"test3@example.com"
 		],
 		"shared": [ ],

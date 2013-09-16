@@ -194,7 +194,6 @@ public class RecordTest {
 		circle.owner = emails[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[0]);
 		circle.members.add(emails[1]);
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -222,13 +221,14 @@ public class RecordTest {
 		circle.owner = emails[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[0]);
 		circle.members.add(emails[1]);
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		circle.owner = emails[1];
+		circle.members.clear();
+		circle.members.add(emails[0]);
 		circle.shared.clear();
 		circle.shared.add(recordId[0]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));

@@ -27,7 +27,6 @@ public class Circles extends Controller {
 		newCircle.name = Form.form().bindFromRequest().get("name");
 		newCircle.owner = request().username();
 		newCircle.members = new BasicDBList();
-		newCircle.members.add(newCircle.owner);
 		newCircle.shared = new BasicDBList();
 		try {
 			String errorMessage = Circle.add(newCircle);

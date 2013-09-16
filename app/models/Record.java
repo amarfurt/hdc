@@ -79,7 +79,7 @@ public class Record {
 		// get records of this user
 		List<Record> records = findOwnedBy(email);
 
-		// get shared records of all circles this user is a member of (excluding own circles)
+		// get shared records of all circles this user is a member of
 		List<Circle> memberCircles = Circle.findMemberOf(email);
 		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
 		for (Circle circle : memberCircles) {
