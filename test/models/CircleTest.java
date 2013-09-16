@@ -529,7 +529,7 @@ public class CircleTest {
 
 	@Test
 	public void findContacts() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+			InvalidKeySpecException, InstantiationException {
 		String[] emails = CreateDBObjects.insertUsers(3);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
@@ -551,9 +551,9 @@ public class CircleTest {
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		Set<String> contacts = Circle.findContacts(emails[0]);
+		List<User> contacts = Circle.findContacts(emails[0]);
 		assertEquals(1, contacts.size());
-		assertTrue(contacts.contains(emails[1]));
+		assertTrue(contacts.get(0).email.equals(emails[1]));
 	}
 
 }

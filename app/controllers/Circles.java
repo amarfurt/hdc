@@ -33,7 +33,7 @@ public class Circles extends Controller {
 			if (errorMessage == null) {
 				String user = request().username();
 				List<Circle> circleList = Circle.findOwnedBy(user);
-				return ok(circles.render(User.findAllExcept(user), circleList, newCircle._id, user));
+				return ok(circles.render(Circle.findContacts(user), User.findAllExcept(user), circleList, newCircle._id, user));
 			} else {
 				return badRequest(errorMessage);
 			}

@@ -1,4 +1,4 @@
-@(users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: String)
+@(contacts: List[User], users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: String)
 @active(circleId: org.bson.types.ObjectId) = @{
 	circleId.equals(activeCircle)
 }
@@ -31,7 +31,7 @@
 		
 		<div id="circleContent" class="tab-content">
 			@circles.map { circle =>
-				@views.html.elements.circle(users, circle, active(circle._id))
+				@views.html.elements.circle(contacts, users, circle, active(circle._id))
 			}
 		</div>
 	}

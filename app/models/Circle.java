@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import models.User.UserComparator;
+
 import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
@@ -79,7 +81,8 @@ public class Circle implements Comparable<Circle> {
 	/**
 	 * Find the users that the given user has already added to his circles.
 	 */
-	public static Set<String> findContacts(String email) {
+	public static List<User> findContacts(String email) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		Set<String> contacts = new HashSet<String>();
 		DBObject query = new BasicDBObject("owner", email);
 		DBObject projection = new BasicDBObject("members", 1);
@@ -90,7 +93,12 @@ public class Circle implements Comparable<Circle> {
 				contacts.add((String) member);
 			}
 		}
-		return contacts;
+		List<User> userList = new ArrayList<User>();
+		for (String user : contacts) {
+			userList.add(User.find(user));
+		}
+		Collections.sort(userList, new UserComparator());
+		return userList;
 	}
 
 	/**

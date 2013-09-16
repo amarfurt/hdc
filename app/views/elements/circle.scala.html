@@ -1,4 +1,4 @@
-@(users: List[User], circle: Circle, active: Boolean)
+@(contacts: List[User], users: List[User], circle: Circle, active: Boolean)
 
 <div id="@circle._id" class="circle tab-pane fade @if(active){in active}">
 	<div class="list-group">
@@ -28,8 +28,23 @@
 						<h4 class="modal-title" id="userFormLabel@circle._id">Add users to this circle</h4>
 					</div>
 					<div class="modal-body">
-						<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
-						@views.html.elements.circles.userForm(Circle.makeDisjoint(circle._id, users))
+						<ul class="nav nav-tabs">
+							<li class="active">
+								<a href="#@circle._id-contacts" data-toggle="tab">Contacts</a>
+							</li>
+							<li>
+								<a href="#@circle._id-all" data-toggle="tab">All users</a>
+							</li>
+						</ul>
+						<div class="tab-content">
+							<div id="@circle._id-contacts" class="tab-pane fade active in">
+								@views.html.elements.circles.userForm(Circle.makeDisjoint(circle._id, contacts))
+							</div>
+							<div id="@circle._id-all" class="tab-pane fade">
+								<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
+								@views.html.elements.circles.userForm(Circle.makeDisjoint(circle._id, users))
+							</div>
+						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

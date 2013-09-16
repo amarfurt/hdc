@@ -3,6 +3,8 @@ package models;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import utils.ModelConversion;
@@ -46,13 +48,15 @@ public class User {
 		}
 	}
 
-	public static List<User> findAllExcept(String... users) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<User> findAllExcept(String... users) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		List<User> userList = new ArrayList<User>();
 		DBObject query = new BasicDBObject("email", new BasicDBObject("$nin", users));
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}
+		Collections.sort(userList, new UserComparator());
 		return userList;
 	}
 
@@ -102,6 +106,15 @@ public class User {
 		// TODO security check before casting to person?
 		// requirement for record owners?
 		return true;
+	}
+
+	public static class UserComparator implements Comparator<User> {
+
+		@Override
+		public int compare(User arg0, User arg1) {
+			return arg0.name.compareTo(arg1.name);
+		}
+
 	}
 
 }
