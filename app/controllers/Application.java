@@ -33,7 +33,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result index() {
 		try {
-			User user = User.find(request().username());
+			String user = request().username();
 			return ok(index.render(Message.findSentTo(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
@@ -47,7 +47,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result circles() {
 		try {
-			User user = User.find(request().username());
+			String user = request().username();
 			List<Circle> circleList = Circle.findOwnedBy(user);
 			ObjectId activeCircle = null;
 			if (circleList.size() > 0) {
@@ -62,7 +62,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result spaces() {
 		try {
-			User user = User.find(request().username());
+			String user = request().username();
 			return ok(spaces.render(Form.form(SpaceForm.class), Record.findSharedWith(user), Space.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
@@ -72,7 +72,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result share() {
 		try {
-			User user = User.find(request().username());
+			String user = request().username();
 			Set<ObjectId> emptySet = Collections.emptySet();
 			return ok(share.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {

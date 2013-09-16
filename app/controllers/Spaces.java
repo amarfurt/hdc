@@ -6,7 +6,6 @@ import java.util.Map;
 
 import models.Record;
 import models.Space;
-import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -29,7 +28,7 @@ public class Spaces extends Controller {
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
 			try {
-				User user = User.find(request().username());
+				String user = request().username();
 				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), user));
 			} catch (IllegalArgumentException e) {
 				return internalServerError(e.getMessage());
@@ -158,7 +157,7 @@ public class Spaces extends Controller {
 		List<Record> response = new ArrayList<Record>();
 		try {
 			// TODO use caching
-			User user = User.find(request().username());
+			String user = request().username();
 			ObjectId sId = new ObjectId(spaceId);
 			if (search == null || search.isEmpty()) {
 				response = Record.findSharedWith(user);

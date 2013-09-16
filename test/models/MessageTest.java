@@ -45,7 +45,7 @@ public class MessageTest {
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(person);
+		List<Message> foundMessages = Message.findSentTo(person.email);
 		assertEquals(1, foundMessages.size());
 		assertEquals("Title", foundMessages.get(0).title);
 	}
@@ -64,7 +64,7 @@ public class MessageTest {
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(person);
+		List<Message> foundMessages = Message.findSentTo(person.email);
 		assertEquals(0, foundMessages.size());
 	}
 }

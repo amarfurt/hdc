@@ -32,7 +32,7 @@ public class Circles extends Controller {
 		try {
 			String errorMessage = Circle.add(newCircle);
 			if (errorMessage == null) {
-				User user = User.find(request().username());
+				String user = request().username();
 				List<Circle> circleList = Circle.findOwnedBy(user);
 				return ok(circles.render(User.findAll(), circleList, newCircle._id, user));
 			} else {

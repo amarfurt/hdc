@@ -47,9 +47,9 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static List<Space> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<Space> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<Space> spaces = new ArrayList<Space>();
-		DBObject query = new BasicDBObject("owner", user.email);
+		DBObject query = new BasicDBObject("owner", email);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();

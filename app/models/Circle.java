@@ -47,10 +47,10 @@ public class Circle implements Comparable<Circle> {
 	/**
 	 * Find the circles that are owned by the given user.
 	 */
-	public static List<Circle> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Circle> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
-		DBObject query = new BasicDBObject("owner", user.email);
+		DBObject query = new BasicDBObject("owner", email);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -64,11 +64,11 @@ public class Circle implements Comparable<Circle> {
 	/**
 	 * Find the circles this user is a member of (excluding own circles).
 	 */
-	public static List<Circle> findMemberOf(User user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Circle> findMemberOf(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
-		DBObject query = new BasicDBObject("members", user.email);
-		query.put("owner", new BasicDBObject("$ne", user.email));
+		DBObject query = new BasicDBObject("members", email);
+		query.put("owner", new BasicDBObject("$ne", email));
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();

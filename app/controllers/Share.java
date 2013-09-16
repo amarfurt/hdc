@@ -9,7 +9,6 @@ import java.util.Set;
 
 import models.Circle;
 import models.Record;
-import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -29,7 +28,7 @@ public class Share extends Controller {
 		}
 		Set<ObjectId> recordsToCheck = findSharedRecords(circleIdSet);
 		try {
-			User user = User.find(request().username());
+			String user = request().username();
 			return ok(records.render(Record.findOwnedBy(user), recordsToCheck));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());

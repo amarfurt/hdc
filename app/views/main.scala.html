@@ -1,4 +1,4 @@
-@(user: User)(content: Html)
+@(user: String)(content: Html)
 
 <!DOCTYPE html>
 
@@ -50,7 +50,7 @@
 						<li><a href="/share">Share!</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						<li><p class="navbar-text">@user.name <small class="text-muted">(@user.email)</small></p></li>
+						<li><p class="navbar-text">@User.getName(user) <small class="text-muted">(@user)</small></p></li>
 						<li><a href="@routes.Application.logout()">
 							<span class="glyphicon glyphicon-off"></span> Sign out
 						</a></li>

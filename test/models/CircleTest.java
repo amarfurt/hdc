@@ -537,7 +537,7 @@ public class CircleTest {
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		List<Circle> memberCircles = Circle.findMemberOf(User.find(emailAddresses[1]));
+		List<Circle> memberCircles = Circle.findMemberOf(emailAddresses[1]);
 		assertEquals(1, memberCircles.size());
 		assertEquals("Test circle 1", memberCircles.get(0).name);
 	}

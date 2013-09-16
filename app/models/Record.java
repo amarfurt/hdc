@@ -58,10 +58,10 @@ public class Record {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static List<Record> findOwnedBy(User user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Record> records = new ArrayList<Record>();
-		DBObject query = new BasicDBObject("owner", user.email);
+		DBObject query = new BasicDBObject("owner", email);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -74,13 +74,13 @@ public class Record {
 	/**
 	 * Find all records shared with the given user (including own records).
 	 */
-	public static List<Record> findSharedWith(User user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findSharedWith(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		// get records of this user
-		List<Record> records = findOwnedBy(user);
+		List<Record> records = findOwnedBy(email);
 
 		// get shared records of all circles this user is a member of (excluding own circles)
-		List<Circle> memberCircles = Circle.findMemberOf(user);
+		List<Circle> memberCircles = Circle.findMemberOf(email);
 		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
 		for (Circle circle : memberCircles) {
 			for (Object recordId : circle.shared) {

@@ -140,7 +140,7 @@ public class RecordTest {
 		assertEquals(0, records.count());
 		String[] emails = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 2);
-		List<Record> foundRecords = Record.findOwnedBy(User.find(emails[0]));
+		List<Record> foundRecords = Record.findOwnedBy(emails[0]);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[1], foundRecords));
@@ -173,7 +173,7 @@ public class RecordTest {
 		space.records.add(recordIds[1]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
-		List<Record> foundRecords = Record.findSharedWith(User.find(emails[0]));
+		List<Record> foundRecords = Record.findSharedWith(emails[0]);
 		foundRecords = Space.makeDisjoint((ObjectId) spaceObject.get("_id"), foundRecords);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -201,7 +201,7 @@ public class RecordTest {
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(User.find(emails[1]));
+		List<Record> foundRecords = Record.findSharedWith(emails[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -233,7 +233,7 @@ public class RecordTest {
 		circle.shared.add(recordId[0]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(User.find(emails[1]));
+		List<Record> foundRecords = Record.findSharedWith(emails[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));

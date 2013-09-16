@@ -26,9 +26,9 @@ public class Message {
 	public String content;
 	public BasicDBList tags;
 
-	public static List<Message> findSentTo(User user) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<Message> findSentTo(String email) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<Message> messages = new ArrayList<Message>();
-		DBObject query = new BasicDBObject("receiver", user.email);
+		DBObject query = new BasicDBObject("receiver", email);
 		DBCursor result = Connection.getCollection("messages").find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();

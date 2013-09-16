@@ -1,4 +1,4 @@
-@(users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: User)
+@(users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: String)
 @active(circleId: org.bson.types.ObjectId) = @{
 	circleId.equals(activeCircle)
 }
