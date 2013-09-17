@@ -24,12 +24,31 @@ import controllers.forms.SpaceForm;
 @Security.Authenticated(Secured.class)
 public class Spaces extends Controller {
 
+	public static Result show(String activeSpaceId) {
+		try {
+			String user = request().username();
+			ObjectId activeSpace = null;
+			if (activeSpaceId != null) {
+				activeSpace = new ObjectId(activeSpaceId);
+			}
+			return ok(spaces.render(Form.form(SpaceForm.class), Record.findSharedWith(user), Space.findOwnedBy(user),
+					activeSpace, user));
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
+
 	public static Result add() {
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
 			try {
 				String user = request().username();
-				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), user));
+				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), null,
+						user));
 			} catch (IllegalArgumentException e) {
 				return internalServerError(e.getMessage());
 			} catch (IllegalAccessException e) {
@@ -38,9 +57,9 @@ public class Spaces extends Controller {
 				return internalServerError(e.getMessage());
 			}
 		} else {
-			// TODO js ajax insertion, open newly added space
+			// TODO (?) js ajax insertion, open newly added space
 			// return ok(space.render(newSpace));
-			return redirect(routes.Application.spaces());
+			return redirect(routes.Spaces.show(spaceForm.get().spaceId));
 		}
 	}
 
@@ -66,7 +85,7 @@ public class Spaces extends Controller {
 		if (Secured.isOwnerOfSpace(id)) {
 			String errorMessage = Space.delete(id);
 			if (errorMessage == null) {
-				return ok();
+				return ok(routes.Application.spaces().url());
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -97,7 +116,7 @@ public class Spaces extends Controller {
 						recordsAdded = "Added some records, but then an error occurred: ";
 					}
 				}
-				return redirect(routes.Application.spaces());
+				return redirect(routes.Spaces.show(spaceId));
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
@@ -185,7 +204,13 @@ public class Spaces extends Controller {
 		newSpace.visualization = visualization;
 		newSpace.records = new BasicDBList();
 		try {
-			return Space.add(newSpace);
+			String errorMessage = Space.add(newSpace);
+			if (errorMessage != null) {
+				return errorMessage;
+			} else {
+				// pass id of space back in case of success
+				return "ObjectId:" + newSpace._id.toString();
+			}
 			// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return e.getMessage();

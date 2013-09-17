@@ -10,6 +10,7 @@ POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
 # Spaces
 GET     /spaces                     controllers.Application.spaces()
+GET     /spaces/:id                 controllers.Spaces.show(id: String)
 POST    /spaces                     controllers.Spaces.add()
 DELETE  /spaces/:id                 controllers.Spaces.delete(id: String)
 PUT     /spaces/:id                 controllers.Spaces.rename(id: String)

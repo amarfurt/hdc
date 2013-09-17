@@ -1,6 +1,6 @@
-@(records: List[Record], space: Space)
+@(records: List[Record], space: Space, activeSpace: org.bson.types.ObjectId)
 
-<div class="space tab-pane fade" id="@space._id">
+<div class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}" id="@space._id">
 	<div class="list-group">
 		<span class="list-group-item active">Records</span>
 		@if(space.records.size() > 0) {
