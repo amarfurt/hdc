@@ -37,33 +37,44 @@
 		</div> <!-- /.modal -->
 	}
 	
-	@if(spaces.isEmpty()) {
-		<p>You have no spaces yet. Add one by clicking on the button below.</p>
-		<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
-			<span class="glyphicon glyphicon-plus"></span> Add a new space
-		</button>
-	} else {
-		<!-- Space tabs -->
-		<ul id="spaceTabs" class="nav nav-tabs">
-			@spaces.map { space =>
-				<li tab-id="@space._id" class="spaceTab">
-					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
-				</li>
-			}
-			<!-- Add new space button -->
-			<li>
-				<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
-					<span class="glyphicon glyphicon-plus"></span>
-				</button>
+	<!-- Space tabs -->
+	<ul id="spaceTabs" class="nav nav-tabs">
+		<li class="active">
+			<a href="#default-space" data-toggle="tab">All records</a>
+		</li>
+		@spaces.map { space =>
+			<li tab-id="@space._id" class="spaceTab">
+				<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
 			</li>
-		</ul>
-		
-		<div id="spaceContent" class="tab-content">
-			@spaces.map { space =>
-				@views.html.elements.space(records, space)
-			}
+		}
+		<!-- Add new space button -->
+		<li>
+			<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
+				<span class="glyphicon glyphicon-plus"></span>
+			</button>
+		</li>
+	</ul>
+	
+	<!-- Space content -->
+	<div id="spaceContent" class="tab-content">
+		<div id="default-space" class="space tab-pane fade active in">
+			<div class="list-group">
+				<span class="list-group-item active">Records</span>
+				@if(records.size() > 0) {
+					@records.map { record =>
+						<a href="" class="record list-group-item">
+							@Record.dataToString(record.data)
+						</a>
+					}
+				} else {
+					<p class="list-group-item">You have no records available yet.</p>
+				}
+			</div>
 		</div>
-	}
+		@spaces.map { space =>
+			@views.html.elements.space(records, space)
+		}
+	</div>
 
 	<!-- New space modal -->
 	@helper.form(routes.Spaces.add) {

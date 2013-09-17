@@ -82,13 +82,13 @@ class SpaceTab extends Backbone.View
 
 class SpaceTabs extends Backbone.View
 	initialize: ->
-		@el.children("li:first").addClass("active")
+		#@el.children("li:first").addClass("active")
 		@el.children(".spaceTab").each (i, spaceTab) ->
 			new SpaceTab el: $(spaceTab)
 
 class SpaceContent extends Backbone.View
 	initialize: ->
-		@el.children("div:first").addClass("active in")
+		#@el.children("div:first").addClass("active in")
 		@el.children(".space").each (i, space) ->
 			new Space el: $(space)
 			

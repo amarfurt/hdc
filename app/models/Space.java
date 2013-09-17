@@ -47,7 +47,8 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static List<Space> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static List<Space> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		List<Space> spaces = new ArrayList<Space>();
 		DBObject query = new BasicDBObject("owner", email);
 		DBCursor result = Connection.getCollection(collection).find(query);
@@ -126,8 +127,8 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Adds a new record to the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String addRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static String addRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException,
+			IllegalAccessException, InstantiationException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else if (Space.recordIsInSpace(spaceId, recordId)) {
@@ -143,8 +144,8 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Removes a record from the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String removeRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static String removeRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException,
+			IllegalAccessException, InstantiationException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else if (!Space.recordIsInSpace(spaceId, recordId)) {
@@ -156,7 +157,7 @@ public class Space implements Comparable<Space> {
 			return result.getLastError().getErrorMessage();
 		}
 	}
-	
+
 	/**
 	 * Creates a new list without the records that are already in the given space.
 	 */
@@ -198,5 +199,5 @@ public class Space implements Comparable<Space> {
 		query.put("records", new BasicDBObject("$in", new ObjectId[] { recordId }));
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
-	
+
 }

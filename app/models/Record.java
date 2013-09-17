@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ public class Record {
 	public static String getCollection() {
 		return collection;
 	}
-	
+
 	/**
 	 * Return the first few words of the data up to a maximum of 40 characters.
 	 */
@@ -98,6 +99,21 @@ public class Record {
 	}
 
 	/**
+	 * Find the records specified by the given list of ids in the given list.
+	 */
+	public static List<Record> findInList(List<Object> recordIds, List<Record> records) {
+		List<Record> foundRecords = new ArrayList<Record>(records);
+		Set<Object> ids = new HashSet<Object>(recordIds);
+		Iterator<Record> iterator = foundRecords.iterator();
+		while (iterator.hasNext()) {
+			if (!ids.contains(iterator.next()._id)) {
+				iterator.remove();
+			}
+		}
+		return foundRecords;
+	}
+
+	/**
 	 * Checks whether the user with the given email is the creator or owner of the record with the given id.
 	 */
 	public static boolean isCreatorOrOwner(ObjectId recordId, String email) {
@@ -124,7 +140,6 @@ public class Record {
 	 */
 	public static String delete(ObjectId recordId) {
 		// TODO remove from spaces
-		
 		DBObject query = new BasicDBObject("_id", recordId);
 		WriteResult result = Connection.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
