@@ -7,8 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import models.User.UserComparator;
-
 import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
@@ -97,7 +95,7 @@ public class Circle implements Comparable<Circle> {
 		for (String user : contacts) {
 			userList.add(User.find(user));
 		}
-		Collections.sort(userList, new UserComparator());
+		Collections.sort(userList);
 		return userList;
 	}
 

@@ -4,7 +4,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import utils.ModelConversion;
@@ -18,7 +17,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class User {
+public class User implements Comparable<User> {
 
 	private static final String collection = "users";
 
@@ -26,6 +25,11 @@ public class User {
 	public String name;
 	public String password;
 	public BasicDBList tags;
+
+	@Override
+	public int compareTo(User o) {
+		return this.name.compareTo(o.name);
+	}
 
 	public static String getCollection() {
 		return collection;
@@ -56,7 +60,7 @@ public class User {
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}
-		Collections.sort(userList, new UserComparator());
+		Collections.sort(userList);
 		return userList;
 	}
 
@@ -106,15 +110,6 @@ public class User {
 		// TODO security check before casting to person?
 		// requirement for record owners?
 		return true;
-	}
-
-	public static class UserComparator implements Comparator<User> {
-
-		@Override
-		public int compare(User arg0, User arg1) {
-			return arg0.name.compareTo(arg1.name);
-		}
-
 	}
 
 }

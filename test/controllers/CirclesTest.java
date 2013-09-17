@@ -45,7 +45,7 @@ public class CirclesTest {
 	public void addCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		Result result = callAction(controllers.routes.ref.Circles.add(), fakeRequest().withSession("email", "test1@example.com")
 				.withFormUrlEncodedBody(ImmutableMap.of("name", "Test circle")));
-		assertEquals(200, status(result));
+		assertEquals(303, status(result));
 		DBObject foundCircle = TestConnection.getCollection("circles").findOne(new BasicDBObject("name", "Test circle"));
 		Circle circle = ModelConversion.mapToModel(Circle.class, foundCircle.toMap());
 		assertNotNull(circle);

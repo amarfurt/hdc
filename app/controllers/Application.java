@@ -3,7 +3,6 @@ package controllers;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 import models.Circle;
@@ -19,7 +18,6 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.circles;
 import views.html.index;
 import views.html.share;
 import views.html.spaces;
@@ -46,17 +44,7 @@ public class Application extends Controller {
 	
 	@Security.Authenticated(Secured.class)
 	public static Result circles() {
-		try {
-			String user = request().username();
-			List<Circle> circleList = Circle.findOwnedBy(user);
-			ObjectId activeCircle = null;
-			if (circleList.size() > 0) {
-				activeCircle = circleList.get(0)._id;
-			}
-			return ok(circles.render(Circle.findContacts(user), User.findAllExcept(user), circleList, activeCircle, user));
-		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
-			return internalServerError(e.getMessage());
-		}
+		return Circles.show(null);
 	}
 	
 	@Security.Authenticated(Secured.class)

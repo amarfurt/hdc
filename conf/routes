@@ -20,6 +20,7 @@ GET     /search/records/:id/:search controllers.Spaces.searchRecords(id: String,
 GET     /search/records/:id/        controllers.Spaces.searchRecords(id: String, search: String = "")
 # Circles
 GET     /circles                    controllers.Application.circles()
+GET     /circles/:id                controllers.Circles.show(id: String)
 POST    /circles                    controllers.Circles.add()
 DELETE  /circles/:id                controllers.Circles.delete(id: String)
 PUT     /circles/:id                controllers.Circles.rename(id: String)

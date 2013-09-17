@@ -21,6 +21,26 @@ import com.mongodb.BasicDBList;
 
 @Security.Authenticated(Secured.class)
 public class Circles extends Controller {
+	
+	public static Result show(String activeCircleId) {
+		try {
+			String user = request().username();
+			List<Circle> circleList = Circle.findOwnedBy(user);
+			ObjectId activeCircle = null;
+			if (activeCircleId != null) {
+				activeCircle = new ObjectId(activeCircleId);
+			} else if (circleList.size() > 0) {
+				activeCircle = circleList.get(0)._id;
+			}
+			return ok(circles.render(Circle.findContacts(user), User.findAllExcept(user), circleList, activeCircle, user));
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
+	}
 
 	public static Result add() {
 		Circle newCircle = new Circle();
@@ -31,9 +51,7 @@ public class Circles extends Controller {
 		try {
 			String errorMessage = Circle.add(newCircle);
 			if (errorMessage == null) {
-				String user = request().username();
-				List<Circle> circleList = Circle.findOwnedBy(user);
-				return ok(circles.render(Circle.findContacts(user), User.findAllExcept(user), circleList, newCircle._id, user));
+				return redirect(routes.Circles.show(newCircle._id.toString()));
 			} else {
 				return badRequest(errorMessage);
 			}
@@ -42,8 +60,6 @@ public class Circles extends Controller {
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -100,7 +116,7 @@ public class Circles extends Controller {
 						usersAdded = "Added some users, but then an error occurred: ";
 					}
 				}
-				return redirect(routes.Application.circles());
+				return redirect(routes.Circles.show(circleId));
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
