@@ -38,14 +38,39 @@ public class KeywordSearchTest {
 	}
 
 	@Test
-	public void singleMatch() throws Exception {
+	public void prefixMatch() throws Exception {
+		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(),
+				keywordList[1].substring(0, 4), 10);
+		assertEquals(1, list.size());
+		assertTrue(list.get(0).tags.contains(keywordList[1]));
+	}
+
+	@Test
+	public void exactMatch() throws Exception {
 		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(), keywordList[1], 10);
 		assertEquals(1, list.size());
 		assertTrue(list.get(0).tags.contains(keywordList[1]));
 	}
 
 	@Test
-	public void multiMatch() throws Exception {
+	public void multiPrefixMatch() throws Exception {
+		String email = (String) TestConnection.getCollection("users").findOne().get("email");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(email, email, 2);
+		DBCollection collection = TestConnection.getCollection("records");
+		collection.update(new BasicDBObject("_id", recordIds[0]), new BasicDBObject("$push", new BasicDBObject("tags",
+				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[3] }))));
+		collection.update(new BasicDBObject("_id", recordIds[1]), new BasicDBObject("$push", new BasicDBObject("tags",
+				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[3] }))));
+		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(),
+				keywordList[1].substring(0, 3) + " " + keywordList[3].substring(0, 3), 10);
+		assertEquals(2, list.size());
+		for (Record record : list) {
+			assertTrue(keywordsInTags(record, keywordList[1], keywordList[3]));
+		}
+	}
+
+	@Test
+	public void multiExactMatch() throws Exception {
 		String email = (String) TestConnection.getCollection("users").findOne().get("email");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(email, email, 2);
 		DBCollection collection = TestConnection.getCollection("records");
@@ -63,8 +88,7 @@ public class KeywordSearchTest {
 
 	@Test
 	public void multiNoMatch() throws Exception {
-		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(), keywordList[1] + " "
-				+ keywordList[3] + " " + keywordList[4], 10);
+		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(), "keywordli", 10);
 		assertEquals(0, list.size());
 
 	}
