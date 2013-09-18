@@ -33,19 +33,16 @@ class Space extends Backbone.View
 		"click .deleteSpace": "deleteSpace"
 		"keyup .recordSearch": "recordSearch"
 	deleteSpace: (e) ->
-		e.preventDefault()
 		@loading(true)
 		jsRoutes.controllers.Spaces.delete(@id).ajax
 			context: this
-			success: ->
-				@el.remove()
-				$(".spaceTab.active").remove()
+			success: (response) ->
 				@loading(false)
-				$("#spaceTabs").children("li:first").addClass("active")
-				$("#spaceContent").children("div:first").addClass("active in")
+				window.location.replace(response)
 			error: (err) ->
 				@loading(false)
-				$.error("Error: " + err)
+				console.error("Deleting space failed.")
+				console.error(err.responseText)
 	loading: (display) ->
 		if (display)
 			@el.children(".addRecord").hide()
@@ -60,8 +57,8 @@ class Space extends Backbone.View
 			success: (data) ->
 				$(".recordForm", @el).replaceWith(data)
 			error: (err) ->
-				console.log("Record search failed.")
-				console.log(err)
+				console.error("Record search failed.")
+				console.error(err.responseText)
 
 class SpaceTab extends Backbone.View
 	initialize: ->
@@ -77,22 +74,10 @@ class SpaceTab extends Backbone.View
 			success: (data) ->
 				@name.editInPlace("close", data)
 			error: (err) ->
-				alert err.responseText
-				$.error("Error: " + err)
-
-class SpaceTabs extends Backbone.View
-	initialize: ->
-		#@el.children("li:first").addClass("active")
-		@el.children(".spaceTab").each (i, spaceTab) ->
-			new SpaceTab el: $(spaceTab)
-
-class SpaceContent extends Backbone.View
-	initialize: ->
-		#@el.children("div:first").addClass("active in")
-		@el.children(".space").each (i, space) ->
-			new Space el: $(space)
+				console.error("Renaming space failed.")
+				console.error(err.responseText)
 			
 # Instantiate views
 $ ->
-	new SpaceTabs el: $("#spaceTabs")
-	new SpaceContent el: $("#spaceContent")
+	_.map($(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab)
+	_.map($(".space"), (space) -> new Space el: $ space)

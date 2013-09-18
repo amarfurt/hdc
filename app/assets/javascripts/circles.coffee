@@ -37,6 +37,7 @@ class Circle extends Backbone.View
 		jsRoutes.controllers.Circles.delete(@id).ajax
 			context: this
 			success: (response) ->
+				@loading(false)
 				window.location.replace(response)
 			error: (err) ->
 				@loading(false)
