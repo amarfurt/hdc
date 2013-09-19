@@ -1,4 +1,4 @@
-@(user: String)(content: Html)
+@(user: String, active: String)(content: Html)
 
 <!DOCTYPE html>
 
@@ -30,10 +30,11 @@
 	</head>
 	<body>
 		<!-- Navbar -->
-		<div class="navbar navbar-default">
+		<div class="navbar navbar-default" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+						<span class="sr-only">Toggle navigation</span>
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
@@ -42,11 +43,11 @@
 	            		<img class="navbar-brand" src="@routes.Assets.at("images/logo.png")" alt="Healthbank" />
 	            	</a>
 				</div>
-				<div class="navbar-collapse collapse">
+				<div class="collapse navbar-collapse navbar-ex1-collapse">
 					<ul class="nav navbar-nav">
-		            	<li><a href="/">News <span class="badge">0</span></a></li>
-						<li><a href="/spaces">Spaces</a></li>
-						<li><a href="/circles">Circles</a></li>
+		            	<li @if("index".equals(active)){class="active"}><a href="/">News <span class="badge">0</span></a></li>
+						<li @if("spaces".equals(active)){class="active"}><a href="/spaces">Spaces</a></li>
+						<li @if("circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
 						<li><p class="navbar-text">@User.getName(user) <small class="text-muted">(@user)</small></p></li>

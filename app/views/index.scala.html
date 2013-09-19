@@ -1,6 +1,6 @@
 @(messages: List[Message], user: String)
 
-@main(user) {
+@main(user, "index") {
 	<div class="page-header">
 		<h1>My messages</h1>
 	</div>
@@ -12,7 +12,7 @@
 		    case (sender, messages) => {
 	   			<div class="panel panel-default">
 	   				<div class="panel-heading">
-	   					<h3 class="panel-title">User.getName(sender)</h3>
+	   					<h3 class="panel-title">@User.getName(sender)</h3>
 	            	</div>
 	            	<div class="panel-body">
 	            		<ul id="messages">

@@ -9,6 +9,10 @@ img.navbar-brand {
 	padding: 0;
 }
 
+.navbar .navbar-nav > .active > a {
+	background-color: #e7e7e7;
+}
+
 .form-control {
 	margin-bottom: 5px;
 }
