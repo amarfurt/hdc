@@ -159,6 +159,31 @@ public class Space implements Comparable<Space> {
 	}
 
 	/**
+	 * Adds the record to the given spaces of the user (if not already present), and removes it from the user's other
+	 * spaces.
+	 */
+	public static String updateRecords(List<ObjectId> spaceIds, ObjectId recordId, String owner)
+			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		if (Record.find(recordId) == null) {
+			return "Record doesn't exist.";
+		} else {
+			DBObject query = new BasicDBObject("owner", owner);
+			query.put("_id", new BasicDBObject("$in", spaceIds.toArray()));
+			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+			query = new BasicDBObject("owner", owner);
+			query.put("_id", new BasicDBObject("$nin", spaceIds.toArray()));
+			update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
+			result = Connection.getCollection(collection).updateMulti(query, update);
+			return result.getLastError().getErrorMessage();
+		}
+	}
+
+	/**
 	 * Creates a new list without the records that are already in the given space.
 	 */
 	public static List<Record> makeDisjoint(ObjectId spaceId, List<Record> recordList) {

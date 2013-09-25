@@ -58,6 +58,20 @@
 	<!-- Space content -->
 	<div id="spaceContent" class="tab-content">
 		<div id="default-space" class="space tab-pane fade @if(activeSpace == null){active in}">
+			<form id="iFrameForm" action="@routes.Visualization.list" method="post" target="spaceIFrame">
+				@records.map { record =>
+					<input type="hidden" name="@record._id creator" value="@record.creator">
+					<input type="hidden" name="@record._id owner" value="@record.owner">
+					<input type="hidden" name="@record._id created" value="@record.created">
+					<input type="hidden" name="@record._id data" value="@record.data">
+				}
+			</form>
+		<!-- 
+		 	<a href="" id="loadSpace" target="spaceIFrame">Load space!</a>
+		 -->
+			<iframe id="spaceIFrame" src="@routes.Visualization.loading" height="420px" width="100%"></iframe>
+		
+		<!-- 
 			<div class="list-group">
 				<span class="list-group-item active">Records</span>
 				@if(records.size() > 0) {
@@ -70,6 +84,8 @@
 					<p class="list-group-item">You have no records available yet.</p>
 				}
 			</div>
+		 -->
+		 
 		</div>
 		@spaces.map { space =>
 			@views.html.elements.space(records, space, activeSpace)

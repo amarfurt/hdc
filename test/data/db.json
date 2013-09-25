@@ -75,30 +75,35 @@
 	{
 		"creator": "test4@example.com",
 		"owner": "test1@example.com",
+		"created": "2010-01-01 11:53:21",
 		"data": "Ran 11.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
 	},
 	{
 		"creator": "test3@example.com",
 		"owner": "test1@example.com",
+		"created": "2010-01-01 12:53:21",
 		"data": "Ran 12.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
 	},
 	{
 		"creator": "test2@example.com",
 		"owner": "test1@example.com",
+		"created": "2010-01-01 13:53:21",
 		"data": "Dentist record.",
 		"tags": [ ]
 	},
 	{
 		"creator": "test2@example.com",
 		"owner": "test1@example.com",
+		"created": "2010-01-01 14:53:21",
 		"data": "X-ray image.",
 		"tags": [ ]
 	},
 	{
 		"creator": "test3@example.com",
 		"owner": "test2@example.com",
+		"created": "2010-01-01 12:53:21",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
 	}

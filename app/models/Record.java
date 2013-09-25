@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -18,15 +19,22 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Record {
+public class Record implements Comparable<Record> {
 
 	private static final String collection = "records";
 
 	public ObjectId _id;
 	public String creator; // any user
 	public String owner; // any user of type person
+	public String created; // date + time created
 	public String data;
 	public BasicDBList tags;
+
+	@Override
+	public int compareTo(Record o) {
+		// newest first
+		return -this.created.compareTo(o.created);
+	}
 
 	public static String getCollection() {
 		return collection;
@@ -68,7 +76,7 @@ public class Record {
 			DBObject cur = result.next();
 			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
 		}
-		// TODO sort by created field
+		Collections.sort(records);
 		return records;
 	}
 
@@ -94,7 +102,7 @@ public class Record {
 			records.add(find(recordId));
 		}
 
-		// TODO sort by created field
+		Collections.sort(records);
 		return records;
 	}
 

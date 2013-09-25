@@ -11,6 +11,8 @@ import static play.test.Helpers.start;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
@@ -330,6 +332,38 @@ public class SpaceTest {
 				Space.removeRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
+	}
+
+	@Test
+	public void updateRecords() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InstantiationException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		assertEquals(0, spaces.count());
+		Space space = new Space();
+		space.name = "Test space 1";
+		space.owner = emailAddresses[0];
+		space.visualization = "Simple List";
+		space.records = new BasicDBList();
+		space.records.add(recordIds[0]);
+		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		spaces.insert(space1);
+		space.name = "Test space 2";
+		space.records.clear();
+		space.records.add(recordIds[1]);
+		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		spaces.insert(space2);
+		assertEquals(2, spaces.count());
+		DBObject query1 = new BasicDBObject("_id", space1.get("_id"));
+		DBObject query2 = new BasicDBObject("_id", space2.get("_id"));
+		assertEquals(1, ((BasicDBList) spaces.findOne(query1).get("records")).size());
+		assertEquals(1, ((BasicDBList) spaces.findOne(query2).get("records")).size());
+		List<ObjectId> spaceList = new ArrayList<ObjectId>();
+		spaceList.add((ObjectId) space2.get("_id"));
+		assertNull(Space.updateRecords(spaceList, recordIds[0], emailAddresses[0]));
+		assertEquals(0, ((BasicDBList) spaces.findOne(query1).get("records")).size());
+		assertEquals(2, ((BasicDBList) spaces.findOne(query2).get("records")).size());
 	}
 
 }

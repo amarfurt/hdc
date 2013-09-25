@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
+import utils.DateTimeUtils;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -48,6 +49,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
@@ -63,6 +65,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
@@ -78,6 +81,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
@@ -93,6 +97,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		assertNull(Record.add(record));
 		assertEquals(1, records.count());
@@ -109,6 +114,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
@@ -125,6 +131,7 @@ public class RecordTest {
 		Record record = new Record();
 		record.creator = "test2@example.com";
 		record.owner = "test1@example.com";
+		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);

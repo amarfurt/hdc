@@ -76,8 +76,54 @@ class SpaceTab extends Backbone.View
 			error: (err) ->
 				console.error("Renaming space failed.")
 				console.error(err.responseText)
-			
+
 # Instantiate views
 $ ->
 	_.map($(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab)
 	_.map($(".space"), (space) -> new Space el: $ space)
+	
+	getJson = () ->
+		JSON.stringify({"record": "Hi there!"})
+	
+	loadVisualization = (e) ->
+		e.preventDefault()
+		jsRoutes.controllers.Visualization.list().ajax
+			context: this
+			contentType: "application/json; charset=utf-8"
+			data:
+				getJson()
+			success: (response) ->
+				console.log("Success!")
+				console.log(response)
+				#$("#spaceIFrame").attr("src", jsRoutes.controllers.Visualization.list().url)
+			error: (err) ->
+				console.error("Error when loading visualization.")
+				console.error(err.responseText)
+
+	# Load visualization
+	#$("#iFrameForm").on("submit", loadVisualization) 
+	$("#iFrameForm").submit()
+	
+	# Load space
+	$("#loadSpace").click (e) ->
+		e.preventDefault()
+		jsRoutes.controllers.Spaces.loadSpace().ajax
+			context: this
+			success: (data) ->
+				console.log(data)
+				console.log(JSON.stringify(data))
+				jsRoutes.controllers.Visualization.list().ajax
+					context: this
+					contentType: "application/json; charset=utf-8"
+					data:
+						JSON.stringify(data)
+					success: (response) ->
+						console.log("Load space succeeded.")
+						console.log(response)
+						#$("#spaceIFrame").attr("src", jsRoutes.controllers.Visualization.list().url)
+					error: (err) ->
+						console.error("Error when loading visualization.")
+						console.error(err.responseText)
+			error: (err) ->
+				console.error("Loading space failed.")
+				console.error(err.responseText)

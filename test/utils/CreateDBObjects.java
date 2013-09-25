@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import models.Record;
 import models.User;
@@ -43,6 +45,7 @@ public class CreateDBObjects {
 			Record record = new Record();
 			record.creator = creator;
 			record.owner = owner;
+			record.created = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
 			record.data = "Random data.";
 			record.tags = new BasicDBList();
 			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));

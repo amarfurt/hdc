@@ -8,11 +8,14 @@ import models.Record;
 import models.Space;
 
 import org.bson.types.ObjectId;
+import org.codehaus.jackson.node.ObjectNode;
 
 import play.data.Form;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.DateTimeUtils;
 import utils.KeywordSearch;
 import views.html.spaces;
 import views.html.elements.spaces.recordForm;
@@ -39,6 +42,31 @@ public class Spaces extends Controller {
 			return internalServerError(e.getMessage());
 		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
+		}
+	}
+
+	/**
+	 * Validation helper for space form (we only have access to current user in controllers).
+	 */
+	public static String validateSpace(String name, String visualization) {
+		Space newSpace = new Space();
+		newSpace.name = name;
+		newSpace.owner = request().username();
+		newSpace.visualization = visualization;
+		newSpace.records = new BasicDBList();
+		try {
+			String errorMessage = Space.add(newSpace);
+			if (errorMessage != null) {
+				return errorMessage;
+			} else {
+				// pass id of space back in case of success
+				return "ObjectId:" + newSpace._id.toString();
+			}
+			// multi-catch doesn't seem to work...
+		} catch (IllegalArgumentException e) {
+			return e.getMessage();
+		} catch (IllegalAccessException e) {
+			return e.getMessage();
 		}
 	}
 
@@ -145,11 +173,19 @@ public class Spaces extends Controller {
 			return forbidden();
 		}
 	}
+	
+	public static Result updateRecords(String recordId) {
+		Map<String, String> data = Form.form().bindFromRequest().data();
+		for (String key : data.keySet())
+			System.out.println(key + " -> " + data.get(key));
+		return ok();
+	}
 
 	public static Result manuallyAddRecord() {
 		Record newRecord = new Record();
 		newRecord.creator = request().username();
 		newRecord.owner = newRecord.creator;
+		newRecord.created = DateTimeUtils.getNow();
 		newRecord.data = Form.form().bindFromRequest().get("data");
 		newRecord.tags = new BasicDBList();
 		for (String tag : Form.form().bindFromRequest().get("tags").toLowerCase().split("[ ,\\+]+")) {
@@ -194,29 +230,24 @@ public class Spaces extends Controller {
 		}
 	}
 
-	/**
-	 * Validation helper for space form (we only have access to current user in controllers).
-	 */
-	public static String validateSpace(String name, String visualization) {
-		Space newSpace = new Space();
-		newSpace.name = name;
-		newSpace.owner = request().username();
-		newSpace.visualization = visualization;
-		newSpace.records = new BasicDBList();
+	public static Result loadSpace() {
+		List<Record> records = null;
 		try {
-			String errorMessage = Space.add(newSpace);
-			if (errorMessage != null) {
-				return errorMessage;
-			} else {
-				// pass id of space back in case of success
-				return "ObjectId:" + newSpace._id.toString();
-			}
-			// multi-catch doesn't seem to work...
+			records = Record.findSharedWith(request().username());
 		} catch (IllegalArgumentException e) {
-			return e.getMessage();
+			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {
-			return e.getMessage();
+			return badRequest(e.getMessage());
+		} catch (InstantiationException e) {
+			return badRequest(e.getMessage());
 		}
+		ObjectNode request = Json.newObject();
+		ObjectNode recs = Json.newObject();
+		for (Record record : records) {
+			recs.put(record._id + " created", record.created);
+			recs.put(record._id + " data", record.data);
+		}
+		request.put("records", recs);
+		return ok(request);
 	}
-
 }

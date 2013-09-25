@@ -1,0 +1,53 @@
+@* required fields: _id, creator, owner, created, data *@
+@(records: List[Record], user: String)
+
+@skeleton{
+	<div class="list-group">
+		<p class="list-group-item active">Records</p>
+		@if(records.size() > 0) {
+			@records.map { record =>
+				<a href="" class="list-group-item">
+					<button class="btn btn-sm btn-info">@User.getName(record.creator)</button>
+					@Record.dataToString(record.data)
+					<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary">Spaces</button>
+					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary">Circles</button>
+				</a>
+			}
+		} else {
+			<p class="list-group-item">No available records found.</p>
+		}
+	</div>
+	
+	<!-- Spaces modal -->
+	<!-- *** Popover??? *** -->
+	<div class="modal fade" id="spacesModal" role="dialog" aria-labelledby="spacesLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="spacesLabel">Create a new space</h4>
+				</div>
+				<div class="modal-body">
+					@defining(Space.findOwnedBy(user)) { spaces =>
+						@if(spaces.size() > 0) {
+							@spaces.map { space =>
+								<div class="checkbox">
+									<label for="cb@space._id">@space.name</label>
+									<input type="checkbox" id="cb@space._id" name="@space._id">
+								</div>
+							}
+						} else {
+							<p>You have no spaces yet. Click cancel and create a new one.</p>
+						}
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="submit" class="btn btn-primary">Create</button>
+				</div>
+			</div> <!-- /.modal-content -->
+		</div> <!-- /.modal-dialog -->
+	</div> <!-- /.modal -->
+	
+	<!-- Circles modal -->
+}

@@ -16,6 +16,7 @@ DELETE  /spaces/:id                 controllers.Spaces.delete(id: String)
 PUT     /spaces/:id                 controllers.Spaces.rename(id: String)
 POST    /spaces/record/:id          controllers.Spaces.addRecords(id: String)
 DELETE  /spaces/record/:id          controllers.Spaces.removeRecord(id: String)
+POST    /spaces/update/:id          controllers.Spaces.updateRecords(id: String)
 POST    /spaces/record              controllers.Spaces.manuallyAddRecord()
 GET     /search/records/:id/:search controllers.Spaces.searchRecords(id: String, search: String)
 GET     /search/records/:id/        controllers.Spaces.searchRecords(id: String, search: String = "")
@@ -33,6 +34,10 @@ GET     /search/user/:id/           controllers.Circles.searchUsers(id: String, 
 GET     /share                      controllers.Application.share()
 POST    /share                      controllers.Share.share()
 GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
+# Default visualization
+GET     /loadspaces                 controllers.Spaces.loadSpace()
+GET     /visualization/loading      controllers.Visualization.loading()
+POST    /visualization/list         controllers.Visualization.list()
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
