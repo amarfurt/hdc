@@ -79,8 +79,8 @@ class SpaceTab extends Backbone.View
 
 # Instantiate views
 $ ->
-	_.map($(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab)
-	_.map($(".space"), (space) -> new Space el: $ space)
+	_.each $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
+	_.each $(".space"), (space) -> new Space el: $ space
 	
 	getJson = () ->
 		JSON.stringify({"record": "Hi there!"})

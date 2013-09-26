@@ -79,5 +79,5 @@ class CircleTab extends Backbone.View
 
 # Instantiate views
 $ ->
-	_.map($(".circleTab"), (circleTab) -> new CircleTab el: $ circleTab)
-	_.map($(".circle"), (circle) -> new Circle el: $ circle)
+	_.each $(".circleTab"), (circleTab) -> new CircleTab el: $ circleTab
+	_.each $(".circle"), (circle) -> new Circle el: $ circle
