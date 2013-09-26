@@ -6,11 +6,13 @@
 		<p class="list-group-item active">Records</p>
 		@if(records.size() > 0) {
 			@records.map { record =>
-				<a href="" class="list-group-item">
+				<a href="#" record-id="@record._id" class="list-group-item record">
 					<button class="btn btn-sm btn-info">@User.getName(record.creator)</button>
 					@Record.dataToString(record.data)
-					<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary">Spaces</button>
-					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary">Circles</button>
+					<div class="pull-right">
+						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Spaces</button>
+						<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton">Circles</button>
+					</div>
 				</a>
 			}
 		} else {
@@ -19,22 +21,18 @@
 	</div>
 	
 	<!-- Spaces modal -->
-	<!-- *** Popover??? *** -->
 	<div class="modal fade" id="spacesModal" role="dialog" aria-labelledby="spacesLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="spacesLabel">Create a new space</h4>
+					<h4 class="modal-title" id="spacesLabel">Spaces with this record</h4>
 				</div>
 				<div class="modal-body">
 					@defining(Space.findOwnedBy(user)) { spaces =>
 						@if(spaces.size() > 0) {
 							@spaces.map { space =>
-								<div class="checkbox">
-									<label for="cb@space._id">@space.name</label>
-									<input type="checkbox" id="cb@space._id" name="@space._id">
-								</div>
+								@views.html.elements.checkbox(space._id.toString()){@space.name}
 							}
 						} else {
 							<p>You have no spaces yet. Click cancel and create a new one.</p>
@@ -43,11 +41,14 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<button type="submit" class="btn btn-primary">Create</button>
+					<button type="button" id="updateSpaces" class="btn btn-primary" data-dismiss="modal">Update</button>
 				</div>
 			</div> <!-- /.modal-content -->
 		</div> <!-- /.modal-dialog -->
 	</div> <!-- /.modal -->
 	
 	<!-- Circles modal -->
+	
+	<!-- Load specific js -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/list.js")"></script>
 }

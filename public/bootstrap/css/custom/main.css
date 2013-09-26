@@ -20,3 +20,7 @@ img.navbar-brand {
 .tab-content {
 	margin-top: 10px;
 }
+
+body.modal-open {
+	margin-right: 0px;
+}

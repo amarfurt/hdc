@@ -13,6 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
@@ -364,6 +365,32 @@ public class SpaceTest {
 		assertNull(Space.updateRecords(spaceList, recordIds[0], emailAddresses[0]));
 		assertEquals(0, ((BasicDBList) spaces.findOne(query1).get("records")).size());
 		assertEquals(2, ((BasicDBList) spaces.findOne(query2).get("records")).size());
+	}
+
+	@Test
+	public void findWithRecord() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
+		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		DBCollection spaces = TestConnection.getCollection("spaces");
+		assertEquals(0, spaces.count());
+		Space space = new Space();
+		space.name = "Test space 1";
+		space.owner = emailAddresses[0];
+		space.visualization = "Simple List";
+		space.records = new BasicDBList();
+		space.records.add(recordIds[0]);
+		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		spaces.insert(space1);
+		space.name = "Test space 2";
+		space.records.clear();
+		space.records.add(recordIds[1]);
+		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		spaces.insert(space2);
+		assertEquals(2, spaces.count());
+		Set<ObjectId> spaceList = Space.findWithRecord(recordIds[0], emailAddresses[0]);
+		assertEquals(1, spaceList.size());
+		assertTrue(spaceList.contains(space1.get("_id")));		
 	}
 
 }

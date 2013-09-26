@@ -62,6 +62,21 @@ public class Space implements Comparable<Space> {
 	}
 
 	/**
+	 * Find the spaces that contain the given record.
+	 */
+	public static Set<ObjectId> findWithRecord(ObjectId recordId, String email) {
+		Set<ObjectId> spaces = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("owner", email);
+		query.put("records", recordId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		while (result.hasNext()) {
+			spaces.add((ObjectId) result.next().get("_id"));
+		}
+		return spaces;
+	}
+
+	/**
 	 * Adds a space and returns the error message (null in absence of errors). Also adds the generated id to the space
 	 * object.
 	 */

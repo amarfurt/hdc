@@ -1,8 +1,10 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import models.Record;
 import models.Space;
@@ -228,6 +230,22 @@ public class Spaces extends Controller {
 		} catch (InstantiationException e) {
 			return badRequest(e.getMessage());
 		}
+	}
+	
+	/**
+	 * Find the spaces that contain the given record.
+	 */
+	public static Result findSpacesWith(String recordId) {
+		Set<ObjectId> spaceIds = Space.findWithRecord(new ObjectId(recordId), request().username());
+		Set<String> spaces = new HashSet<String>();
+		for (ObjectId id : spaceIds) {
+			spaces.add(id.toString());
+		}
+		return ok(Json.toJson(spaces));
+	}
+	
+	public static Set<ObjectId> findCirclesWith(String recordId) {
+		return null;
 	}
 
 	public static Result loadSpace() {
