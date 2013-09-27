@@ -175,12 +175,26 @@ public class Spaces extends Controller {
 			return forbidden();
 		}
 	}
-	
-	public static Result updateRecords(String recordId) {
-		Map<String, String> data = Form.form().bindFromRequest().data();
-		for (String key : data.keySet())
-			System.out.println(key + " -> " + data.get(key));
-		return ok();
+
+	public static Result updateRecords(String recordId, List<String> spaces) {
+		List<ObjectId> spaceIds = new ArrayList<ObjectId>();
+		for (String id : spaces) {
+			spaceIds.add(new ObjectId(id));
+		}
+		try {
+			String errorMessage = Space.updateRecords(spaceIds, new ObjectId(recordId), request().username());
+			if (errorMessage == null) {
+				return ok();
+			} else {
+				return badRequest(errorMessage);
+			}
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
 	}
 
 	public static Result manuallyAddRecord() {
@@ -231,7 +245,7 @@ public class Spaces extends Controller {
 			return badRequest(e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Find the spaces that contain the given record.
 	 */
@@ -243,7 +257,7 @@ public class Spaces extends Controller {
 		}
 		return ok(Json.toJson(spaces));
 	}
-	
+
 	public static Set<ObjectId> findCirclesWith(String recordId) {
 		return null;
 	}
