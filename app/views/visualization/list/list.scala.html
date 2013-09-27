@@ -11,7 +11,9 @@
 					@Record.dataToString(record.data)
 					<div class="pull-right">
 						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Spaces</button>
-						<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton">Circles</button>
+						@if(record.owner.equals(user)) {
+							<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton">Circles</button>
+						}
 					</div>
 				</a>
 			}
@@ -48,6 +50,31 @@
 	</div> <!-- /.modal -->
 	
 	<!-- Circles modal -->
+	<div class="modal fade" id="circlesModal" role="dialog" aria-labelledby="circlesLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="circlesLabel">Spaces with this record</h4>
+				</div>
+				<div class="modal-body">
+					@defining(Space.findOwnedBy(user)) { circles =>
+						@if(circles.size() > 0) {
+							@circles.map { circle =>
+								@views.html.elements.checkbox(circle._id.toString()){@circle.name}
+							}
+						} else {
+							<p>You have no circles yet. Click cancel and create a new one.</p>
+						}
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" id="updateSpaces" class="btn btn-primary" data-dismiss="modal">Update</button>
+				</div>
+			</div> <!-- /.modal-content -->
+		</div> <!-- /.modal-dialog -->
+	</div> <!-- /.modal -->
 	
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/list.js")"></script>

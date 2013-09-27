@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import models.Circle;
 import models.Record;
 import models.Space;
 
@@ -176,7 +177,10 @@ public class Spaces extends Controller {
 		}
 	}
 
-	public static Result updateRecords(String recordId, List<String> spaces) {
+	/**
+	 * Updates the spaces the given record is in.
+	 */
+	public static Result updateSpaces(String recordId, List<String> spaces) {
 		List<ObjectId> spaceIds = new ArrayList<ObjectId>();
 		for (String id : spaces) {
 			spaceIds.add(new ObjectId(id));
@@ -195,6 +199,44 @@ public class Spaces extends Controller {
 		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
+	}
+
+	/**
+	 * Updates the circles the given record is shared with.
+	 */
+	public static Result updateCircles(String record, List<String> circles) {
+		ObjectId recordId = new ObjectId(record);
+		List<ObjectId> circleIds = new ArrayList<ObjectId>();
+		for (String id : circles) {
+			circleIds.add(new ObjectId(id));
+		}
+
+		// TODO Security checks here?
+		if (!Secured.isCreatorOrOwnerOfRecord(recordId)) {
+			return forbidden();
+		}
+		for (ObjectId circleId : circleIds) {
+			if (!Secured.isOwnerOfCircle(circleId)) {
+				return forbidden();
+			}
+		}
+		
+		// update circles
+		try {
+			String errorMessage = Circle.updateShared(circleIds, recordId, request().username());
+			if (errorMessage == null) {
+				return ok();
+			} else {
+				return badRequest(errorMessage);
+			}
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
+
 	}
 
 	public static Result manuallyAddRecord() {
@@ -258,8 +300,14 @@ public class Spaces extends Controller {
 		return ok(Json.toJson(spaces));
 	}
 
-	public static Set<ObjectId> findCirclesWith(String recordId) {
-		return null;
+	public static Result findCirclesWith(String recordId) {
+//		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), request().username());
+//		Set<String> circles = new HashSet<String>();
+//		for (ObjectId id : circleIds) {
+//			circles.add(id.toString());
+//		}
+//		return ok(Json.toJson(circles));
+		return ok();
 	}
 
 	public static Result loadSpace() {

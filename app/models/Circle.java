@@ -222,6 +222,27 @@ public class Circle implements Comparable<Circle> {
 		return shared;
 	}
 
+	public static String updateShared(List<ObjectId> circleIds, ObjectId recordId, String owner)
+			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		if (Record.find(recordId) == null) {
+			return "Record doesn't exist.";
+		} else {
+			DBObject query = new BasicDBObject("owner", owner);
+			query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
+			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
+			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+			query = new BasicDBObject("owner", owner);
+			query.put("_id", new BasicDBObject("$nin", circleIds.toArray()));
+			update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
+			result = Connection.getCollection(collection).updateMulti(query, update);
+			return result.getLastError().getErrorMessage();
+		}
+	}
+
 	/**
 	 * Shares the given records with the given circle.
 	 */

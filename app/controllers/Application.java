@@ -116,7 +116,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.removeRecord(),
 				controllers.routes.javascript.Spaces.searchRecords(),
-				controllers.routes.javascript.Spaces.updateRecords(),
+				controllers.routes.javascript.Spaces.updateSpaces(),
+				controllers.routes.javascript.Spaces.updateCircles(),
 				controllers.routes.javascript.Spaces.findSpacesWith(),
 				controllers.routes.javascript.Share.sharedRecords()));
 	}

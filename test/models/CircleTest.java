@@ -11,6 +11,7 @@ import static play.test.Helpers.start;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -554,6 +555,44 @@ public class CircleTest {
 		List<User> contacts = Circle.findContacts(emails[0]);
 		assertEquals(1, contacts.size());
 		assertTrue(contacts.get(0).email.equals(emails[1]));
+	}
+
+	@Test
+	public void updateShared() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+			InvalidKeySpecException, InstantiationException {
+		String[] emails = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[0], emails[1], 2);
+		DBCollection circles = TestConnection.getCollection("circles");
+		assertEquals(0, circles.count());
+		Circle circle = new Circle();
+		circle.name = "Test circle 1";
+		circle.owner = emails[0];
+		circle.order = 1;
+		circle.members = new BasicDBList();
+		circle.members.add(emails[1]);
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[0]);
+		DBObject circle1 = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circle1);
+		circle = new Circle();
+		circle.name = "Test circle 2";
+		circle.owner = emails[0];
+		circle.order = 2;
+		circle.members = new BasicDBList();
+		circle.shared = new BasicDBList();
+		circle.shared.add(recordIds[1]);
+		DBObject circle2 = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
+		circles.insert(circle2);
+		assertEquals(2, circles.count());
+		List<ObjectId> circleIds = new ArrayList<ObjectId>();
+		circleIds.add((ObjectId) circle1.get("_id"));
+		assertNull(Circle.updateShared(circleIds, recordIds[1], emails[0]));
+		BasicDBList shared1 = (BasicDBList) circles.findOne(new BasicDBObject("_id", circle1.get("_id"))).get("shared");
+		assertEquals(2, shared1.size());
+		assertTrue(shared1.contains(recordIds[0]));
+		assertTrue(shared1.contains(recordIds[1]));
+		BasicDBList shared2 = (BasicDBList) circles.findOne(new BasicDBObject("_id", circle2.get("_id"))).get("shared");
+		assertEquals(0, shared2.size());
 	}
 
 }
