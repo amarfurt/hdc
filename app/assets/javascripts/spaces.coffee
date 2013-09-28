@@ -95,14 +95,14 @@ $ ->
 			success: (response) ->
 				console.log("Success!")
 				console.log(response)
-				#$("#spaceIFrame").attr("src", jsRoutes.controllers.Visualization.list().url)
+				#$("#iframe-default").attr("src", jsRoutes.controllers.Visualization.list().url)
 			error: (err) ->
 				console.error("Error when loading visualization.")
 				console.error(err.responseText)
 
 	# Load visualization
-	#$("#iFrameForm").on("submit", loadVisualization) 
-	$("#iFrameForm").submit()
+	#$("#form-default").on("submit", loadVisualization) 
+	$("#form-default").submit()
 	
 	# Load space
 	$("#loadSpace").click (e) ->
@@ -120,7 +120,7 @@ $ ->
 					success: (response) ->
 						console.log("Load space succeeded.")
 						console.log(response)
-						#$("#spaceIFrame").attr("src", jsRoutes.controllers.Visualization.list().url)
+						#$("#iframe-default").attr("src", jsRoutes.controllers.Visualization.list().url)
 					error: (err) ->
 						console.error("Error when loading visualization.")
 						console.error(err.responseText)
