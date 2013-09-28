@@ -39,8 +39,8 @@ POST    /share                      controllers.Share.share()
 GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
 # Default visualization
 GET     /loadspaces                 controllers.Spaces.loadSpace()
-GET     /visualization/loading      controllers.Visualization.loading()
-POST    /visualization/list         controllers.Visualization.list()
+GET     /visualization/loading      controllers.Visualizations.loading()
+POST    /visualization/list         controllers.Visualizations.list()
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 

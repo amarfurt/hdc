@@ -19,7 +19,7 @@ import play.mvc.Security;
 import views.html.visualization.list.list;
 
 @Security.Authenticated(Secured.class)
-public class Visualization extends Controller {
+public class Visualizations extends Controller {
 
 	public static Result loading() {
 		return ok("Loading space...");
