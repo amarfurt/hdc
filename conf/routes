@@ -21,7 +21,8 @@ POST    /spaces/updateCircles       controllers.Spaces.updateCircles(id: String,
 POST    /spaces/record              controllers.Spaces.manuallyAddRecord()
 GET     /search/records/:id/:search controllers.Spaces.searchRecords(id: String, search: String)
 GET     /search/records/:id/        controllers.Spaces.searchRecords(id: String, search: String = "")
-GET     /spaces/find/:id            controllers.Spaces.findSpacesWith(id: String)
+GET     /spaces/findSpaces/:id      controllers.Spaces.findSpacesWith(id: String)
+GET     /spaces/findCircles/:id     controllers.Spaces.findCirclesWith(id: String)
 # Circles
 GET     /circles                    controllers.Application.circles()
 GET     /circles/:id                controllers.Circles.show(id: String)

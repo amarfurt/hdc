@@ -301,13 +301,12 @@ public class Spaces extends Controller {
 	}
 
 	public static Result findCirclesWith(String recordId) {
-//		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), request().username());
-//		Set<String> circles = new HashSet<String>();
-//		for (ObjectId id : circleIds) {
-//			circles.add(id.toString());
-//		}
-//		return ok(Json.toJson(circles));
-		return ok();
+		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), request().username());
+		Set<String> circles = new HashSet<String>();
+		for (ObjectId id : circleIds) {
+			circles.add(id.toString());
+		}
+		return ok(Json.toJson(circles));
 	}
 
 	public static Result loadSpace() {

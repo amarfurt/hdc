@@ -98,6 +98,21 @@ public class Circle implements Comparable<Circle> {
 		Collections.sort(userList);
 		return userList;
 	}
+	
+	/**
+	 * Find the circles of the given user that contain the given record.
+	 */
+	public static Set<ObjectId> findWithRecord(ObjectId recordId, String email) {
+		Set<ObjectId> circles = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("owner", email);
+		query.put("shared", recordId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		while (result.hasNext()) {
+			circles.add((ObjectId) result.next().get("_id"));
+		}
+		return circles;
+	}
 
 	/**
 	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle

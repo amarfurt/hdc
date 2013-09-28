@@ -55,10 +55,10 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="circlesLabel">Spaces with this record</h4>
+					<h4 class="modal-title" id="circlesLabel">Circles this record is shared with</h4>
 				</div>
 				<div class="modal-body">
-					@defining(Space.findOwnedBy(user)) { circles =>
+					@defining(Circle.findOwnedBy(user)) { circles =>
 						@if(circles.size() > 0) {
 							@circles.map { circle =>
 								@views.html.elements.checkbox(circle._id.toString()){@circle.name}
@@ -70,7 +70,7 @@
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-					<button type="button" id="updateSpaces" class="btn btn-primary" data-dismiss="modal">Update</button>
+					<button type="button" id="updateCircles" class="btn btn-primary" data-dismiss="modal">Update</button>
 				</div>
 			</div> <!-- /.modal-content -->
 		</div> <!-- /.modal-dialog -->
