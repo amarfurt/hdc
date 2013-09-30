@@ -1,5 +1,13 @@
 @(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, user: String)
 
+@getCreators(records: List[Record]) = @{
+	val creators = new Set()
+	for(r <- records) {
+		creators = creators ++ r.creator
+	}
+	return creators
+}
+
 @main(user, "spaces") {
 	<div class="page-header">
 		<h1>My spaces</h1>
@@ -58,6 +66,17 @@
 	<!-- Space content -->
 	<div id="spaceContent" class="tab-content">
 		<div id="tab-default" class="space tab-pane fade @if(activeSpace == null){active in}">
+			<p class="activeFilters"></p>
+			<p>Filter the displayed records by:
+				<div class="dropdown">
+					<button type="button" class="btn btn-link" data-toggle="dropdown">Creator</button>
+					<ul class="dropdown-menu" aria-labelledby="default-creator-dropdown">
+						@getCreators(records).map { creator =>
+							<li><a href="#">@User.getName(creator)</a></li>
+						}
+					</ul>
+				</div>
+			</p>
 			<form id="form-default" action="@routes.Visualizations.list" method="post" target="iframe-default">
 				@records.map { record =>
 					<input type="hidden" name="@record._id creator" value="@record.creator">
