@@ -66,6 +66,8 @@ class SpaceTab extends Backbone.View
 		@name = $(".spaceName", @el).editInPlace
 			context: this
 			onChange: @renameSpace
+	events:
+		"click": "loadSpace"
 	renameSpace: (name) ->
 		jsRoutes.controllers.Spaces.rename(@id).ajax
 			context: this
@@ -76,6 +78,8 @@ class SpaceTab extends Backbone.View
 			error: (err) ->
 				console.error("Renaming space failed.")
 				console.error(err.responseText)
+	loadSpace: ->
+		$("#form-"+@id).submit()
 
 # Instantiate views
 $ ->

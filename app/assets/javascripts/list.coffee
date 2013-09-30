@@ -30,8 +30,11 @@ class Record extends Backbone.View
 			_.each $(":checkbox"), (checkbox) -> spaces.push $(checkbox).attr("name") if $(checkbox).prop("checked")
 			jsRoutes.controllers.Spaces.updateSpaces(@id, spaces).ajax
 				context: this
-				success: (data) ->
-					# TODO: if record has been removed from this space, remove it from the visualization
+				success: ->
+					# if record has been removed from this space, remove it from the visualization
+					if window.spaceId not in spaces
+						$("[record-id=" + window.cur + "]").remove()
+					# TODO: record is not removed from records list passed to Spaces yet...
 				error: (err) ->
 					console.error("Updating the spaces of this record failed.")
 					console.error(err.responseText)
@@ -47,6 +50,7 @@ class Record extends Backbone.View
 					
 class List extends Backbone.View
 	initialize: ->
+		window.spaceId = $("[space-id]").attr("space-id")
 		window.cur = null
 		@records = _.map $(".record"), (record) -> new Record el: $ record
 	events:

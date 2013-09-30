@@ -1,8 +1,8 @@
-@* required fields: _id, creator, owner, created, data *@
-@(records: List[Record], user: String)
+@* required fields for record: _id, creator, owner, created, data *@
+@(spaceId: String, records: List[Record], user: String)
 
 @skeleton{
-	<div class="list-group">
+	<div space-id="@spaceId" class="list-group">
 		<p class="list-group-item active">Records</p>
 		@if(records.size() > 0) {
 			@records.map { record =>

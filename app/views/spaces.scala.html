@@ -92,7 +92,7 @@
 			<div class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}" id="tab-@space._id">
 				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id">
 					<input type="hidden" name="spaceId" value="@space._id">
-					@records.map { record =>
+					@records.filter((record) => space.records.contains(record._id)).map { record =>
 						<input type="hidden" name="@record._id creator" value="@record.creator">
 						<input type="hidden" name="@record._id owner" value="@record.owner">
 						<input type="hidden" name="@record._id created" value="@record.created">

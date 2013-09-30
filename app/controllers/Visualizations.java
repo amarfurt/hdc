@@ -29,7 +29,15 @@ public class Visualizations extends Controller {
 		// build the list of records from the data
 		Map<String, String> data = Form.form().bindFromRequest().data();
 		Map<String, Record> recordMap = new HashMap<String, Record>();
+		String spaceId = null;
 		for (String key : data.keySet()) {
+			// space id is passed once
+			if ("spaceId".equals(key)) {
+				spaceId = data.get(key);
+				continue;
+			}
+			
+			// rest of the data are record objects
 			String[] split = key.split(" ");
 			String id = split[0];
 			if (!recordMap.containsKey(id)) {
@@ -52,7 +60,7 @@ public class Visualizations extends Controller {
 		}
 		List<Record> records = new ArrayList<Record>(recordMap.values());
 		Collections.sort(records);
-		return ok(list.render(records, request().username()));
+		return ok(list.render(spaceId, records, request().username()));
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
