@@ -7,7 +7,7 @@
 		@if(records.size() > 0) {
 			@records.map { record =>
 				<a href="#" record-id="@record._id" class="list-group-item record">
-					<button class="btn btn-sm btn-info">@User.getName(record.creator)</button>
+					<span class="label label-info">@User.getName(record.creator)</span>
 					@Record.dataToString(record.data)
 					<div class="pull-right">
 						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Spaces</button>
