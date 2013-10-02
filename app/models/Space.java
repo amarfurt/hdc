@@ -197,6 +197,17 @@ public class Space implements Comparable<Space> {
 			return result.getLastError().getErrorMessage();
 		}
 	}
+	
+	public static Set<ObjectId> getRecords(ObjectId spaceId) {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject projection = new BasicDBObject("records", 1);
+		BasicDBList records = (BasicDBList) Connection.getCollection(collection).findOne(query, projection).get("records");
+		Set<ObjectId> recordIds = new HashSet<ObjectId>();
+		for (Object recordId : records) {
+			recordIds.add((ObjectId) recordId);
+		}
+		return recordIds;
+	}
 
 	/**
 	 * Creates a new list without the records that are already in the given space.

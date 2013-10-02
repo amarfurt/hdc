@@ -1,11 +1,11 @@
 @(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, user: String)
 
 @getCreators(records: List[Record]) = @{
-	val creators = new Set()
-	for(r <- records) {
-		creators = creators ++ r.creator
-	}
-	return creators
+	records map (r => r.creator) distinct
+}
+
+@getOwners(records: List[Record]) = @{
+	records map (r => r.owner) distinct
 }
 
 @main(user, "spaces") {
@@ -68,56 +68,39 @@
 		<div id="tab-default" class="space tab-pane fade @if(activeSpace == null){active in}">
 			<p class="activeFilters"></p>
 			<p>Filter the displayed records by:
-				<div class="dropdown">
-					<button type="button" class="btn btn-link" data-toggle="dropdown">Creator</button>
-					<ul class="dropdown-menu" aria-labelledby="default-creator-dropdown">
-						@getCreators(records).map { creator =>
-							<li><a href="#">@User.getName(creator)</a></li>
-						}
-					</ul>
-				</div>
+				<ul class="nav nav-pills">
+					<li class="dropdown">
+						<a role="button" data-toggle="dropdown" href="#">Creator <b class="caret"></b></a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-creator">
+							@getCreators(records).map { creator =>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(creator)</a></li>
+							}
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a role="button" data-toggle="dropdown" href="#">Owner <b class="caret"></b></a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-owner">
+							@getOwners(records).map { owner =>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(owner)</a></li>
+							}
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a role="button" data-toggle="dropdown" href="#">Date <b class="caret"></b></a>
+						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-date">
+							<li role="presentation"><a role="menuitem" tabindex="-1" href="#">TODO</a></li>
+						</ul>
+					</li>
+				</ul> <!-- /tabs -->
 			</p>
-			<form id="form-default" action="@routes.Visualizations.list" method="post" target="iframe-default">
-				@records.map { record =>
-					<input type="hidden" name="@record._id creator" value="@record.creator">
-					<input type="hidden" name="@record._id owner" value="@record.owner">
-					<input type="hidden" name="@record._id created" value="@record.created">
-					<input type="hidden" name="@record._id data" value="@record.data">
-				}
-			</form>
-		<!-- 
-		 	<a href="" id="loadSpace" target="spaceIFrame">Load space!</a>
-		 -->
+			<form id="form-default" action="@routes.Visualizations.list" method="post" target="iframe-default"></form>
 			<iframe id="iframe-default" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
-		
-		<!-- 
-			<div class="list-group">
-				<span class="list-group-item active">Records</span>
-				@if(records.size() > 0) {
-					@records.map { record =>
-						<a href="" class="record list-group-item">
-							@Record.dataToString(record.data)
-						</a>
-					}
-				} else {
-					<p class="list-group-item">You have no records available yet.</p>
-				}
-			</div>
-		 -->
 		 
 		</div>
 		@spaces.map { space =>
 			<!-- views.html.elements.space(records, space, activeSpace) -->
 			<div class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}" id="tab-@space._id">
-				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id">
-					<input type="hidden" name="spaceId" value="@space._id">
-					@records.filter((record) => space.records.contains(record._id)).map { record =>
-						<input type="hidden" name="@record._id creator" value="@record.creator">
-						<input type="hidden" name="@record._id owner" value="@record.owner">
-						<input type="hidden" name="@record._id created" value="@record.created">
-						<input type="hidden" name="@record._id data" value="@record.data">
-					}
-				</form>
+				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id"></form>
 				<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
 			</div>
 		}
