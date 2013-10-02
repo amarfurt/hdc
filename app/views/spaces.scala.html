@@ -52,7 +52,7 @@
 		</li>
 		@spaces.map { space =>
 			<li tab-id="@space._id" class="spaceTab @if(space._id.equals(activeSpace)){active}">
-				<a href="#tab-@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
+				<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
 			</li>
 		}
 		<!-- Add new space button -->
@@ -72,6 +72,7 @@
 					<li class="dropdown">
 						<a role="button" data-toggle="dropdown" href="#">Creator <b class="caret"></b></a>
 						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-creator">
+							<!-- TODO: in JS -->
 							@getCreators(records).map { creator =>
 								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(creator)</a></li>
 							}
@@ -80,6 +81,7 @@
 					<li class="dropdown">
 						<a role="button" data-toggle="dropdown" href="#">Owner <b class="caret"></b></a>
 						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-owner">
+							<!-- TODO: in JS -->
 							@getOwners(records).map { owner =>
 								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(owner)</a></li>
 							}
@@ -88,6 +90,7 @@
 					<li class="dropdown">
 						<a role="button" data-toggle="dropdown" href="#">Date <b class="caret"></b></a>
 						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-date">
+							<!-- TODO: in JS -->
 							<li role="presentation"><a role="menuitem" tabindex="-1" href="#">TODO</a></li>
 						</ul>
 					</li>
@@ -98,10 +101,38 @@
 		 
 		</div>
 		@spaces.map { space =>
-			<!-- views.html.elements.space(records, space, activeSpace) -->
-			<div class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}" id="tab-@space._id">
+			<div id="@space._id" class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}">
 				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id"></form>
 				<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+				<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">
+					<span class="glyphicon glyphicon-plus-sign"></span> Add record
+				</button>
+				<button class="btn btn-danger deleteSpace">
+					<span class="glyphicon glyphicon-remove-sign"></span> Delete space
+				</button>
+				
+				<!-- Add records modal -->
+				@helper.form(routes.Spaces.addRecords(space._id.toString())) {
+					<div class="modal fade" id="recordForm-@space._id" role="dialog" aria-labelledby="label-@space._id" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title" id="label-@space._id">Add records to this space</h4>
+								</div>
+								<div class="modal-body">
+									<input type="text" class="recordSearch" name="recordSearch" placeholder="Search in your records">
+									<!-- TODO: in JS -->
+									@views.html.elements.searchresults(Space.makeDisjoint(space._id, records))
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<button type="submit" class="btn btn-primary">Add</button>
+								</div>
+							</div> <!-- /.modal-content -->
+						</div> <!-- /.modal-dialog -->
+					</div> <!-- /.modal -->
+				}
 			</div>
 		}
 	</div>

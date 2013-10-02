@@ -1,29 +1,3 @@
-class Record extends Backbone.View
-	initialize: ->
-		@spaceId = @el.attr("space-id")
-		@id = @el.attr("id")
-	events:
-		"click .removeRecord": "removeRecord"
-	removeRecord: (e) ->
-		e.preventDefault()
-		@loading(true)
-		jsRoutes.controllers.Spaces.removeRecord(@spaceId).ajax
-			context: this
-			data:
-				id: @id
-			success: (data) ->
-				@el.remove()
-				@loading(false)
-			error: (err) ->
-				@loading(false)
-				alert err.responseText
-				$.error("Error: " + err.responseText)
-	loading: (display) ->
-		if (display)
-			@el.children(".removeRecord").hide()
-		else
-			@el.children(".removeRecord").show()
-
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
@@ -33,6 +7,7 @@ class Space extends Backbone.View
 		"click .deleteSpace": "deleteSpace"
 		"keyup .recordSearch": "recordSearch"
 	deleteSpace: (e) ->
+		e.preventDefault()
 		@loading(true)
 		jsRoutes.controllers.Spaces.delete(@id).ajax
 			context: this
@@ -52,10 +27,11 @@ class Space extends Backbone.View
 			@el.children(".deleteSpace").show()
 	recordSearch: (e) ->
 		search = $(".recordSearch", @el).val()
+		console.log("request: " + search)
 		jsRoutes.controllers.Spaces.searchRecords(@id, search).ajax
 			context: this
 			success: (data) ->
-				$(".recordForm", @el).replaceWith(data)
+				$(".search-results", @el).replaceWith(data)
 			error: (err) ->
 				console.error("Record search failed.")
 				console.error(err.responseText)

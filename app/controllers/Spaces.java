@@ -21,7 +21,7 @@ import play.mvc.Security;
 import utils.DateTimeUtils;
 import utils.KeywordSearch;
 import views.html.spaces;
-import views.html.elements.spaces.recordForm;
+import views.html.elements.searchresults;
 
 import com.mongodb.BasicDBList;
 
@@ -156,6 +156,7 @@ public class Spaces extends Controller {
 		}
 	}
 
+	@Deprecated
 	public static Result removeRecord(String spaceId) {
 		// can't pass parameter of type ObjectId, using String
 		ObjectId sId = new ObjectId(spaceId);
@@ -278,7 +279,7 @@ public class Spaces extends Controller {
 				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
 			}
 			response = Space.makeDisjoint(sId, response);
-			return ok(recordForm.render(response));
+			return ok(searchresults.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {
