@@ -220,7 +220,7 @@ public class Spaces extends Controller {
 				return forbidden();
 			}
 		}
-		
+
 		// update circles
 		try {
 			String errorMessage = Circle.updateShared(circleIds, recordId, request().username());
@@ -309,10 +309,22 @@ public class Spaces extends Controller {
 		return ok(Json.toJson(circles));
 	}
 
-	public static Result loadSpace() {
-		List<Record> records = null;
+	public static Result loadAllRecords() {
 		try {
-			records = Record.findSharedWith(request().username());
+			List<Record> records = Record.findSharedWith(request().username());
+
+			// format records
+			List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
+			for (Record record : records) {
+				ObjectNode jsonRecord = Json.newObject();
+				jsonRecord.put("_id", record._id.toString());
+				jsonRecord.put("creator", record.creator);
+				jsonRecord.put("owner", record.owner);
+				jsonRecord.put("created", record.created);
+				jsonRecord.put("data", Record.dataToString(record.data));
+				jsonRecords.add(jsonRecord);
+			}
+			return ok(Json.toJson(jsonRecords));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {
@@ -320,13 +332,15 @@ public class Spaces extends Controller {
 		} catch (InstantiationException e) {
 			return badRequest(e.getMessage());
 		}
-		ObjectNode request = Json.newObject();
-		ObjectNode recs = Json.newObject();
-		for (Record record : records) {
-			recs.put(record._id + " created", record.created);
-			recs.put(record._id + " data", record.data);
-		}
-		request.put("records", recs);
-		return ok(request);
 	}
+
+	public static Result loadRecords(String spaceId) {
+		Set<ObjectId> records = Space.getRecords(new ObjectId(spaceId));
+		List<String> recordIds = new ArrayList<String>(records.size());
+		for (ObjectId recordId : records) {
+			recordIds.add(recordId.toString());
+		}
+		return ok(Json.toJson(recordIds));
+	}
+
 }

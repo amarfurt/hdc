@@ -67,7 +67,7 @@ class SpaceTab extends Backbone.View
 			context: this
 			onChange: @renameSpace
 	events:
-		"click": "loadSpace"
+		"click": "loadSpaceRecords"
 	renameSpace: (name) ->
 		jsRoutes.controllers.Spaces.rename(@id).ajax
 			context: this
@@ -78,7 +78,24 @@ class SpaceTab extends Backbone.View
 			error: (err) ->
 				console.error("Renaming space failed.")
 				console.error(err.responseText)
-	loadSpace: ->
+	loadSpaceRecords: ->
+		jsRoutes.controllers.Spaces.loadRecords(@id).ajax
+			context: this
+			success: (data) ->
+				records = _.filter window.records, (record) -> record._id in data
+				@loadSpace(records)
+			error: (err) ->
+				console.error("Error when loading spaces.")
+				console.error(err.responseText)
+	loadSpace: (records) ->
+		$("#form-"+@id).empty()
+		$("#form-"+@id).append('<input type="hidden" name="spaceId" value="' + @id + '">')
+		_.each records, ((record) ->
+			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
+			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
+			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
+			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
+			), this
 		$("#form-"+@id).submit()
 
 # Instantiate views
@@ -86,6 +103,25 @@ $ ->
 	_.each $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
 	_.each $(".space"), (space) -> new Space el: $ space
 	
+	# Load all records and default space
+	window.records = []
+	jsRoutes.controllers.Spaces.loadAllRecords().ajax
+		context: this
+		success: (data) ->
+			window.records = data
+			_.each window.records, (record) ->
+				$("#form-default").append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
+				$("#form-default").append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
+				$("#form-default").append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
+				$("#form-default").append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
+			$("#form-default").submit()
+		error: (err) ->
+			console.error("Error when loading records.")
+			console.error(err.responseText)
+	
+	#*******************************************#
+	#        Testing code snippets...           #
+	#*******************************************#	
 	getJson = () ->
 		JSON.stringify({"record": "Hi there!"})
 	
@@ -104,30 +140,4 @@ $ ->
 				console.error("Error when loading visualization.")
 				console.error(err.responseText)
 
-	# Load visualization
-	#$("#form-default").on("submit", loadVisualization) 
-	$("#form-default").submit()
-	
-	# Load space
-	$("#loadSpace").click (e) ->
-		e.preventDefault()
-		jsRoutes.controllers.Spaces.loadSpace().ajax
-			context: this
-			success: (data) ->
-				console.log(data)
-				console.log(JSON.stringify(data))
-				jsRoutes.controllers.Visualization.list().ajax
-					context: this
-					contentType: "application/json; charset=utf-8"
-					data:
-						JSON.stringify(data)
-					success: (response) ->
-						console.log("Load space succeeded.")
-						console.log(response)
-						#$("#iframe-default").attr("src", jsRoutes.controllers.Visualization.list().url)
-					error: (err) ->
-						console.error("Error when loading visualization.")
-						console.error(err.responseText)
-			error: (err) ->
-				console.error("Loading space failed.")
-				console.error(err.responseText)
+	#$("#form-default").on("submit", loadVisualization)
