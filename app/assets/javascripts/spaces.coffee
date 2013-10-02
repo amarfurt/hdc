@@ -66,6 +66,8 @@ class SpaceTab extends Backbone.View
 		@name = $(".spaceName", @el).editInPlace
 			context: this
 			onChange: @renameSpace
+		if @el.hasClass("active")
+			@loadSpaceRecords()
 	events:
 		"click": "loadSpaceRecords"
 	renameSpace: (name) ->
