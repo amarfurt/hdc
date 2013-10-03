@@ -3,8 +3,10 @@ package controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import models.Record;
 
@@ -36,7 +38,7 @@ public class Visualizations extends Controller {
 				spaceId = data.get(key);
 				continue;
 			}
-			
+
 			// rest of the data are record objects
 			String[] split = key.split(" ");
 			String id = split[0];
@@ -65,17 +67,39 @@ public class Visualizations extends Controller {
 
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result jsonList() {
-		System.out.println(request().toString());
-		System.out.println(request().body().asJson());
+		// check whether the request is complete
 		JsonNode json = request().body().asJson();
 		if (json == null) {
 			return badRequest("No json found.");
+		} else if (json.get("spaceId") == null) {
+			return badRequest("No space id found.");
+		} else if (json.get("records") == null) {
+			return badRequest("No records found.");
 		}
-		JsonNode node = json.findPath("record");
-		if (node == null) {
-			return badRequest("No message node found.");
+		
+		// parse the space id and the records
+		String spaceId = json.get("spaceId").asText();
+		List<Record> records = new ArrayList<Record>();
+		Iterator<JsonNode> elements = json.get("records").getElements();
+		while (elements.hasNext()) {
+			JsonNode cur = elements.next();
+			Record newRecord = new Record();
+			Iterator<Entry<String, JsonNode>> fields = cur.getFields();
+			while (fields.hasNext()) {
+				Entry<String, JsonNode> curField = fields.next();
+				if (curField.getKey().equals("_id")) {
+					newRecord._id = new ObjectId(curField.getValue().asText());
+				} else {
+					try {
+						Record.class.getField(curField.getKey()).set(newRecord, curField.getValue().asText());
+					} catch (Exception e) {
+						return internalServerError(e.getMessage());
+					}
+				}
+			}
+			records.add(newRecord);
 		}
-		return ok(node.getTextValue());
+		return ok(list.render(spaceId, records, request().username()));
 	}
 
 }

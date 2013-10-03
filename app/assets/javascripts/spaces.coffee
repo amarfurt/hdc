@@ -90,6 +90,21 @@ $ ->
 				$("#form-default").append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
 				$("#form-default").append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
 			$("#form-default").submit()
+			###
+			json = JSON.stringify({"spaceId": null, "records": data})
+			jsRoutes.controllers.Visualizations.jsonList().ajax
+				context: this
+				type: "POST"
+				contentType: "application/json; charset=utf-8"
+				data: json
+				success: (response) ->
+					console.log(response)
+					#$("#space-default").html(response)
+					$("#iframe-default").contents().find("html").html(response)
+				error: (err) ->
+					console.error("Error when loading visualization")
+					console.error(err.responseText)
+			###
 		error: (err) ->
 			console.error("Error when loading records.")
 			console.error(err.responseText)

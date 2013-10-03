@@ -122,7 +122,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.findCirclesWith(),
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
-				controllers.routes.javascript.Share.sharedRecords()));
+				controllers.routes.javascript.Visualizations.jsonList()));
 	}
 
 }

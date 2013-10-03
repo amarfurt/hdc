@@ -42,6 +42,8 @@ GET     /loadAllRecords             controllers.Spaces.loadAllRecords()
 GET     /loadRecords                controllers.Spaces.loadRecords(spaceId: String)
 GET     /visualization/loading      controllers.Visualizations.loading()
 POST    /visualization/list         controllers.Visualizations.list()
+POST    /visualization/jsonList     controllers.Visualizations.jsonList()
+
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
