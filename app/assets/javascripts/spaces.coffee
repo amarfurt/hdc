@@ -58,10 +58,13 @@ class SpaceTab extends Backbone.View
 			context: this
 			success: (data) ->
 				records = _.filter window.records, (record) -> record._id in data
+				@loadFilters(records)
 				@loadSpace(records)
 			error: (err) ->
 				console.error("Error when loading spaces.")
 				console.error(err.responseText)
+	loadFilters: (records) ->
+		#
 	loadSpace: (records) ->
 		$("#form-"+@id).empty()
 		$("#form-"+@id).append('<input type="hidden" name="spaceId" value="' + @id + '">')
@@ -105,6 +108,30 @@ $ ->
 					console.error("Error when loading visualization")
 					console.error(err.responseText)
 			###
+			
+			# Load the filters (TODO: remove)
+			creators = []
+			owners = []
+			_.each records, (record) ->
+				creators.push record.creator
+				owners.push record.owner
+			# Load the names (synchronously; needed afterwards)
+			ids = _.union(creators, owners)
+			idsToNames = {}
+			_.each ids, (id) ->
+				jsRoutes.controllers.api.UserInfo.getName(id).ajax
+					async: false
+					success: (name) ->
+						idsToNames[id] = name
+					error: (err) ->
+						console.error("Error when retrieving a user's name.")
+						console.error(err.responseText)
+			
+			# Insert the filter options
+			$("#filterCreator").append('<option id="filterCreator-anyone">anyone</option>')
+			$("#filterOwner").append('<option id="filterOwner-anyone">anyone</option>')
+			_.each (_.uniq creators), (creator) -> $("#filterCreator").append('<option id="filterCreator-' + creator + '">' + idsToNames[creator] + '</option>')
+			_.each (_.uniq owners), (owner) -> $("#filterOwner").append('<option id="filterOwner-' + owner + '">' + idsToNames[owner] + '</option>')
 		error: (err) ->
 			console.error("Error when loading records.")
 			console.error(err.responseText)

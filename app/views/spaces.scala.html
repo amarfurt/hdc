@@ -66,36 +66,29 @@
 	<!-- Space content -->
 	<div id="spaceContent" class="tab-content">
 		<div id="tab-default" class="space tab-pane fade @if(activeSpace == null){active in}">
-			<p class="activeFilters"></p>
-			<p>Filter the displayed records by:
-				<ul class="nav nav-pills">
-					<li class="dropdown">
-						<a role="button" data-toggle="dropdown" href="#">Creator <b class="caret"></b></a>
-						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-creator">
-							<!-- TODO: in JS -->
-							@getCreators(records).map { creator =>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(creator)</a></li>
-							}
-						</ul>
-					</li>
-					<li class="dropdown">
-						<a role="button" data-toggle="dropdown" href="#">Owner <b class="caret"></b></a>
-						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-owner">
-							<!-- TODO: in JS -->
-							@getOwners(records).map { owner =>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="#">@User.getName(owner)</a></li>
-							}
-						</ul>
-					</li>
-					<li class="dropdown">
-						<a role="button" data-toggle="dropdown" href="#">Date <b class="caret"></b></a>
-						<ul class="dropdown-menu" role="menu" aria-labelledby="drop-date">
-							<!-- TODO: in JS -->
-							<li role="presentation"><a role="menuitem" tabindex="-1" href="#">TODO</a></li>
-						</ul>
-					</li>
-				</ul> <!-- /tabs -->
-			</p>
+			<div class="well well-sm">
+				<form class="form-horizontal" role="form">
+					<div class="form-group">
+						<label for="filterCreator" class="col-lg-2 control-label">Created by: </label>
+						<div class="col-lg-10">
+							<select id="filterCreator" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="filterOwner" class="col-lg-2 control-label">Owned by: </label>
+						<div class="col-lg-10">
+							<select id="filterOwner" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="filterCreator" class="col-lg-2 control-label">Created between: </label>
+						<div class="col-lg-10">
+							<!-- TODO -->
+							TODO
+						</div>
+					</div>
+				</form>
+			</div>
 			<form id="form-default" action="@routes.Visualizations.list" method="post" target="iframe-default"></form>
 			<iframe id="iframe-default" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
 			<!--

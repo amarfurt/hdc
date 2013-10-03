@@ -43,6 +43,8 @@ GET     /loadRecords                controllers.Spaces.loadRecords(spaceId: Stri
 GET     /visualization/loading      controllers.Visualizations.loading()
 POST    /visualization/list         controllers.Visualizations.list()
 POST    /visualization/jsonList     controllers.Visualizations.jsonList()
+# Public API (to be done)
+GET     /user/name                  controllers.api.UserInfo.getName(id: String)
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
