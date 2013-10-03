@@ -1,8 +1,6 @@
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
-		$(".record", @el).each (i, record) ->
-			new Record el: $(record)
 	events:
 		"click .deleteSpace": "deleteSpace"
 		"keyup .recordSearch": "recordSearch"
@@ -27,11 +25,10 @@ class Space extends Backbone.View
 			@el.children(".deleteSpace").show()
 	recordSearch: (e) ->
 		search = $(".recordSearch", @el).val()
-		console.log("request: " + search)
 		jsRoutes.controllers.Spaces.searchRecords(@id, search).ajax
 			context: this
 			success: (data) ->
-				$(".search-results", @el).replaceWith(data)
+				$(".searchResults", @el).replaceWith(data)
 			error: (err) ->
 				console.error("Record search failed.")
 				console.error(err.responseText)

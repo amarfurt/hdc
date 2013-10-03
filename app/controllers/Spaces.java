@@ -21,7 +21,7 @@ import play.mvc.Security;
 import utils.DateTimeUtils;
 import utils.KeywordSearch;
 import views.html.spaces;
-import views.html.elements.searchresults;
+import views.html.elements.recordsearchresults;
 
 import com.mongodb.BasicDBList;
 
@@ -126,6 +126,7 @@ public class Spaces extends Controller {
 	}
 
 	public static Result addRecords(String spaceId) {
+		// TODO pass data with ajax (same as updating spaces of a single record)
 		// can't pass parameter of type ObjectId, using String
 		ObjectId sId = new ObjectId(spaceId);
 		if (Secured.isOwnerOfSpace(sId)) {
@@ -147,6 +148,7 @@ public class Spaces extends Controller {
 						recordsAdded = "Added some records, but then an error occurred: ";
 					}
 				}
+				// TODO return ok();
 				return redirect(routes.Spaces.show(spaceId));
 			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 				return internalServerError(e.getMessage());
@@ -279,7 +281,7 @@ public class Spaces extends Controller {
 				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
 			}
 			response = Space.makeDisjoint(sId, response);
-			return ok(searchresults.render(response));
+			return ok(recordsearchresults.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {

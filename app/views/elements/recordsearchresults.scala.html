@@ -1,5 +1,5 @@
 @(records: List[Record])
-<div class="search-results">
+<div class="searchResults">
 	@if(records.size() > 0) {
 		@records.map { record =>
 			@views.html.elements.checkbox(record._id.toString()){@record.data}
