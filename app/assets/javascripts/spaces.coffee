@@ -68,13 +68,7 @@ class SpaceTab extends Backbone.View
 	loadSpace: (records) ->
 		$("#form-"+@id).empty()
 		$("#form-"+@id).append('<input type="hidden" name="spaceId" value="' + @id + '">')
-		_.each records, ((record) ->
-			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
-			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
-			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
-			$("#form-"+@id).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
-			), this
-		$("#form-"+@id).submit()
+		postForm(records, @id)
 
 # Instantiate views
 $ ->
@@ -87,12 +81,7 @@ $ ->
 		context: this
 		success: (data) ->
 			window.records = data
-			_.each window.records, (record) ->
-				$("#form-default").append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
-				$("#form-default").append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
-				$("#form-default").append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
-				$("#form-default").append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
-			$("#form-default").submit()
+			postForm(window.records, "default")
 			###
 			json = JSON.stringify({"spaceId": null, "records": data})
 			jsRoutes.controllers.Visualizations.jsonList().ajax
@@ -109,7 +98,7 @@ $ ->
 					console.error(err.responseText)
 			###
 			
-			# Load the filters (TODO: remove)
+			# Load the filters (TODO: remove from default space (only in custom spaces))
 			creators = []
 			owners = []
 			_.each records, (record) ->
@@ -135,26 +124,15 @@ $ ->
 		error: (err) ->
 			console.error("Error when loading records.")
 			console.error(err.responseText)
-	
-	#*******************************************#
-	#        Testing code snippets...           #
-	#*******************************************#	
-	getJson = () ->
-		JSON.stringify({"record": "Hi there!"})
-	
-	loadVisualization = (e) ->
-		e.preventDefault()
-		jsRoutes.controllers.Visualization.list().ajax
-			context: this
-			contentType: "application/json; charset=utf-8"
-			data:
-				getJson()
-			success: (response) ->
-				console.log("Success!")
-				console.log(response)
-				#$("#iframe-default").attr("src", jsRoutes.controllers.Visualization.list().url)
-			error: (err) ->
-				console.error("Error when loading visualization.")
-				console.error(err.responseText)
 
-	#$("#form-default").on("submit", loadVisualization)
+# General functions
+postForm = (records, spaceId) ->
+	_.each records, (record) ->
+		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
+		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
+		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
+		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
+	$("#form-"+spaceId).submit()
+	
+filterRecords = (list, property, value) ->
+	return _.filter list, (record) -> record[property] is value

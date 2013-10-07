@@ -37,6 +37,3 @@ $.fn.editInPlace = (method, options...) ->
 			return methods.init.call(this, method)
 		else
 			$.error("Method " + method + " does not exist.")
-
-$.fn.filter = (list, property, value) ->
-	return _.filter list, (record) -> record[property] is value
