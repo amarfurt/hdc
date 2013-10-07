@@ -10,10 +10,8 @@
 					<span class="label label-info">@User.getName(record.creator)</span>
 					@Record.dataToString(record.data)
 					<div class="pull-right">
-						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Spaces</button>
-						@if(record.owner.equals(user)) {
-							<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton">Circles</button>
-						}
+						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Show</button>
+						<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton" @if(!record.owner.equals(user)){disabled}>Share</button>
 					</div>
 				</a>
 			}
@@ -28,7 +26,7 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title" id="spacesLabel">Spaces with this record</h4>
+					<h4 class="modal-title" id="spacesLabel">Spaces this record is shown in</h4>
 				</div>
 				<div class="modal-body">
 					@defining(Space.findOwnedBy(user)) { spaces =>
