@@ -43,7 +43,6 @@ class SpaceTab extends Backbone.View
 			@loadSpaceRecords()
 	events:
 		"click": "loadSpaceRecords"
-		#"change select": "reloadSpace"
 	renameSpace: (name) ->
 		jsRoutes.controllers.Spaces.rename(@id).ajax
 			context: this
@@ -66,15 +65,6 @@ class SpaceTab extends Backbone.View
 	loadSpace: ->
 		loadFilters(@records, @id)
 		postForm(@records, @id)
-		
-		# Register the filter events
-		$("#filterCreator-"+@id).on "change", (e) ->
-			filterRecords(records, @id)
-		$("#filterOwner-"+@id).on "change", (e) ->
-			filterRecords(records, @id)
-	reloadSpace: ->
-		console.log("Reloading space.")
-		filterRecords(@records, @id)
 
 # Instantiate views
 $ ->
@@ -94,12 +84,6 @@ $ ->
 			
 			# Load the space
 			postForm(window.records, spaceId)
-			
-			# Register the filter events
-			$("#filterCreator-"+spaceId).on "change", (e) ->
-				filterRecords(window.records, spaceId)
-			$("#filterOwner-"+spaceId).on "change", (e) ->
-				filterRecords(window.records, spaceId)
 			
 			###
 			json = JSON.stringify({"spaceId": null, "records": data})
@@ -167,3 +151,9 @@ loadFilters = (records, spaceId) ->
 	$("#filterOwner-"+spaceId).append('<option value="any">anyone</option>')
 	_.each (_.uniq creators), (creator) -> $("#filterCreator-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
 	_.each (_.uniq owners), (owner) -> $("#filterOwner-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
+	
+	# Register the filter events
+	$("#filterCreator-"+spaceId).on "change", (e) ->
+		filterRecords(records, spaceId)
+	$("#filterOwner-"+spaceId).on "change", (e) ->
+		filterRecords(records, spaceId)
