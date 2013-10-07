@@ -32,7 +32,7 @@ class Record extends Backbone.View
 				context: this
 				success: ->
 					# if record has been removed from this space, remove it from the visualization
-					if @parent.spaceId isnt "" and @parent.spaceId not in spaces
+					if @parent.spaceId isnt "default" and @parent.spaceId not in spaces
 						$("[record-id=" + @parent.curRecord + "]").remove()
 				error: (err) ->
 					console.error("Updating the spaces of this record failed.")

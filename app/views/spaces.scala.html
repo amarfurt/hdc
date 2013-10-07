@@ -1,13 +1,5 @@
 @(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, user: String)
 
-@getCreators(records: List[Record]) = @{
-	records map (r => r.creator) distinct
-}
-
-@getOwners(records: List[Record]) = @{
-	records map (r => r.owner) distinct
-}
-
 @main(user, "spaces") {
 	<div class="page-header">
 		<h1>My spaces</h1>
@@ -69,19 +61,19 @@
 			<div class="well well-sm">
 				<form class="form-horizontal" role="form">
 					<div class="form-group">
-						<label for="filterCreator" class="col-lg-2 control-label">Created by: </label>
+						<label for="filterCreator-default" class="col-lg-2 control-label">Created by: </label>
 						<div class="col-lg-10">
-							<select id="filterCreator" class="form-control"></select>
+							<select id="filterCreator-default" class="form-control"></select>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="filterOwner" class="col-lg-2 control-label">Owned by: </label>
+						<label for="filterOwner-default" class="col-lg-2 control-label">Owned by: </label>
 						<div class="col-lg-10">
-							<select id="filterOwner" class="form-control"></select>
+							<select id="filterOwner-default" class="form-control"></select>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="filterCreator" class="col-lg-2 control-label">Created between: </label>
+						<label for="filterDate-default" class="col-lg-2 control-label">Created between: </label>
 						<div class="col-lg-10">
 							<!-- TODO -->
 							TODO
@@ -98,6 +90,29 @@
 		</div>
 		@spaces.map { space =>
 			<div id="@space._id" class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}">
+				<div class="well well-sm">
+					<form class="form-horizontal" role="form">
+						<div class="form-group">
+							<label for="filterCreator-@space._id" class="col-lg-2 control-label">Created by: </label>
+							<div class="col-lg-10">
+								<select id="filterCreator-@space._id" class="form-control"></select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="filterOwner-@space._id" class="col-lg-2 control-label">Owned by: </label>
+							<div class="col-lg-10">
+								<select id="filterOwner-@space._id" class="form-control"></select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="filterDate-@space._id" class="col-lg-2 control-label">Created between: </label>
+							<div class="col-lg-10">
+								<!-- TODO -->
+								TODO
+							</div>
+						</div>
+					</form>
+				</div>
 				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id"></form>
 				<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">

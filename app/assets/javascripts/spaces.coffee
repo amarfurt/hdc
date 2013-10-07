@@ -43,6 +43,7 @@ class SpaceTab extends Backbone.View
 			@loadSpaceRecords()
 	events:
 		"click": "loadSpaceRecords"
+		#"change select": "reloadSpace"
 	renameSpace: (name) ->
 		jsRoutes.controllers.Spaces.rename(@id).ajax
 			context: this
@@ -57,18 +58,23 @@ class SpaceTab extends Backbone.View
 		jsRoutes.controllers.Spaces.loadRecords(@id).ajax
 			context: this
 			success: (data) ->
-				records = _.filter window.records, (record) -> record._id in data
-				@loadFilters(records)
-				@loadSpace(records)
+				@records = _.filter window.records, (record) -> record._id in data
+				@loadSpace()
 			error: (err) ->
 				console.error("Error when loading spaces.")
 				console.error(err.responseText)
-	loadFilters: (records) ->
-		#
-	loadSpace: (records) ->
-		$("#form-"+@id).empty()
-		$("#form-"+@id).append('<input type="hidden" name="spaceId" value="' + @id + '">')
-		postForm(records, @id)
+	loadSpace: ->
+		loadFilters(@records, @id)
+		postForm(@records, @id)
+		
+		# Register the filter events
+		$("#filterCreator-"+@id).on "change", (e) ->
+			filterRecords(records, @id)
+		$("#filterOwner-"+@id).on "change", (e) ->
+			filterRecords(records, @id)
+	reloadSpace: ->
+		console.log("Reloading space.")
+		filterRecords(@records, @id)
 
 # Instantiate views
 $ ->
@@ -77,11 +83,24 @@ $ ->
 	
 	# Load all records and default space
 	window.records = []
+	spaceId = "default"
 	jsRoutes.controllers.Spaces.loadAllRecords().ajax
 		context: this
 		success: (data) ->
 			window.records = data
-			postForm(window.records, "default")
+			
+			# Load the filters
+			loadFilters(window.records, spaceId)
+			
+			# Load the space
+			postForm(window.records, spaceId)
+			
+			# Register the filter events
+			$("#filterCreator-"+spaceId).on "change", (e) ->
+				filterRecords(window.records, spaceId)
+			$("#filterOwner-"+spaceId).on "change", (e) ->
+				filterRecords(window.records, spaceId)
+			
 			###
 			json = JSON.stringify({"spaceId": null, "records": data})
 			jsRoutes.controllers.Visualizations.jsonList().ajax
@@ -98,35 +117,14 @@ $ ->
 					console.error(err.responseText)
 			###
 			
-			# Load the filters (TODO: remove from default space (only in custom spaces))
-			creators = []
-			owners = []
-			_.each records, (record) ->
-				creators.push record.creator
-				owners.push record.owner
-			# Load the names (synchronously; needed afterwards)
-			ids = _.union(creators, owners)
-			idsToNames = {}
-			_.each ids, (id) ->
-				jsRoutes.controllers.api.UserInfo.getName(id).ajax
-					async: false
-					success: (name) ->
-						idsToNames[id] = name
-					error: (err) ->
-						console.error("Error when retrieving a user's name.")
-						console.error(err.responseText)
-			
-			# Insert the filter options
-			$("#filterCreator").append('<option id="filterCreator-anyone">anyone</option>')
-			$("#filterOwner").append('<option id="filterOwner-anyone">anyone</option>')
-			_.each (_.uniq creators), (creator) -> $("#filterCreator").append('<option id="filterCreator-' + creator + '">' + idsToNames[creator] + '</option>')
-			_.each (_.uniq owners), (owner) -> $("#filterOwner").append('<option id="filterOwner-' + owner + '">' + idsToNames[owner] + '</option>')
 		error: (err) ->
 			console.error("Error when loading records.")
 			console.error(err.responseText)
 
 # General functions
 postForm = (records, spaceId) ->
+	$("#form-"+spaceId).empty()
+	$("#form-"+spaceId).append('<input type="hidden" name="spaceId" value="' + spaceId + '">')
 	_.each records, (record) ->
 		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
 		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
@@ -134,5 +132,38 @@ postForm = (records, spaceId) ->
 		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
 	$("#form-"+spaceId).submit()
 	
-filterRecords = (list, property, value) ->
-	return _.filter list, (record) -> record[property] is value
+filterRecords = (records, spaceId) ->
+	creator = $("#filterCreator-"+spaceId).attr("value")
+	owner = $("#filterOwner-"+spaceId).attr("value")
+	records = filterByProperty(records, "creator", creator)
+	records = filterByProperty(records, "owner", owner)
+	postForm(records, spaceId)
+
+filterByProperty = (list, property, value) ->
+	return _.filter list, (record) -> if value is "any" then true else record[property] is value
+
+loadFilters = (records, spaceId) ->
+	creators = []
+	owners = []
+	_.each records, (record) ->
+		creators.push record.creator
+		owners.push record.owner
+	# Load the names (synchronously; needed afterwards)
+	ids = _.union(creators, owners)
+	idsToNames = {}
+	_.each ids, (id) ->
+		jsRoutes.controllers.api.UserInfo.getName(id).ajax
+			async: false
+			success: (name) ->
+				idsToNames[id] = name
+			error: (err) ->
+				console.error("Error when retrieving a user's name.")
+				console.error(err.responseText)
+	
+	# Add filter options to select
+	$("#filterCreator-"+spaceId).empty()
+	$("#filterOwner-"+spaceId).empty()
+	$("#filterCreator-"+spaceId).append('<option value="any">anyone</option>')
+	$("#filterOwner-"+spaceId).append('<option value="any">anyone</option>')
+	_.each (_.uniq creators), (creator) -> $("#filterCreator-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
+	_.each (_.uniq owners), (owner) -> $("#filterOwner-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
