@@ -90,12 +90,22 @@
 		</div>
 		@spaces.map { space =>
 			<div id="@space._id" class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}">
-				<button class="btn btn-primary showCompare" style="margin-bottom: 5px;">
-					<span class="glyphicon glyphicon-adjust"></span> Compare
-				</button>
-				<button class="btn btn-primary hideCompare hidden" style="margin-bottom: 5px;">
-					<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
-				</button>
+				<div>
+					<button class="btn btn-primary showCompare" style="margin-bottom: 5px;">
+						<span class="glyphicon glyphicon-adjust"></span> Compare
+					</button>
+					<button class="btn btn-primary hideCompare hidden" style="margin-bottom: 5px;">
+						<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
+					</button>
+					<div class="pull-right">
+						<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">
+							<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
+						</button>
+						<button class="btn btn-danger deleteSpace">
+							<span class="glyphicon glyphicon-remove-sign"></span> Delete this space
+						</button>
+					</div>
+				</div>
 				<div class="compare1">
 					<div class="well well-sm">
 						<form class="form-horizontal" role="form">
@@ -151,12 +161,6 @@
 					<form id="form2-@space._id" action="@routes.Visualizations.list" method="post" target="iframe2-@space._id"></form>
 					<iframe id="iframe2-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
-				<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">
-					<span class="glyphicon glyphicon-plus-sign"></span> Add record
-				</button>
-				<button class="btn btn-danger deleteSpace">
-					<span class="glyphicon glyphicon-remove-sign"></span> Delete space
-				</button>
 				
 				<!-- Add records modal -->
 				@helper.form(routes.Spaces.addRecords(space._id.toString())) {
