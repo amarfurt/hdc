@@ -11,7 +11,6 @@ import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -19,16 +18,14 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Record implements Comparable<Record> {
+public class Record extends Model implements Comparable<Record> {
 
 	private static final String collection = "records";
 
-	public ObjectId _id;
-	public String creator; // any user
-	public String owner; // any user of type person
+	public ObjectId creator; // any user
+	public ObjectId owner; // any user of type person
 	public String created; // date + time created
 	public String data;
-	public BasicDBList tags;
 
 	@Override
 	public int compareTo(Record o) {
@@ -67,10 +64,10 @@ public class Record implements Comparable<Record> {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static List<Record> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findOwnedBy(ObjectId owner) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Record> records = new ArrayList<Record>();
-		DBObject query = new BasicDBObject("owner", email);
+		DBObject query = new BasicDBObject("owner", owner);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -83,13 +80,13 @@ public class Record implements Comparable<Record> {
 	/**
 	 * Find all records shared with the given user (including own records).
 	 */
-	public static List<Record> findSharedWith(String email) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findSharedWith(ObjectId user) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		// get records of this user
-		List<Record> records = findOwnedBy(email);
+		List<Record> records = findOwnedBy(user);
 
 		// get shared records of all circles this user is a member of
-		List<Circle> memberCircles = Circle.findMemberOf(email);
+		List<Circle> memberCircles = Circle.findMemberOf(user);
 		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
 		for (Circle circle : memberCircles) {
 			for (Object recordId : circle.shared) {

@@ -1,13 +1,16 @@
 package models;
 
+import org.bson.types.ObjectId;
+
 public class Person extends User {
 
 	public String birthday;
 
-	public static Person find(String email) throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static Person find(ObjectId person) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		// TODO how to do model conversion to person?
 		// Maybe save type (e.g. "models.Person") into database?
-		return (Person) User.find(email);
+		return (Person) User.find(person);
 	}
 
 }

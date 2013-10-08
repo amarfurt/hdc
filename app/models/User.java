@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import utils.ModelConversion;
 import utils.PasswordHash;
 
@@ -17,14 +19,13 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class User implements Comparable<User> {
+public class User extends Model implements Comparable<User> {
 
 	private static final String collection = "users";
 
-	public String email; // serves as id
+	public String email; // must be unique
 	public String name;
 	public String password;
-	public BasicDBList tags;
 
 	@Override
 	public int compareTo(User o) {
@@ -34,14 +35,31 @@ public class User implements Comparable<User> {
 	public static String getCollection() {
 		return collection;
 	}
-
-	public static String getName(String email) {
+	
+	public static ObjectId getId(String email) {
 		DBObject query = new BasicDBObject("email", email);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("_id");
+	}
+
+	public static String getName(ObjectId id) {
+		DBObject query = new BasicDBObject("_id", id);
 		DBObject projection = new BasicDBObject("name", 1);
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
 	}
 
-	public static User find(String email) throws IllegalArgumentException, IllegalAccessException,
+	public static User find(ObjectId id) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		DBObject query = new BasicDBObject("_id", id);
+		DBObject result = Connection.getCollection(collection).findOne(query);
+		if (result != null) {
+			return ModelConversion.mapToModel(User.class, result.toMap());
+		} else {
+			return null;
+		}
+	}
+
+	public static User findABC(String email) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("email", email);
 		DBObject result = Connection.getCollection(collection).findOne(query);
@@ -52,10 +70,10 @@ public class User implements Comparable<User> {
 		}
 	}
 
-	public static List<User> findAllExcept(String... users) throws IllegalArgumentException, IllegalAccessException,
+	public static List<User> findAllExcept(ObjectId... ids) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<User> userList = new ArrayList<User>();
-		DBObject query = new BasicDBObject("email", new BasicDBObject("$nin", users));
+		DBObject query = new BasicDBObject("_id", new BasicDBObject("$nin", ids));
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
@@ -64,19 +82,15 @@ public class User implements Comparable<User> {
 		return userList;
 	}
 
-	public static User authenticate(String email, String password) throws IllegalArgumentException,
+	public static boolean authenticationValid(String email, String password) throws IllegalArgumentException,
 			IllegalAccessException, InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
-		User user = find(email);
-		if (user != null && PasswordHash.validatePassword(password, user.password)) {
-			return user;
-		} else {
-			return null;
-		}
+		String storedPassword = getPassword(email);
+		return PasswordHash.validatePassword(password, storedPassword);
 	}
 
 	public static String add(User newUser) throws IllegalArgumentException, IllegalAccessException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
-		if (userWithSameEmailExists(newUser.email)) {
+			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
+		if (findABC(newUser.email) != null) {
 			return "A user with this email address already exists.";
 		}
 		newUser.password = PasswordHash.createHash(newUser.password);
@@ -90,20 +104,26 @@ public class User implements Comparable<User> {
 		return result.getLastError().getErrorMessage();
 	}
 
-	public static String remove(String email) {
-		if (!userWithSameEmailExists(email)) {
-			return "No user with this email address exists.";
+	public static String remove(ObjectId id) {
+		if (!userExists(id)) {
+			return "This user does not exist.";
 		}
 		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
 		// the marketplace), ...
-		DBObject query = new BasicDBObject("email", email);
+		DBObject query = new BasicDBObject("_id", id);
 		WriteResult result = Connection.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
 	}
 
-	private static boolean userWithSameEmailExists(String email) {
-		DBObject query = new BasicDBObject("email", email);
+	private static boolean userExists(ObjectId id) {
+		DBObject query = new BasicDBObject("_id", id);
 		return (Connection.getCollection(collection).findOne(query) != null);
+	}
+
+	private static String getPassword(String email) {
+		DBObject query = new BasicDBObject("email", email);
+		DBObject projection = new BasicDBObject("password", 1);
+		return (String) Connection.getCollection(collection).findOne(query, projection).get("password");
 	}
 
 	public static boolean isPerson(String email) {

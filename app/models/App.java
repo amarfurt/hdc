@@ -1,11 +1,8 @@
 package models;
 
-import com.mongodb.BasicDBList;
+public class App extends Model {
 
-public class App {
-	
 	public String name;
 	public String description;
-	public BasicDBList tags;
 
 }

@@ -20,37 +20,35 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Space implements Comparable<Space> {
+public class Space extends Model implements Comparable<Space> {
 
 	private static final String collection = "spaces";
 
-	public ObjectId _id;
 	public String name;
-	public String owner;
+	public ObjectId owner;
 	public String visualization;
 	public int order;
 	public BasicDBList records;
-	public BasicDBList tags;
 
 	@Override
 	public int compareTo(Space o) {
 		return this.order - o.order;
 	}
 
-	public static boolean isOwner(ObjectId spaceId, String email) {
+	public static boolean isOwner(ObjectId spaceId, ObjectId owner) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", spaceId);
-		query.put("owner", email);
+		query.put("owner", owner);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static List<Space> findOwnedBy(String email) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Space> findOwnedBy(ObjectId owner) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Space> spaces = new ArrayList<Space>();
-		DBObject query = new BasicDBObject("owner", email);
+		DBObject query = new BasicDBObject("owner", owner);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -64,9 +62,9 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Find the spaces that contain the given record.
 	 */
-	public static Set<ObjectId> findWithRecord(ObjectId recordId, String email) {
+	public static Set<ObjectId> findWithRecord(ObjectId recordId, ObjectId owner) {
 		Set<ObjectId> spaces = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject("owner", email);
+		DBObject query = new BasicDBObject("owner", owner);
 		query.put("records", recordId);
 		DBObject projection = new BasicDBObject("_id", 1);
 		DBCursor result = Connection.getCollection(collection).find(query, projection);
@@ -105,7 +103,7 @@ public class Space implements Comparable<Space> {
 		if (foundSpace == null) {
 			return "This space doesn't exist.";
 		}
-		String owner = (String) foundSpace.get("owner");
+		ObjectId owner = (ObjectId) foundSpace.get("owner");
 		if (!spaceWithSameNameExists(newName, owner)) {
 			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
@@ -125,7 +123,7 @@ public class Space implements Comparable<Space> {
 		if (space == null) {
 			return "No space with this id exists.";
 		}
-		String owner = (String) space.get("owner");
+		ObjectId owner = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 
 		// remove space
@@ -197,11 +195,12 @@ public class Space implements Comparable<Space> {
 			return result.getLastError().getErrorMessage();
 		}
 	}
-	
+
 	public static Set<ObjectId> getRecords(ObjectId spaceId) {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject projection = new BasicDBObject("records", 1);
-		BasicDBList records = (BasicDBList) Connection.getCollection(collection).findOne(query, projection).get("records");
+		BasicDBList records = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
+				.get("records");
 		Set<ObjectId> recordIds = new HashSet<ObjectId>();
 		for (Object recordId : records) {
 			recordIds.add((ObjectId) recordId);
@@ -234,7 +233,7 @@ public class Space implements Comparable<Space> {
 	/**
 	 * Checks whether a space with the same name already exists for the given owner.
 	 */
-	private static boolean spaceWithSameNameExists(String name, String owner) {
+	private static boolean spaceWithSameNameExists(String name, ObjectId owner) {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
 		query.put("owner", owner);

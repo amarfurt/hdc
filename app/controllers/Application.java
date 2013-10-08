@@ -52,7 +52,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result share() {
 		try {
-			String user = request().username();
+			String email = request().username();
 			Set<ObjectId> emptySet = Collections.emptySet();
 			return ok(share.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {

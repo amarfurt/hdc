@@ -1,5 +1,7 @@
 package utils;
 
+import org.bson.types.ObjectId;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -13,7 +15,7 @@ public class OrderOperations {
 	/**
 	 * Returns the maximum of the order fields in the given collection.
 	 */
-	public static int getMax(String collection, String owner) {
+	public static int getMax(String collection, ObjectId owner) {
 		DBCollection coll = Connection.getCollection(collection);
 		DBObject query = new BasicDBObject("owner", owner);
 		DBObject projection = new BasicDBObject("order", 1);
@@ -29,7 +31,7 @@ public class OrderOperations {
 	 * Decrements all order fields from (and including) 'fromLimit' to (and including) 'toLimit' by one. If either one
 	 * is zero, only the other condition will be considered.
 	 */
-	public static String decrement(String collection, String owner, int fromLimit, int toLimit) {
+	public static String decrement(String collection, ObjectId owner, int fromLimit, int toLimit) {
 		// fromLimit is never greater than toLimit
 		if (toLimit != 0 && fromLimit > toLimit) {
 			int tmp = fromLimit;
@@ -43,7 +45,7 @@ public class OrderOperations {
 	 * Increments all order fields from (and including) 'fromLimit' to (and including) 'toLimit' by one. If either one
 	 * is zero, only the other condition will be considered.
 	 */
-	public static String increment(String collection, String owner, int fromLimit, int toLimit) {
+	public static String increment(String collection, ObjectId owner, int fromLimit, int toLimit) {
 		// fromLimit is never greater than toLimit
 		if (toLimit != 0 && fromLimit > toLimit) {
 			int tmp = fromLimit;
@@ -53,7 +55,7 @@ public class OrderOperations {
 		return incOperation(collection, owner, fromLimit, toLimit, 1);
 	}
 
-	private static String incOperation(String collection, String owner, int fromLimit, int toLimit, int increment) {
+	private static String incOperation(String collection, ObjectId owner, int fromLimit, int toLimit, int increment) {
 		DBObject query = new BasicDBObject("owner", owner);
 		if (fromLimit == 0) {
 			query.put("order", new BasicDBObject("$lte", toLimit));

@@ -11,7 +11,7 @@ public class Registration {
 	
 	public String validate() {
 		try {
-			if (User.find(email) != null) {
+			if (User.findABC(email) != null) {
 				return "A user with this email address already exists.";
 			} else if (email.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || password.isEmpty()){
 				return "Please fill out all fields.";
