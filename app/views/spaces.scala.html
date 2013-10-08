@@ -90,31 +90,67 @@
 		</div>
 		@spaces.map { space =>
 			<div id="@space._id" class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}">
-				<div class="well well-sm">
-					<form class="form-horizontal" role="form">
-						<div class="form-group">
-							<label for="filterCreator-@space._id" class="col-lg-2 control-label">Created by: </label>
-							<div class="col-lg-10">
-								<select id="filterCreator-@space._id" class="form-control"></select>
+				<button class="btn btn-primary showCompare" style="margin-bottom: 5px;">
+					<span class="glyphicon glyphicon-adjust"></span> Compare
+				</button>
+				<button class="btn btn-primary hideCompare hidden" style="margin-bottom: 5px;">
+					<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
+				</button>
+				<div class="compare1">
+					<div class="well well-sm">
+						<form class="form-horizontal" role="form">
+							<div class="form-group">
+								<label for="filterCreator-@space._id" class="col-lg-2 control-label">Created by: </label>
+								<div class="col-lg-10">
+									<select id="filterCreator-@space._id" class="form-control"></select>
+								</div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="filterOwner-@space._id" class="col-lg-2 control-label">Owned by: </label>
-							<div class="col-lg-10">
-								<select id="filterOwner-@space._id" class="form-control"></select>
+							<div class="form-group">
+								<label for="filterOwner-@space._id" class="col-lg-2 control-label">Owned by: </label>
+								<div class="col-lg-10">
+									<select id="filterOwner-@space._id" class="form-control"></select>
+								</div>
 							</div>
-						</div>
-						<div class="form-group">
-							<label for="filterDate-@space._id" class="col-lg-2 control-label">Created between: </label>
-							<div class="col-lg-10">
-								<!-- TODO -->
-								TODO
+							<div class="form-group">
+								<label for="filterDate-@space._id" class="col-lg-2 control-label">Created between: </label>
+								<div class="col-lg-10">
+									<!-- TODO -->
+									TODO
+								</div>
 							</div>
-						</div>
-					</form>
+						</form>
+					</div>
+					<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id"></form>
+					<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
-				<form id="form-@space._id" action="@routes.Visualizations.list" method="post" target="iframe-@space._id"></form>
-				<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+				<!-- Comparison view (hidden at the beginning) -->
+				<div class="compare2 col-lg-6 hidden">
+					<div class="well well-sm">
+						<form class="form-horizontal" role="form">
+							<div class="form-group">
+								<label for="filterCreator2-@space._id" class="col-lg-2 control-label">Created by: </label>
+								<div class="col-lg-10">
+									<select id="filterCreator2-@space._id" class="form-control"></select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="filterOwner2-@space._id" class="col-lg-2 control-label">Owned by: </label>
+								<div class="col-lg-10">
+									<select id="filterOwner2-@space._id" class="form-control"></select>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="filterDate2-@space._id" class="col-lg-2 control-label">Created between: </label>
+								<div class="col-lg-10">
+									<!-- TODO -->
+									TODO
+								</div>
+							</div>
+						</form>
+					</div>
+					<form id="form2-@space._id" action="@routes.Visualizations.list" method="post" target="iframe2-@space._id"></form>
+					<iframe id="iframe2-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+				</div>
 				<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">
 					<span class="glyphicon glyphicon-plus-sign"></span> Add record
 				</button>

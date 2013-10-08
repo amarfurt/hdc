@@ -2,8 +2,23 @@ class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
 	events:
+		"click .showCompare": "showCompare"
+		"click .hideCompare": "hideCompare"
 		"click .deleteSpace": "deleteSpace"
 		"keyup .recordSearch": "recordSearch"
+	showCompare: (e) ->
+		e.preventDefault()
+		$(".showCompare", @el).addClass("hidden")
+		$(".hideCompare", @el).removeClass("hidden")
+		$(".compare1", @el).addClass("col-lg-6")
+		#$(".compare2", @el).addClass("col-lg-6")
+		$(".compare2", @el).removeClass("hidden")
+	hideCompare: (e) ->
+		e.preventDefault()
+		$(".hideCompare", @el).addClass("hidden")
+		$(".showCompare", @el).removeClass("hidden")
+		$(".compare1", @el).removeClass("col-lg-6")
+		$(".compare2", @el).addClass("hidden")
 	deleteSpace: (e) ->
 		e.preventDefault()
 		@loading(true)
