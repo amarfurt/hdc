@@ -1,6 +1,8 @@
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
+		if @el.hasClass("active")
+			@loadSpaceRecords()
 	events:
 		"click .showCompare": "showCompare"
 		"click .hideCompare": "hideCompare"
@@ -11,14 +13,26 @@ class Space extends Backbone.View
 		$(".showCompare", @el).addClass("hidden")
 		$(".hideCompare", @el).removeClass("hidden")
 		$(".compare1", @el).addClass("col-lg-6")
-		#$(".compare2", @el).addClass("col-lg-6")
 		$(".compare2", @el).removeClass("hidden")
+		@loadSpace(true)
 	hideCompare: (e) ->
 		e.preventDefault()
 		$(".hideCompare", @el).addClass("hidden")
 		$(".showCompare", @el).removeClass("hidden")
 		$(".compare1", @el).removeClass("col-lg-6")
 		$(".compare2", @el).addClass("hidden")
+	loadSpaceRecords: ->
+		jsRoutes.controllers.Spaces.loadRecords(@id).ajax
+			context: this
+			success: (data) ->
+				@records = _.filter window.records, (record) -> record._id in data
+				@loadSpace(false)
+			error: (err) ->
+				console.error("Error when loading spaces.")
+				console.error(err.responseText)
+	loadSpace: (compare) ->
+		loadFilters(@records, @id, compare)
+		postForm(@records, @id, compare)
 	deleteSpace: (e) ->
 		e.preventDefault()
 		@loading(true)
@@ -54,10 +68,8 @@ class SpaceTab extends Backbone.View
 		@name = $(".spaceName", @el).editInPlace
 			context: this
 			onChange: @renameSpace
-		if @el.hasClass("active")
-			@loadSpaceRecords()
 	events:
-		"click": "loadSpaceRecords"
+		"click": "loadSpace"
 	renameSpace: (name) ->
 		jsRoutes.controllers.Spaces.rename(@id).ajax
 			context: this
@@ -68,24 +80,17 @@ class SpaceTab extends Backbone.View
 			error: (err) ->
 				console.error("Renaming space failed.")
 				console.error(err.responseText)
-	loadSpaceRecords: ->
-		jsRoutes.controllers.Spaces.loadRecords(@id).ajax
-			context: this
-			success: (data) ->
-				@records = _.filter window.records, (record) -> record._id in data
-				@loadSpace()
-			error: (err) ->
-				console.error("Error when loading spaces.")
-				console.error(err.responseText)
 	loadSpace: ->
-		loadFilters(@records, @id)
-		postForm(@records, @id)
+		@content.loadSpaceRecords()
 
 # Instantiate views
 $ ->
-	_.each $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
-	_.each $(".space"), (space) -> new Space el: $ space
-	
+	tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
+	spaces = _.map $(".space"), (space) -> new Space el: $ space
+	_.each tabs, (tab) ->
+		_.each spaces, (space) ->
+			if tab.id is space.id then tab.content = space
+
 	# Load all records and default space
 	window.records = []
 	spaceId = "default"
@@ -95,10 +100,10 @@ $ ->
 			window.records = data
 			
 			# Load the filters
-			loadFilters(window.records, spaceId)
+			loadFilters(window.records, spaceId, false)
 			
 			# Load the space
-			postForm(window.records, spaceId)
+			postForm(window.records, spaceId, false)
 			
 			###
 			json = JSON.stringify({"spaceId": null, "records": data})
@@ -121,27 +126,30 @@ $ ->
 			console.error(err.responseText)
 
 # General functions
-postForm = (records, spaceId) ->
-	$("#form-"+spaceId).empty()
-	$("#form-"+spaceId).append('<input type="hidden" name="spaceId" value="' + spaceId + '">')
+postForm = (records, spaceId, compare) ->
+	formName = if not compare then "form" else "form2"
+	$("#"+formName+"-"+spaceId).empty()
+	$("#"+formName+"-"+spaceId).append('<input type="hidden" name="spaceId" value="' + spaceId + '">')
 	_.each records, (record) ->
-		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
-		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
-		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
-		$("#form-"+spaceId).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
-	$("#form-"+spaceId).submit()
+		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
+		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
+		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
+		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
+	$("#"+formName+"-"+spaceId).submit()
 	
-filterRecords = (records, spaceId) ->
-	creator = $("#filterCreator-"+spaceId).attr("value")
-	owner = $("#filterOwner-"+spaceId).attr("value")
+filterRecords = (records, spaceId, compare) ->
+	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
+	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	creator = $("#"+creatorFilter+"-"+spaceId).attr("value")
+	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
 	records = filterByProperty(records, "creator", creator)
 	records = filterByProperty(records, "owner", owner)
-	postForm(records, spaceId)
+	postForm(records, spaceId, compare)
 
 filterByProperty = (list, property, value) ->
 	return _.filter list, (record) -> if value is "any" then true else record[property] is value
 
-loadFilters = (records, spaceId) ->
+loadFilters = (records, spaceId, compare) ->
 	creators = []
 	owners = []
 	_.each records, (record) ->
@@ -159,16 +167,20 @@ loadFilters = (records, spaceId) ->
 				console.error("Error when retrieving a user's name.")
 				console.error(err.responseText)
 	
+	# Define the names
+	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
+	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	
 	# Add filter options to select
-	$("#filterCreator-"+spaceId).empty()
-	$("#filterOwner-"+spaceId).empty()
-	$("#filterCreator-"+spaceId).append('<option value="any">anyone</option>')
-	$("#filterOwner-"+spaceId).append('<option value="any">anyone</option>')
-	_.each (_.uniq creators), (creator) -> $("#filterCreator-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
-	_.each (_.uniq owners), (owner) -> $("#filterOwner-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
+	$("#"+creatorFilter+"-"+spaceId).empty()
+	$("#"+ownerFilter+"-"+spaceId).empty()
+	$("#"+creatorFilter+"-"+spaceId).append('<option value="any">anyone</option>')
+	$("#"+ownerFilter+"-"+spaceId).append('<option value="any">anyone</option>')
+	_.each (_.uniq creators), (creator) -> $("#"+creatorFilter+"-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
+	_.each (_.uniq owners), (owner) -> $("#"+ownerFilter+"-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
 	
 	# Register the filter events
-	$("#filterCreator-"+spaceId).on "change", (e) ->
-		filterRecords(records, spaceId)
-	$("#filterOwner-"+spaceId).on "change", (e) ->
-		filterRecords(records, spaceId)
+	$("#"+creatorFilter+"-"+spaceId).on "change", (e) ->
+		filterRecords(records, spaceId, compare)
+	$("#"+ownerFilter+"-"+spaceId).on "change", (e) ->
+		filterRecords(records, spaceId, compare)
