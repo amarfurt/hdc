@@ -10,8 +10,12 @@
 					<span class="label label-info">@User.getName(record.creator)</span>
 					@Record.dataToString(record.data)
 					<div class="pull-right">
-						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">Show</button>
-						<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton" @if(!record.owner.equals(user)){disabled}>Share</button>
+						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">
+							<span class="glyphicon glyphicon-picture"></span> Show
+						</button>
+						<button data-toggle="modal" data-target="#circlesModal" data-backdrop="false" class="btn btn-sm btn-primary circlesButton" @if(!record.owner.equals(user)){disabled}>
+							<span class="glyphicon glyphicon-share"></span> Share
+						</button>
 					</div>
 				</a>
 			}
