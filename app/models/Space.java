@@ -35,20 +35,20 @@ public class Space extends Model implements Comparable<Space> {
 		return this.order - o.order;
 	}
 
-	public static boolean isOwner(ObjectId spaceId, ObjectId owner) {
+	public static boolean isOwner(ObjectId spaceId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", spaceId);
-		query.put("owner", owner);
+		query.put("owner", userId);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static List<Space> findOwnedBy(ObjectId owner) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Space> findOwnedBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Space> spaces = new ArrayList<Space>();
-		DBObject query = new BasicDBObject("owner", owner);
+		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -62,9 +62,9 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Find the spaces that contain the given record.
 	 */
-	public static Set<ObjectId> findWithRecord(ObjectId recordId, ObjectId owner) {
+	public static Set<ObjectId> findWithRecord(ObjectId recordId, ObjectId userId) {
 		Set<ObjectId> spaces = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject("owner", owner);
+		DBObject query = new BasicDBObject("owner", userId);
 		query.put("records", recordId);
 		DBObject projection = new BasicDBObject("_id", 1);
 		DBCursor result = Connection.getCollection(collection).find(query, projection);
@@ -103,8 +103,8 @@ public class Space extends Model implements Comparable<Space> {
 		if (foundSpace == null) {
 			return "This space doesn't exist.";
 		}
-		ObjectId owner = (ObjectId) foundSpace.get("owner");
-		if (!spaceWithSameNameExists(newName, owner)) {
+		ObjectId ownerId = (ObjectId) foundSpace.get("owner");
+		if (!spaceWithSameNameExists(newName, ownerId)) {
 			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
@@ -123,7 +123,7 @@ public class Space extends Model implements Comparable<Space> {
 		if (space == null) {
 			return "No space with this id exists.";
 		}
-		ObjectId owner = (ObjectId) space.get("owner");
+		ObjectId ownerId = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 
 		// remove space
@@ -134,7 +134,7 @@ public class Space extends Model implements Comparable<Space> {
 		}
 
 		// decrement all order fields greater than the removed space
-		return OrderOperations.decrement(collection, owner, order, 0);
+		return OrderOperations.decrement(collection, ownerId, order, 0);
 	}
 
 	/**
@@ -175,12 +175,12 @@ public class Space extends Model implements Comparable<Space> {
 	 * Adds the record to the given spaces of the user (if not already present), and removes it from the user's other
 	 * spaces.
 	 */
-	public static String updateRecords(List<ObjectId> spaceIds, ObjectId recordId, String owner)
+	public static String updateRecords(List<ObjectId> spaceIds, ObjectId recordId, ObjectId userId)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else {
-			DBObject query = new BasicDBObject("owner", owner);
+			DBObject query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$in", spaceIds.toArray()));
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
 			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
@@ -188,7 +188,7 @@ public class Space extends Model implements Comparable<Space> {
 			if (errorMessage != null) {
 				return errorMessage;
 			}
-			query = new BasicDBObject("owner", owner);
+			query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$nin", spaceIds.toArray()));
 			update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
 			result = Connection.getCollection(collection).updateMulti(query, update);
@@ -233,10 +233,10 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Checks whether a space with the same name already exists for the given owner.
 	 */
-	private static boolean spaceWithSameNameExists(String name, ObjectId owner) {
+	private static boolean spaceWithSameNameExists(String name, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
-		query.put("owner", owner);
+		query.put("owner", userId);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 

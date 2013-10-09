@@ -1,6 +1,7 @@
 {
 	"users" : [
 	{
+		"_id": { "$oid" : "5255500630040546a0ddc670" },
 		"email" : "test1@example.com",
 		"name" : "Test User 1",
 		"password" : "1000:8325165e85492ff15e59c525a5f66088df4847d8d5fe2536:4d0959338760205bddd3098ad7681259ad1f1a3334473bbc",
@@ -8,6 +9,7 @@
 		"tags": [ ]
 	},
 	{
+		"_id": { "$oid" : "5255500630040546a0ddc671" },
 		"email" : "test2@example.com",
 		"name" : "Test User 2",
 		"password" : "1000:6203f51737eebf6052f2d93fae1844d3400a2c731cb7cdba:0806ec1604e33b0d09fc51c2320eebb85ff93d334bd81975",
@@ -15,6 +17,7 @@
 		"tags": [ ]
 	},
 	{
+		"_id": { "$oid" : "5255500630040546a0ddc672" },
 		"email" : "test3@example.com",
 		"name" : "Test User 3",
 		"password" : "1000:c9baf5689c8e7f5842de0bf3f1bc7c4c2fa0dff8d95425e8:3677f28113a374471c0c86aad602d3ef4ed6628111c18798",
@@ -22,6 +25,7 @@
 		"tags": [ ]
 	},
 	{
+		"_id": { "$oid" : "5255500630040546a0ddc673" },
 		"email" : "test4@example.com",
 		"name" : "Test User 4",
 		"password" : "1000:cb0a03eddf8846e0da1152ece93a1dc7c1e1909388c003c5:d019303e8b826faf2a2d76290b66ae6fa444577b478a6572",
@@ -31,40 +35,40 @@
 	],
 	"messages" : [
 	{
-		"sender": "test1@example.com",
-		"receiver": "test2@example.com",
+		"sender": { "$oid" : "5255500630040546a0ddc670" },
+		"receiver": { "$oid" : "5255500630040546a0ddc671" },
 		"datetime": "2001-01-01-120000Z",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
 	},
 	{
-		"sender": "test2@example.com",
-		"receiver": "test3@example.com",
+		"sender": { "$oid" : "5255500630040546a0ddc671" },
+		"receiver": { "$oid" : "5255500630040546a0ddc672" },
 		"datetime": "2001-01-01-130000Z",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
 	},
 	{
-		"sender": "test3@example.com",
-		"receiver": "test4@example.com",
+		"sender": { "$oid" : "5255500630040546a0ddc672" },
+		"receiver": { "$oid" : "5255500630040546a0ddc673" },
 		"datetime": "2001-01-01-140000Z",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
 	},
 	{
-		"sender": "test4@example.com",
-		"receiver": "test1@example.com",
+		"sender": { "$oid" : "5255500630040546a0ddc673" },
+		"receiver": { "$oid" : "5255500630040546a0ddc670" },
 		"datetime": "2001-01-01-150000Z",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
 	},
 	{
-		"sender": "test2@example.com",
-		"receiver": "test1@example.com",
+		"sender": { "$oid" : "5255500630040546a0ddc671" },
+		"receiver": { "$oid" : "5255500630040546a0ddc670" },
 		"datetime": "2001-01-01-160000Z",
 		"title": "RE: How are you?",
 		"content": "Thanks I'm fine.",
@@ -73,36 +77,36 @@
 	],
 	"records" : [
 	{
-		"creator": "test4@example.com",
-		"owner": "test1@example.com",
+		"creator": { "$oid" : "5255500630040546a0ddc673" },
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 11:53:21",
 		"data": "Ran 11.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
 	},
 	{
-		"creator": "test3@example.com",
-		"owner": "test1@example.com",
+		"creator": { "$oid" : "5255500630040546a0ddc672" },
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 12:53:21",
 		"data": "Ran 12.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
 	},
 	{
-		"creator": "test2@example.com",
-		"owner": "test1@example.com",
+		"creator": { "$oid" : "5255500630040546a0ddc671" },
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 13:53:21",
 		"data": "Dentist record.",
 		"tags": [ ]
 	},
 	{
-		"creator": "test2@example.com",
-		"owner": "test1@example.com",
+		"creator": { "$oid" : "5255500630040546a0ddc671" },
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 14:53:21",
 		"data": "X-ray image.",
 		"tags": [ ]
 	},
 	{
-		"creator": "test3@example.com",
-		"owner": "test2@example.com",
+		"creator": { "$oid" : "5255500630040546a0ddc672" },
+		"owner": { "$oid" : "5255500630040546a0ddc671" },
 		"created": "2010-01-01 12:53:21",
 		"data": "Ran 13.53km in 1.35h on 2010-01-01",
 		"tags": [ ]
@@ -111,41 +115,41 @@
 	"circles" : [
 	{
 		"name": "Test circle 1",
-		"owner": "test1@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"order": 1,
 		"members": [
-			"test2@example.com"
+			{ "$oid" : "5255500630040546a0ddc671" }
 		],
 		"shared": [ ]
 	},
 	{
 		"name": "Test circle 2",
-		"owner": "test1@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"order": 2,
 		"members": [
-			"test3@example.com"
+			{ "$oid" : "5255500630040546a0ddc672" }
 		],
 		"shared": [ ],
 		"tags": [ ]
 	},
 	{
 		"name": "Test circle 3",
-		"owner": "test1@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"order": 3,
 		"members": [
-			"test4@example.com",
-			"test2@example.com",
-			"test3@example.com"
+			{ "$oid" : "5255500630040546a0ddc673" },
+			{ "$oid" : "5255500630040546a0ddc671" },
+			{ "$oid" : "5255500630040546a0ddc672" }
 		],
 		"shared": [ ],
 		"tags": [ ]
 	},
 	{
 		"name": "Test circle 2",
-		"owner": "test2@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc671" },
 		"order": 1,
 		"members": [
-			"test3@example.com"
+			{ "$oid" : "5255500630040546a0ddc672" }
 		],
 		"shared": [ ],
 		"tags": [ ]
@@ -154,7 +158,7 @@
 	"spaces" : [
 	{
 		"name": "Test space 1",
-		"owner": "test1@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"visualization": "Simple List",
 		"order": 1,
 		"records": [ ],
@@ -162,7 +166,7 @@
 	},
 	{
 		"name": "Test space 2",
-		"owner": "test1@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"visualization": "Simple List",
 		"order": 2,
 		"records": [ ],
@@ -170,7 +174,7 @@
 	},
 	{
 		"name": "Test space 2",
-		"owner": "test2@example.com",
+		"owner": { "$oid" : "5255500630040546a0ddc671" },
 		"visualization": "Simple List",
 		"order": 1,
 		"records": [ ],

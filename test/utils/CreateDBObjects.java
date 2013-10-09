@@ -19,24 +19,25 @@ import com.mongodb.DBObject;
 
 public class CreateDBObjects {
 
-	public static String[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
+	public static ObjectId[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = TestConnection.getCollection("users");
 		long originalCount = users.count();
-		String[] emailAddresses = new String[numUsers];
+		ObjectId[] userIds = new ObjectId[numUsers];
 		for (int i = 0; i < numUsers; i++) {
 			User user = new User();
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
 			user.password = PasswordHash.createHash("secret");
-			users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
-			emailAddresses[i] = user.email;
+			DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(User.class, user));
+			users.insert(userObject);
+			userIds[i] = (ObjectId) userObject.get("_id");
 		}
 		assertEquals(originalCount + numUsers, users.count());
-		return emailAddresses;
+		return userIds;
 	}
 
-	public static ObjectId[] insertRecords(String creator, String owner, int numRecords)
+	public static ObjectId[] insertRecords(ObjectId creator, ObjectId owner, int numRecords)
 			throws IllegalArgumentException, IllegalAccessException {
 		DBCollection records = TestConnection.getCollection("records");
 		long originalCount = records.count();

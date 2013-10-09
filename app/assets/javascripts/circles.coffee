@@ -10,7 +10,7 @@ class Member extends Backbone.View
 		jsRoutes.controllers.Circles.removeMember(@circleId).ajax
 			context: this
 			data:
-				name: @id
+				id: @id
 			success: (data) ->
 				@el.remove()
 				@loading(false)

@@ -24,7 +24,7 @@ public class Circles extends Controller {
 	
 	public static Result show(String activeCircleId) {
 		try {
-			String user = request().username();
+			ObjectId user = new ObjectId(request().username());
 			List<Circle> circleList = Circle.findOwnedBy(user);
 			ObjectId activeCircle = null;
 			if (activeCircleId != null) {
@@ -45,7 +45,7 @@ public class Circles extends Controller {
 	public static Result add() {
 		Circle newCircle = new Circle();
 		newCircle.name = Form.form().bindFromRequest().get("name");
-		newCircle.owner = request().username();
+		newCircle.owner = new ObjectId(request().username());
 		newCircle.members = new BasicDBList();
 		newCircle.shared = new BasicDBList();
 		try {
@@ -102,12 +102,12 @@ public class Circles extends Controller {
 			Map<String, String> data = Form.form().bindFromRequest().data();
 			try {
 				String usersAdded = "";
-				for (String email : data.keySet()) {
+				for (String user : data.keySet()) {
 					// skip search input field
-					if (email.equals("userSearch")) {
+					if (user.equals("userSearch")) {
 						continue;
 					}
-					String errorMessage = Circle.addMember(id, email);
+					String errorMessage = Circle.addMember(id, new ObjectId(user));
 					if (errorMessage != null) {
 						// TODO remove previously added users?
 						return badRequest(usersAdded + errorMessage);
@@ -127,11 +127,11 @@ public class Circles extends Controller {
 
 	public static Result removeMember(String circleId) {
 		// can't pass parameter of type ObjectId, using String
-		ObjectId id = new ObjectId(circleId);
-		if (Secured.isOwnerOfCircle(id)) {
-			String member = Form.form().bindFromRequest().get("name");
+		ObjectId circle = new ObjectId(circleId);
+		if (Secured.isOwnerOfCircle(circle)) {
+			ObjectId member = new ObjectId(Form.form().bindFromRequest().get("id"));
 			try {
-				String errorMessage = Circle.removeMember(id, member);
+				String errorMessage = Circle.removeMember(circle, member);
 				if (errorMessage == null) {
 					return ok();
 				} else {
@@ -153,13 +153,13 @@ public class Circles extends Controller {
 		List<User> response = new ArrayList<User>();
 		try {
 			// TODO use caching
-			ObjectId id = new ObjectId(circleId);
+			ObjectId circle = new ObjectId(circleId);
 			if (search == null || search.isEmpty()) {
-				response = User.findAllExcept(request().username());
+				response = User.findAllExcept(new ObjectId(request().username()));
 			} else {
 				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
 			}
-			response = Circle.makeDisjoint(id, response);
+			response = Circle.makeDisjoint(circle, response);
 			return ok(userForm.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());

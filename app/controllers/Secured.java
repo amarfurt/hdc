@@ -14,7 +14,8 @@ public class Secured extends Security.Authenticator {
 
 	@Override
 	public String getUsername(Context ctx) {
-		return ctx.session().get("email");
+		// id is the user id in String form
+		return ctx.session().get("id");
 	}
 
 	@Override
@@ -23,15 +24,15 @@ public class Secured extends Security.Authenticator {
 	}
 
 	public static boolean isCreatorOrOwnerOfRecord(ObjectId recordId) {
-		return Record.isCreatorOrOwner(recordId, Context.current().request().username());
+		return Record.isCreatorOrOwner(recordId, new ObjectId(Context.current().request().username()));
 	}
 
 	public static boolean isOwnerOfSpace(ObjectId spaceId) {
-		return Space.isOwner(spaceId, Context.current().request().username());
+		return Space.isOwner(spaceId, new ObjectId(Context.current().request().username()));
 	}
 
 	public static boolean isOwnerOfCircle(ObjectId circleId) {
-		return Circle.isOwner(circleId, Context.current().request().username());
+		return Circle.isOwner(circleId, new ObjectId(Context.current().request().username()));
 	}
 
 }

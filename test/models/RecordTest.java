@@ -47,8 +47,8 @@ public class RecordTest {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = new ObjectId();
+		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
@@ -63,8 +63,8 @@ public class RecordTest {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = new ObjectId();
+		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
@@ -79,30 +79,32 @@ public class RecordTest {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = new ObjectId();
+		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		ObjectId recordId = (ObjectId) recordObject.get("_id");
-		assertFalse(Record.isCreatorOrOwner(recordId, "wrong@example.com"));
+		assertFalse(Record.isCreatorOrOwner(recordId, new ObjectId()));
 	}
 
 	@Test
 	public void addRecord() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection records = TestConnection.getCollection("records");
+		ObjectId creator = new ObjectId();
+		ObjectId owner = new ObjectId();
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = creator;
+		record.owner = owner;
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		assertNull(Record.add(record));
 		assertEquals(1, records.count());
-		assertEquals("test2@example.com", records.findOne().get("creator"));
-		assertEquals("test1@example.com", records.findOne().get("owner"));
+		assertEquals(creator, records.findOne().get("creator"));
+		assertEquals(owner, records.findOne().get("owner"));
 		assertEquals("Test data.", records.findOne().get("data"));
 		assertNotNull(record._id);
 	}
@@ -110,16 +112,17 @@ public class RecordTest {
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
 		DBCollection records = TestConnection.getCollection("records");
+		ObjectId creator = new ObjectId();
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = creator;
+		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
-		assertEquals("test2@example.com", records.findOne().get("creator"));
+		assertEquals(creator, records.findOne().get("creator"));
 		assertNull(Record.delete((ObjectId) recordObject.get("_id")));
 		assertEquals(0, records.count());
 	}
@@ -129,8 +132,8 @@ public class RecordTest {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
-		record.creator = "test2@example.com";
-		record.owner = "test1@example.com";
+		record.creator = new ObjectId();
+		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
@@ -145,9 +148,9 @@ public class RecordTest {
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 2);
-		List<Record> foundRecords = Record.findOwnedBy(emails[0]);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
+		List<Record> foundRecords = Record.findOwnedBy(userIds[0]);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[1], foundRecords));
@@ -168,19 +171,19 @@ public class RecordTest {
 			InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 3);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emails[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.order = 1;
 		space.records = new BasicDBList();
 		space.records.add(recordIds[1]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
-		List<Record> foundRecords = Record.findSharedWith(emails[0]);
+		List<Record> foundRecords = Record.findSharedWith(userIds[0]);
 		foundRecords = Space.makeDisjoint((ObjectId) spaceObject.get("_id"), foundRecords);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -192,22 +195,22 @@ public class RecordTest {
 			InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordId = CreateDBObjects.insertRecords(emails[1], emails[1], 1);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 3);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
 		DBCollection circles = TestConnection.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emails[0];
+		circle.owner = userIds[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(1, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(emails[1]);
+		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -219,39 +222,39 @@ public class RecordTest {
 			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordId = CreateDBObjects.insertRecords(emails[1], emails[1], 1);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], 3);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
 		DBCollection circles = TestConnection.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emails[0];
+		circle.owner = userIds[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
-		circle.owner = emails[1];
+		circle.owner = userIds[1];
 		circle.members.clear();
-		circle.members.add(emails[0]);
+		circle.members.add(userIds[0]);
 		circle.shared.clear();
 		circle.shared.add(recordId[0]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(emails[1]);
+		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));
 	}
-	
+
 	@Test
 	public void dataToString() {
 		String shortString = "Some medical data.";
 		String longString = "Doctor Frankenstein detected a fracture of the bone in the patient's lower left leg.";
-		String noSpacesString = "DoctorFrankensteindetectedafractureoftheboneinthepatient'slowerleftleg."; 
+		String noSpacesString = "DoctorFrankensteindetectedafractureoftheboneinthepatient'slowerleftleg.";
 		String splitAt39 = "10letters 10letters 10letters 10letters no longer shown";
 		String splitAt40 = "10letters 10letters 10letters 10letters1 no longer shown";
 		String splitAt41 = "10letters 10letters 10letters 10letters11 no longer shown";

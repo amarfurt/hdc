@@ -10,6 +10,7 @@ import static play.test.Helpers.fakeRequest;
 import static play.test.Helpers.start;
 import static play.test.Helpers.status;
 import models.Space;
+import models.User;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
@@ -47,16 +48,17 @@ public class SpacesTest {
 
 	@Test
 	public void addSpace() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		ObjectId userId = User.getId("test1@example.com");
 		Result result = callAction(
 				controllers.routes.ref.Spaces.add(),
-				fakeRequest().withSession("email", "test1@example.com").withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test space", "visualization", "Test visualization")));
 		assertEquals(303, status(result));
 		DBObject foundSpace = TestConnection.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
 		Space space = ModelConversion.mapToModel(Space.class, foundSpace.toMap());
 		assertNotNull(space);
 		assertEquals("Test space", space.name);
-		assertEquals("test1@example.com", space.owner);
+		assertEquals(userId, space.owner);
 		assertEquals("Test visualization", space.visualization);
 		assertEquals(OrderOperations.getMax("spaces", space.owner), space.order);
 		assertEquals(0, space.records.size());
@@ -68,32 +70,33 @@ public class SpacesTest {
 		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed test space"));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.rename(spaceId),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Renamed test space")));
 		assertEquals(200, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
 		assertEquals("Renamed test space", spaces.findOne(idQuery).get("name"));
-		assertEquals(owner, spaces.findOne(idQuery).get("owner"));
+		assertEquals(userId, spaces.findOne(idQuery).get("owner"));
 	}
 
 	@Test
 	public void renameSpaceForbidden() {
 		DBCollection spaces = TestConnection.getCollection("spaces");
+		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", "test2@example.com"));
+		query.put("owner", new BasicDBObject("$ne", userId));
 		query.put("name", new BasicDBObject("$ne", "Test space 2"));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String spaceId = id.toString();
 		String originalName = (String) space.get("name");
-		String originalOwner = (String) space.get("owner");
+		ObjectId originalOwner = (ObjectId) space.get("owner");
 		Result result = callAction(
 				controllers.routes.ref.Spaces.rename(spaceId),
-				fakeRequest().withSession("email", "test2@example.com").withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test space 2")));
 		assertEquals(403, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
@@ -107,10 +110,10 @@ public class SpacesTest {
 		long originalCount = spaces.count();
 		DBObject space = spaces.findOne();
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		String spaceId = id.toString();
 		Result result = callAction(controllers.routes.ref.Spaces.delete(spaceId),
-				fakeRequest().withSession("email", owner));
+				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(200, status(result));
 		assertNull(spaces.findOne(new BasicDBObject("_id", id)));
 		assertEquals(originalCount - 1, spaces.count());
@@ -120,13 +123,14 @@ public class SpacesTest {
 	public void deleteSpaceForbidden() {
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		long originalCount = spaces.count();
+		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", "test2@example.com"));
+		query.put("owner", new BasicDBObject("$ne", userId));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String spaceId = id.toString();
 		Result result = callAction(controllers.routes.ref.Spaces.rename(spaceId),
-				fakeRequest().withSession("email", "test2@example.com"));
+				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(403, status(result));
 		assertNotNull(spaces.findOne(new BasicDBObject("_id", id)));
 		assertEquals(originalCount, spaces.count());
@@ -141,14 +145,14 @@ public class SpacesTest {
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 		BasicDBList records = (BasicDBList) space.get("records");
 		int oldSize = records.size();
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.addRecords(spaceId),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(303, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
@@ -168,7 +172,7 @@ public class SpacesTest {
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 
 		// insert that record into that space
@@ -183,7 +187,7 @@ public class SpacesTest {
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.addRecords(spaceId),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(recordId.toString(), "on")));
 		assertEquals(400, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
@@ -203,7 +207,7 @@ public class SpacesTest {
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 
 		// insert that record into that space
@@ -218,7 +222,7 @@ public class SpacesTest {
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.removeRecord(spaceId),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("id", recordId.toString())));
 		assertEquals(200, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
@@ -238,7 +242,7 @@ public class SpacesTest {
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
-		String owner = (String) space.get("owner");
+		ObjectId userId = (ObjectId) space.get("owner");
 		int order = (int) space.get("order");
 
 		// try to remove that record from that space
@@ -247,7 +251,7 @@ public class SpacesTest {
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.removeRecord(spaceId),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("id", recordId.toString())));
 		assertEquals(400, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
@@ -260,10 +264,10 @@ public class SpacesTest {
 		DBCollection records = TestConnection.getCollection("records");
 		long oldSize = records.count();
 		DBCollection users = TestConnection.getCollection("users");
-		String username = (String) users.findOne().get("email");
+		ObjectId userId = (ObjectId) users.findOne().get("_id");
 		Result result = callAction(
 				controllers.routes.ref.Spaces.manuallyAddRecord(),
-				fakeRequest().withSession("email", username).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("data", "Test data", "tags", "test")));
 		assertEquals(303, status(result));
 		assertEquals(oldSize + 1, records.count());

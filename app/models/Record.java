@@ -64,10 +64,10 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static List<Record> findOwnedBy(ObjectId owner) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findOwnedBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Record> records = new ArrayList<Record>();
-		DBObject query = new BasicDBObject("owner", owner);
+		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -80,13 +80,13 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Find all records shared with the given user (including own records).
 	 */
-	public static List<Record> findSharedWith(ObjectId user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findSharedWith(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		// get records of this user
-		List<Record> records = findOwnedBy(user);
+		List<Record> records = findOwnedBy(userId);
 
 		// get shared records of all circles this user is a member of
-		List<Circle> memberCircles = Circle.findMemberOf(user);
+		List<Circle> memberCircles = Circle.findMemberOf(userId);
 		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
 		for (Circle circle : memberCircles) {
 			for (Object recordId : circle.shared) {
@@ -121,10 +121,10 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Checks whether the user with the given email is the creator or owner of the record with the given id.
 	 */
-	public static boolean isCreatorOrOwner(ObjectId recordId, String email) {
+	public static boolean isCreatorOrOwner(ObjectId recordId, ObjectId userId) {
 		DBObject query = new BasicDBObject("_id", recordId);
-		DBObject creator = new BasicDBObject("creator", email);
-		DBObject owner = new BasicDBObject("owner", email);
+		DBObject creator = new BasicDBObject("creator", userId);
+		DBObject owner = new BasicDBObject("owner", userId);
 		query.put("$or", new DBObject[] { creator, owner });
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}

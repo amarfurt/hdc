@@ -28,7 +28,7 @@ public class Share extends Controller {
 		}
 		Set<ObjectId> recordsToCheck = findSharedRecords(circleIdSet);
 		try {
-			String user = request().username();
+			ObjectId user = new ObjectId(request().username());
 			return ok(records.render(Record.findOwnedBy(user), recordsToCheck));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
@@ -46,9 +46,9 @@ public class Share extends Controller {
 		Iterator<ObjectId> iterator = circleIds.iterator();
 		Set<ObjectId> sharedRecords = Collections.emptySet();
 		if (iterator.hasNext()) {
-			sharedRecords = new HashSet<ObjectId>(Circle.getShared(iterator.next(), request().username()));
+			sharedRecords = new HashSet<ObjectId>(Circle.getShared(iterator.next(), new ObjectId(request().username())));
 			while (iterator.hasNext()) {
-				sharedRecords.retainAll(Circle.getShared(iterator.next(), request().username()));
+				sharedRecords.retainAll(Circle.getShared(iterator.next(), new ObjectId(request().username())));
 			}
 		}
 		return sharedRecords;

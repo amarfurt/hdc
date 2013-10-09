@@ -28,7 +28,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result index() {
 		try {
-			String user = request().username();
+			ObjectId user = new ObjectId(request().username());
 			return ok(index.render(Message.findSentTo(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
 			return internalServerError(e.getMessage());
@@ -52,7 +52,7 @@ public class Application extends Controller {
 	@Security.Authenticated(Secured.class)
 	public static Result share() {
 		try {
-			String email = request().username();
+			ObjectId user = new ObjectId(request().username());
 			Set<ObjectId> emptySet = Collections.emptySet();
 			return ok(share.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
 		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
@@ -66,7 +66,7 @@ public class Application extends Controller {
 			return badRequest(welcome.render(loginForm, Form.form(Registration.class)));
 		} else {
 			session().clear();
-			session("email", loginForm.get().email);
+			session("id", User.getId(loginForm.get().email).toString());
 			return redirect(routes.Application.index());
 		}
 	}
@@ -87,13 +87,17 @@ public class Application extends Controller {
 					return badRequest(errorMessage);
 				}
 				session().clear();
-				session("email", registration.email);
+				session("id", newUser._id.toString());
 				return redirect(routes.Application.index());
 			} catch (IllegalAccessException e) {
 				return internalServerError(e.getMessage());
 			} catch (NoSuchAlgorithmException e) {
 				return internalServerError(e.getMessage());
 			} catch (InvalidKeySpecException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
 		}

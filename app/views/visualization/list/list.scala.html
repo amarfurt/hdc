@@ -1,5 +1,5 @@
 @* required fields for record: _id, creator, owner, created, data *@
-@(spaceId: String, records: List[Record], user: String)
+@(spaceId: String, records: List[Record], user: org.bson.types.ObjectId)
 
 @skeleton{
 	<div space-id="@spaceId" class="list-group">

@@ -7,6 +7,7 @@ import static play.test.Helpers.start;
 
 import java.util.List;
 
+import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,16 +37,16 @@ public class MessageTest {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();
-		person.email = "test2@example.com";
+		person._id = new ObjectId();
 		Message message = new Message();
-		message.sender = "test1@example.com";
-		message.receiver = person.email;
+		message.sender = new ObjectId();
+		message.receiver = person._id;
 		message.datetime = "2000-01-01-000000Z";
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(person.email);
+		List<Message> foundMessages = Message.findSentTo(person._id);
 		assertEquals(1, foundMessages.size());
 		assertEquals("Title", foundMessages.get(0).title);
 	}
@@ -55,16 +56,16 @@ public class MessageTest {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();
-		person.email = "test1@example.com";
+		person._id = new ObjectId();
 		Message message = new Message();
-		message.sender = person.email;
-		message.receiver = "test2@example.com";
+		message.sender = person._id;
+		message.receiver = new ObjectId();
 		message.datetime = "2000-01-01-000000Z";
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(person.email);
+		List<Message> foundMessages = Message.findSentTo(person._id);
 		assertEquals(0, foundMessages.size());
 	}
 }

@@ -49,7 +49,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -65,14 +65,14 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
-		assertFalse(Space.isOwner(spaceId, "wrong@example.com"));
+		assertFalse(Space.isOwner(spaceId, new ObjectId()));
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		assertNull(Space.add(space));
@@ -96,7 +96,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		assertNull(Space.add(space));
@@ -116,7 +116,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -134,7 +134,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		spaces.insert(new BasicDBObject(ModelConversion.modelToMap(Space.class, space)));
@@ -151,7 +151,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -169,7 +169,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -186,7 +186,7 @@ public class SpaceTest {
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = "test1@example.com";
+		space.owner = new ObjectId();
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -200,13 +200,13 @@ public class SpaceTest {
 	@Test
 	public void addRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -222,13 +222,13 @@ public class SpaceTest {
 	@Test
 	public void addRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -244,14 +244,13 @@ public class SpaceTest {
 	@Test
 	public void addRecordAlreadyInSpace() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] insertUsers = CreateDBObjects.insertUsers(2);
-		String[] emailAddresses = insertUsers;
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -269,13 +268,13 @@ public class SpaceTest {
 	@Test
 	public void removeRecordSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -292,13 +291,13 @@ public class SpaceTest {
 	@Test
 	public void removeRecordWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -315,13 +314,13 @@ public class SpaceTest {
 	@Test
 	public void removeRecordNotInSpace() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -338,13 +337,13 @@ public class SpaceTest {
 	@Test
 	public void updateRecords() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space 1";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -362,7 +361,7 @@ public class SpaceTest {
 		assertEquals(1, ((BasicDBList) spaces.findOne(query2).get("records")).size());
 		List<ObjectId> spaceList = new ArrayList<ObjectId>();
 		spaceList.add((ObjectId) space2.get("_id"));
-		assertNull(Space.updateRecords(spaceList, recordIds[0], emailAddresses[0]));
+		assertNull(Space.updateRecords(spaceList, recordIds[0], userIds[0]));
 		assertEquals(0, ((BasicDBList) spaces.findOne(query1).get("records")).size());
 		assertEquals(2, ((BasicDBList) spaces.findOne(query2).get("records")).size());
 	}
@@ -370,13 +369,13 @@ public class SpaceTest {
 	@Test
 	public void findWithRecord() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[0], emailAddresses[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection spaces = TestConnection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space 1";
-		space.owner = emailAddresses[0];
+		space.owner = userIds[0];
 		space.visualization = "Simple List";
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
@@ -388,9 +387,9 @@ public class SpaceTest {
 		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(space2);
 		assertEquals(2, spaces.count());
-		Set<ObjectId> spaceList = Space.findWithRecord(recordIds[0], emailAddresses[0]);
+		Set<ObjectId> spaceList = Space.findWithRecord(recordIds[0], userIds[0]);
 		assertEquals(1, spaceList.size());
-		assertTrue(spaceList.contains(space1.get("_id")));		
+		assertTrue(spaceList.contains(space1.get("_id")));
 	}
 
 }

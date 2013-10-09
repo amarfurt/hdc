@@ -85,12 +85,6 @@ class SpaceTab extends Backbone.View
 
 # Instantiate views
 $ ->
-	tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
-	spaces = _.map $(".space"), (space) -> new Space el: $ space
-	_.each tabs, (tab) ->
-		_.each spaces, (space) ->
-			if tab.id is space.id then tab.content = space
-
 	# Load all records and default space
 	window.records = []
 	spaceId = "default"
@@ -120,6 +114,13 @@ $ ->
 					console.error("Error when loading visualization")
 					console.error(err.responseText)
 			###
+			
+			# Load the other spaces (window.records needs to be set)
+			tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
+			spaces = _.map $(".space"), (space) -> new Space el: $ space
+			_.each tabs, (tab) ->
+				_.each spaces, (space) ->
+					if tab.id is space.id then tab.content = space
 			
 		error: (err) ->
 			console.error("Error when loading records.")

@@ -10,6 +10,7 @@ import models.Message;
 import models.Person;
 import models.User;
 
+import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +80,8 @@ public class DatabaseObjectTest {
 	}
 
 	@Test
-	public void createAndRetrievePerson() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void createAndRetrievePerson() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
 		Person person = new Person();
@@ -93,14 +95,15 @@ public class DatabaseObjectTest {
 		Person retrievedPerson = ModelConversion.mapToModel(Person.class, foundObject.toMap());
 		assertEquals("Test User", retrievedPerson.name);
 	}
-	
+
 	@Test
-	public void createAndRetrieveMessage() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void createAndRetrieveMessage() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Message message = new Message();
-		message.sender = "test1@example.com";
-		message.receiver = "test2@example.com";
+		message.sender = new ObjectId();
+		message.receiver = new ObjectId();
 		message.datetime = "2000-01-01-120000Z";
 		message.title = "Test";
 		message.content = "This is a test message.";
@@ -110,14 +113,15 @@ public class DatabaseObjectTest {
 		Message retrievedMessage = ModelConversion.mapToModel(Message.class, foundObject.toMap());
 		assertEquals("Test", retrievedMessage.title);
 	}
-	
+
 	@Test
-	public void createAndRetrieveCircle() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void createAndRetrieveCircle() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Family";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.members.add("test2@example.com");
 		circle.members.add("test3@example.com");

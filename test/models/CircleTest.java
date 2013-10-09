@@ -51,7 +51,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -67,14 +67,14 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		ObjectId circleId = (ObjectId) circleObject.get("_id");
-		assertFalse(Circle.isOwner(circleId, "wrong@example.com"));
+		assertFalse(Circle.isOwner(circleId, new ObjectId()));
 	}
 
 	// not testing order any further, has already been done in SpaceTest
@@ -84,7 +84,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		assertNull(Circle.add(circle));
@@ -99,7 +99,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		assertNull(Circle.add(circle));
@@ -119,7 +119,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -137,7 +137,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
@@ -154,7 +154,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -172,7 +172,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -189,7 +189,7 @@ public class CircleTest {
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = "test1@example.com";
+		circle.owner = new ObjectId();
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -203,19 +203,19 @@ public class CircleTest {
 	@Test
 	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.addMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertNull(Circle.addMember((ObjectId) circleObject.get("_id"), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -223,19 +223,19 @@ public class CircleTest {
 	@Test
 	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.addMember(ObjectId.get(), emailAddresses[1]));
+		assertNull(Circle.addMember(ObjectId.get(), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -243,12 +243,12 @@ public class CircleTest {
 	@Test
 	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(1);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -264,21 +264,21 @@ public class CircleTest {
 	@Test
 	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
-		circle.members.add(emailAddresses[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 		assertEquals("User is already in this circle.",
-				Circle.addMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+				Circle.addMember((ObjectId) circleObject.get("_id"), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -286,20 +286,20 @@ public class CircleTest {
 	@Test
 	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
-		circle.members.add(emailAddresses[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertNull(Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+		assertNull(Circle.removeMember((ObjectId) circleObject.get("_id"), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -307,20 +307,20 @@ public class CircleTest {
 	@Test
 	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
-		circle.members.add(emailAddresses[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
-		assertEquals("User is not in this circle.", Circle.removeMember(ObjectId.get(), emailAddresses[1]));
+		assertEquals("User is not in this circle.", Circle.removeMember(ObjectId.get(), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -328,12 +328,12 @@ public class CircleTest {
 	@Test
 	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		DBObject circleObject = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
@@ -341,7 +341,7 @@ public class CircleTest {
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
 		assertEquals("User is not in this circle.",
-				Circle.removeMember((ObjectId) circleObject.get("_id"), emailAddresses[1]));
+				Circle.removeMember((ObjectId) circleObject.get("_id"), userIds[1]));
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
 	}
@@ -349,13 +349,13 @@ public class CircleTest {
 	@Test
 	public void getShared() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -364,7 +364,7 @@ public class CircleTest {
 		circles.insert(circleObject);
 		assertEquals(1, circles.count());
 		assertEquals(2, ((BasicDBList) circles.findOne().get("shared")).size());
-		Set<ObjectId> shared = Circle.getShared((ObjectId) circleObject.get("_id"), emailAddresses[0]);
+		Set<ObjectId> shared = Circle.getShared((ObjectId) circleObject.get("_id"), userIds[0]);
 		assertEquals(recordIds.length, shared.size());
 		assertTrue(shared.contains(recordIds[0]));
 		assertTrue(shared.contains(recordIds[1]));
@@ -373,13 +373,13 @@ public class CircleTest {
 	@Test
 	public void shareRecord() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -398,13 +398,13 @@ public class CircleTest {
 	@Test
 	public void shareRecords() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 4);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -424,13 +424,13 @@ public class CircleTest {
 	@Test
 	public void pullRecordSuccess() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -450,13 +450,13 @@ public class CircleTest {
 	@Test
 	public void pullRecordsSuccess() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 4);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 4);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.addAll(Arrays.asList(recordIds));
@@ -479,13 +479,13 @@ public class CircleTest {
 	@Test
 	public void pullRecordNotShared() throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emailAddresses[1], emailAddresses[0], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
@@ -504,26 +504,26 @@ public class CircleTest {
 	@Test
 	public void findMemberOf() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		String[] emailAddresses = CreateDBObjects.insertUsers(2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emailAddresses[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		circle = new Circle();
 		circle.name = "Test circle 2";
-		circle.owner = emailAddresses[0];
+		circle.owner = userIds[0];
 		circle.order = 2;
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		List<Circle> memberCircles = Circle.findMemberOf(emailAddresses[1]);
+		List<Circle> memberCircles = Circle.findMemberOf(userIds[1]);
 		assertEquals(1, memberCircles.size());
 		assertEquals("Test circle 1", memberCircles.get(0).name);
 	}
@@ -531,52 +531,52 @@ public class CircleTest {
 	@Test
 	public void findContacts() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		String[] emails = CreateDBObjects.insertUsers(3);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(3);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";
-		circle.owner = emails[0];
+		circle.owner = userIds[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		circle = new Circle();
 		circle.name = "Test circle 2";
-		circle.owner = emails[1];
+		circle.owner = userIds[1];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[0]);
-		circle.members.add(emails[2]);
+		circle.members.add(userIds[0]);
+		circle.members.add(userIds[2]);
 		circle.shared = new BasicDBList();
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
 		assertEquals(2, circles.count());
-		List<User> contacts = Circle.findContacts(emails[0]);
+		List<User> contacts = Circle.findContacts(userIds[0]);
 		assertEquals(1, contacts.size());
-		assertTrue(contacts.get(0).email.equals(emails[1]));
+		assertTrue(contacts.get(0)._id.equals(userIds[1]));
 	}
 
 	@Test
 	public void updateShared() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[0], emails[1], 2);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
 		DBCollection circles = TestConnection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";
-		circle.owner = emails[0];
+		circle.owner = userIds[0];
 		circle.order = 1;
 		circle.members = new BasicDBList();
-		circle.members.add(emails[1]);
+		circle.members.add(userIds[1]);
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		DBObject circle1 = new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle));
 		circles.insert(circle1);
 		circle = new Circle();
 		circle.name = "Test circle 2";
-		circle.owner = emails[0];
+		circle.owner = userIds[0];
 		circle.order = 2;
 		circle.members = new BasicDBList();
 		circle.shared = new BasicDBList();
@@ -586,7 +586,7 @@ public class CircleTest {
 		assertEquals(2, circles.count());
 		List<ObjectId> circleIds = new ArrayList<ObjectId>();
 		circleIds.add((ObjectId) circle1.get("_id"));
-		assertNull(Circle.updateShared(circleIds, recordIds[1], emails[0]));
+		assertNull(Circle.updateShared(circleIds, recordIds[1], userIds[0]));
 		BasicDBList shared1 = (BasicDBList) circles.findOne(new BasicDBObject("_id", circle1.get("_id"))).get("shared");
 		assertEquals(2, shared1.size());
 		assertTrue(shared1.contains(recordIds[0]));

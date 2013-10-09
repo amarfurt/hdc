@@ -3,6 +3,8 @@ package models;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bson.types.ObjectId;
+
 import utils.ModelConversion;
 
 import com.mongodb.BasicDBObject;
@@ -13,16 +15,16 @@ import controllers.database.Connection;
 
 public class Message extends Model {
 
-	public String sender; // email of sender
-	public String receiver; // email of receiver
+	public ObjectId sender;
+	public ObjectId receiver;
 	public String datetime;
 	public String title;
 	public String content;
 
-	public static List<Message> findSentTo(String email) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Message> findSentTo(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Message> messages = new ArrayList<Message>();
-		DBObject query = new BasicDBObject("receiver", email);
+		DBObject query = new BasicDBObject("receiver", userId);
 		DBCursor result = Connection.getCollection("messages").find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();

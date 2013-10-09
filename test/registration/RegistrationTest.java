@@ -11,6 +11,8 @@ import static play.test.Helpers.session;
 import static play.test.Helpers.start;
 import static play.test.Helpers.status;
 
+import models.User;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,7 +53,7 @@ public class RegistrationTest {
 						ImmutableMap.of("email", newEmail, "firstName", "First", "lastName", "Last", "password",
 								"secret")));
 		assertEquals(303, status(result));
-		assertEquals(newEmail, session(result).get("email"));
+		assertEquals(User.getId(newEmail).toString(), session(result).get("id"));
 		assertEquals(oldSize + 1, users.count());
 	}
 

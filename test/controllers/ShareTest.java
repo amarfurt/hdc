@@ -15,6 +15,8 @@ import static play.test.Helpers.status;
 import java.util.ArrayList;
 import java.util.List;
 
+import models.User;
+
 import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
@@ -47,9 +49,9 @@ public class ShareTest {
 
 	@Test
 	public void sharedRecords() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 2);
-		ObjectId[] recordIds = getObjectIds("records", owner, 2);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 2);
+		ObjectId[] recordIds = getObjectIds("records", userId, 2);
 		shareRecordsWithCircle(circleIds[0], recordIds);
 		shareRecordsWithCircle(circleIds[1], new ObjectId[] { recordIds[0] });
 		List<String> cIds = new ArrayList<String>(circleIds.length);
@@ -57,7 +59,7 @@ public class ShareTest {
 			cIds.add(circleId.toString());
 		}
 		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds),
-				fakeRequest().withSession("email", owner));
+				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(200, status(result));
 		assertTrue(contentAsString(result)
 				.contains("name=\"" + recordIds[0].toString() + "\" value=\"record\" checked"));
@@ -67,9 +69,9 @@ public class ShareTest {
 
 	@Test
 	public void sharedRecordsForbidden() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 2);
-		ObjectId[] recordIds = getObjectIds("records", owner, 2);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 2);
+		ObjectId[] recordIds = getObjectIds("records", userId, 2);
 		shareRecordsWithCircle(circleIds[0], recordIds);
 		shareRecordsWithCircle(circleIds[1], new ObjectId[] { recordIds[0] });
 		List<String> cIds = new ArrayList<String>(circleIds.length);
@@ -77,16 +79,16 @@ public class ShareTest {
 			cIds.add(circleId.toString());
 		}
 		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds),
-				fakeRequest().withSession("email", "test2@example.com"));
+				fakeRequest().withSession("id", User.getId("test2@example.com").toString()));
 		assertEquals(200, status(result));
 		assertFalse(contentAsString(result).contains("checked>"));
 	}
 
 	@Test
 	public void sharedRecordsNoIntersection() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 2);
-		ObjectId[] recordIds = getObjectIds("records", owner, 2);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 2);
+		ObjectId[] recordIds = getObjectIds("records", userId, 2);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[1] });
 		shareRecordsWithCircle(circleIds[1], new ObjectId[] { recordIds[0] });
 		List<String> cIds = new ArrayList<String>(circleIds.length);
@@ -94,20 +96,20 @@ public class ShareTest {
 			cIds.add(circleId.toString());
 		}
 		Result result = callAction(controllers.routes.ref.Share.sharedRecords(cIds),
-				fakeRequest().withSession("email", owner));
+				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(200, status(result));
 		assertFalse(contentAsString(result).contains("checked>"));
 	}
 
 	@Test
 	public void shareRecord() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 1);
-		ObjectId[] recordIds = getObjectIds("records", owner, 2);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 1);
+		ObjectId[] recordIds = getObjectIds("records", userId, 2);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record",
 								recordIds[1].toString(), "record")));
 		assertEquals(303, status(result));
@@ -115,27 +117,27 @@ public class ShareTest {
 
 	@Test
 	public void pullRecord() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 1);
-		ObjectId[] recordIds = getObjectIds("records", owner, 2);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 1);
+		ObjectId[] recordIds = getObjectIds("records", userId, 2);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[1] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record")));
 		assertEquals(303, status(result));
 	}
 
 	@Test
 	public void shareRecords() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 1);
-		ObjectId[] recordIds = getObjectIds("records", owner, 4);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 1);
+		ObjectId[] recordIds = getObjectIds("records", userId, 4);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[0].toString(), "record",
 								recordIds[1].toString(), "record", recordIds[2].toString(), "record",
 								recordIds[3].toString(), "record")));
@@ -144,16 +146,16 @@ public class ShareTest {
 
 	@Test
 	public void pullRecords() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 1);
-		ObjectId[] recordIds = getObjectIds("records", owner, 4);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 1);
+		ObjectId[] recordIds = getObjectIds("records", userId, 4);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[1] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[2] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[3] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", recordIds[1].toString(), "record",
 								recordIds[3].toString(), "record")));
 		assertEquals(303, status(result));
@@ -161,16 +163,16 @@ public class ShareTest {
 
 	@Test
 	public void shareRecordsMultipleCircles() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 3);
-		ObjectId[] recordIds = getObjectIds("records", owner, 4);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 3);
+		ObjectId[] recordIds = getObjectIds("records", userId, 4);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[1] });
 		shareRecordsWithCircle(circleIds[1], new ObjectId[] { recordIds[0] });
 		shareRecordsWithCircle(circleIds[1], new ObjectId[] { recordIds[3] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", circleIds[1].toString(), "circle",
 								circleIds[2].toString(), "circle", recordIds[2].toString(), "record",
 								recordIds[3].toString(), "record")));
@@ -179,9 +181,9 @@ public class ShareTest {
 
 	@Test
 	public void pullRecordsMultipleCircles() {
-		String owner = "test1@example.com";
-		ObjectId[] circleIds = getObjectIds("circles", owner, 3);
-		ObjectId[] recordIds = getObjectIds("records", owner, 4);
+		ObjectId userId = User.getId("test1@example.com");
+		ObjectId[] circleIds = getObjectIds("circles", userId, 3);
+		ObjectId[] recordIds = getObjectIds("records", userId, 4);
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[0] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[1] });
 		shareRecordsWithCircle(circleIds[0], new ObjectId[] { recordIds[2] });
@@ -192,7 +194,7 @@ public class ShareTest {
 		shareRecordsWithCircle(circleIds[2], new ObjectId[] { recordIds[0] });
 		Result result = callAction(
 				controllers.routes.ref.Share.share(),
-				fakeRequest().withSession("email", owner).withFormUrlEncodedBody(
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of(circleIds[0].toString(), "circle", circleIds[1].toString(), "circle",
 								recordIds[1].toString(), "record")));
 		assertEquals(303, status(result));
@@ -201,10 +203,10 @@ public class ShareTest {
 	/**
 	 * Get the ids of 'num' objects in the given collection, owned by the given owner.
 	 */
-	private ObjectId[] getObjectIds(String collection, String owner, int num) {
+	private ObjectId[] getObjectIds(String collection, ObjectId userId, int num) {
 		ObjectId[] objectIds = new ObjectId[num];
 		DBCollection coll = TestConnection.getCollection(collection);
-		DBObject query = new BasicDBObject("owner", owner);
+		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor cursor = coll.find(query);
 		for (int i = 0; i < num; i++) {
 			assertTrue(cursor.hasNext());

@@ -35,20 +35,20 @@ public class Circle extends Model implements Comparable<Circle> {
 		return this.order - o.order;
 	}
 
-	public static boolean isOwner(ObjectId circleId, ObjectId user) {
+	public static boolean isOwner(ObjectId circleId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
-		query.put("owner", user);
+		query.put("owner", userId);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
 	 * Find the circles that are owned by the given user.
 	 */
-	public static List<Circle> findOwnedBy(ObjectId user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Circle> findOwnedBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
-		DBObject query = new BasicDBObject("owner", user);
+		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -62,10 +62,10 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Find the circles this user is a member of.
 	 */
-	public static List<Circle> findMemberOf(ObjectId user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Circle> findMemberOf(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
-		DBObject query = new BasicDBObject("members", user);
+		DBObject query = new BasicDBObject("members", userId);
 		DBCursor result = Connection.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
@@ -77,10 +77,10 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Find the users that the given user has already added to his circles.
 	 */
-	public static List<User> findContacts(ObjectId user) throws IllegalArgumentException, IllegalAccessException,
+	public static List<User> findContacts(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		Set<ObjectId> contacts = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject("owner", user);
+		DBObject query = new BasicDBObject("owner", userId);
 		DBObject projection = new BasicDBObject("members", 1);
 		DBCursor result = Connection.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
@@ -90,8 +90,8 @@ public class Circle extends Model implements Comparable<Circle> {
 			}
 		}
 		List<User> userList = new ArrayList<User>();
-		for (ObjectId userId : contacts) {
-			userList.add(User.find(userId));
+		for (ObjectId contactId : contacts) {
+			userList.add(User.find(contactId));
 		}
 		Collections.sort(userList);
 		return userList;
@@ -100,9 +100,9 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Find the circles of the given user that contain the given record.
 	 */
-	public static Set<ObjectId> findWithRecord(ObjectId recordId, ObjectId user) {
+	public static Set<ObjectId> findWithRecord(ObjectId recordId, ObjectId userId) {
 		Set<ObjectId> circles = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject("owner", user);
+		DBObject query = new BasicDBObject("owner", userId);
 		query.put("shared", recordId);
 		DBObject projection = new BasicDBObject("_id", 1);
 		DBCursor result = Connection.getCollection(collection).find(query, projection);
@@ -184,17 +184,17 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Adds a member to the circle with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String addMember(ObjectId circleId, ObjectId newMember) throws IllegalArgumentException,
+	public static String addMember(ObjectId circleId, ObjectId userId) throws IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		if (User.find(newMember) == null) {
+		if (User.find(userId) == null) {
 			return "No user with this email address exists.";
-		} else if (Circle.isOwner(circleId, newMember)) {
+		} else if (Circle.isOwner(circleId, userId)) {
 			return "Owner can't be added to own circle.";
-		} else if (Circle.userIsInCircle(circleId, newMember)) {
+		} else if (Circle.userIsInCircle(circleId, userId)) {
 			return "User is already in this circle.";
 		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
-			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", newMember));
+			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
@@ -203,15 +203,15 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Removes a member from the circle with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String removeMember(ObjectId circleId, ObjectId memberId) throws IllegalArgumentException,
+	public static String removeMember(ObjectId circleId, ObjectId userId) throws IllegalArgumentException,
 			IllegalAccessException, InstantiationException {
-		if (User.find(memberId) == null) {
+		if (User.find(userId) == null) {
 			return "No user with this email address exists.";
-		} else if (!Circle.userIsInCircle(circleId, memberId)) {
+		} else if (!Circle.userIsInCircle(circleId, userId)) {
 			return "User is not in this circle.";
 		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
-			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", memberId));
+			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", userId));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
@@ -220,11 +220,11 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Returns a list of all records shared with this circle.
 	 */
-	public static Set<ObjectId> getShared(ObjectId circleId, String email) {
+	public static Set<ObjectId> getShared(ObjectId circleId, ObjectId userId) {
 		Set<ObjectId> shared = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
-		query.put("owner", email);
+		query.put("owner", userId);
 		DBObject foundObject = Connection.getCollection(collection).findOne(query);
 		if (foundObject != null) {
 			BasicDBList sharedRecords = (BasicDBList) foundObject.get("shared");
@@ -235,12 +235,12 @@ public class Circle extends Model implements Comparable<Circle> {
 		return shared;
 	}
 
-	public static String updateShared(List<ObjectId> circleIds, ObjectId recordId, String owner)
+	public static String updateShared(List<ObjectId> circleIds, ObjectId recordId, ObjectId userId)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else {
-			DBObject query = new BasicDBObject("owner", owner);
+			DBObject query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
 			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
@@ -248,7 +248,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			if (errorMessage != null) {
 				return errorMessage;
 			}
-			query = new BasicDBObject("owner", owner);
+			query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$nin", circleIds.toArray()));
 			update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
 			result = Connection.getCollection(collection).updateMulti(query, update);
@@ -288,13 +288,13 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject projection = new BasicDBObject("members", 1);
 		DBObject result = Connection.getCollection(collection).findOne(query, projection);
 		BasicDBList members = (BasicDBList) result.get("members");
-		Set<String> emails = new HashSet<String>();
-		for (Object email : members) {
-			emails.add((String) email);
+		Set<ObjectId> userIds = new HashSet<ObjectId>();
+		for (Object userId : members) {
+			userIds.add((ObjectId) userId);
 		}
 		Iterator<User> iterator = newUserList.iterator();
 		while (iterator.hasNext()) {
-			if (emails.contains(iterator.next().email)) {
+			if (userIds.contains(iterator.next()._id)) {
 				iterator.remove();
 			}
 		}
@@ -304,20 +304,20 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Checks whether a circle with the same name already exists for the given owner.
 	 */
-	private static boolean circleWithSameNameExists(String name, ObjectId owner) {
+	private static boolean circleWithSameNameExists(String name, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
-		query.put("owner", owner);
+		query.put("owner", userId);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
 	 * Checks whether the given user is in the given circle.
 	 */
-	private static boolean userIsInCircle(ObjectId circleId, ObjectId user) {
+	private static boolean userIsInCircle(ObjectId circleId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
-		query.put("members", new BasicDBObject("$in", new ObjectId[] { user }));
+		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 

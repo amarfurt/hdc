@@ -54,8 +54,8 @@ public class KeywordSearchTest {
 
 	@Test
 	public void multiPrefixMatch() throws Exception {
-		String email = (String) TestConnection.getCollection("users").findOne().get("email");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(email, email, 2);
+		ObjectId userId = (ObjectId) TestConnection.getCollection("users").findOne().get("_id");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userId, userId, 2);
 		DBCollection collection = TestConnection.getCollection("records");
 		collection.update(new BasicDBObject("_id", recordIds[0]), new BasicDBObject("$push", new BasicDBObject("tags",
 				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[3] }))));
@@ -71,8 +71,8 @@ public class KeywordSearchTest {
 
 	@Test
 	public void multiExactMatch() throws Exception {
-		String email = (String) TestConnection.getCollection("users").findOne().get("email");
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(email, email, 2);
+		ObjectId userId = (ObjectId) TestConnection.getCollection("users").findOne().get("_id");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userId, userId, 2);
 		DBCollection collection = TestConnection.getCollection("records");
 		collection.update(new BasicDBObject("_id", recordIds[0]), new BasicDBObject("$push", new BasicDBObject("tags",
 				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[3] }))));
@@ -112,8 +112,8 @@ public class KeywordSearchTest {
 
 	private void insertRecordKeywords() throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		String[] emails = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(emails[1], emails[0], keywordList.length);
+		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], keywordList.length);
 		DBCollection collection = TestConnection.getCollection("records");
 		for (int i = 0; i < keywordList.length; i++) {
 			collection.update(new BasicDBObject("_id", recordIds[i]), new BasicDBObject("$push", new BasicDBObject(

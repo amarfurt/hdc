@@ -5,7 +5,12 @@
 		<span class="list-group-item active">Members</span>
 		@if(circle.members.size() > 0) {
 			@circle.members.map { member =>
-				@views.html.elements.circles.member(circle._id, member)
+				<a href="" circle-id="@circle._id" id="@member" class="member list-group-item">
+					@User.getName(member.asInstanceOf[org.bson.types.ObjectId])
+					<button class="btn btn-xs btn-warning removeMember">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+				</a>
 			}
 		} else {
 			<p class="list-group-item">This circle has no members yet.</p>

@@ -32,7 +32,7 @@ public class Spaces extends Controller {
 
 	public static Result show(String activeSpaceId) {
 		try {
-			String user = request().username();
+			ObjectId user = new ObjectId(request().username());
 			ObjectId activeSpace = null;
 			if (activeSpaceId != null) {
 				activeSpace = new ObjectId(activeSpaceId);
@@ -54,7 +54,7 @@ public class Spaces extends Controller {
 	public static String validateSpace(String name, String visualization) {
 		Space newSpace = new Space();
 		newSpace.name = name;
-		newSpace.owner = request().username();
+		newSpace.owner = new ObjectId(request().username());
 		newSpace.visualization = visualization;
 		newSpace.records = new BasicDBList();
 		try {
@@ -77,7 +77,7 @@ public class Spaces extends Controller {
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
 			try {
-				String user = request().username();
+				ObjectId user = new ObjectId(request().username());
 				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), null,
 						user));
 			} catch (IllegalArgumentException e) {
@@ -189,7 +189,8 @@ public class Spaces extends Controller {
 			spaceIds.add(new ObjectId(id));
 		}
 		try {
-			String errorMessage = Space.updateRecords(spaceIds, new ObjectId(recordId), request().username());
+			String errorMessage = Space.updateRecords(spaceIds, new ObjectId(recordId), new ObjectId(request()
+					.username()));
 			if (errorMessage == null) {
 				return ok();
 			} else {
@@ -226,7 +227,7 @@ public class Spaces extends Controller {
 
 		// update circles
 		try {
-			String errorMessage = Circle.updateShared(circleIds, recordId, request().username());
+			String errorMessage = Circle.updateShared(circleIds, recordId, new ObjectId(request().username()));
 			if (errorMessage == null) {
 				return ok();
 			} else {
@@ -244,7 +245,7 @@ public class Spaces extends Controller {
 
 	public static Result manuallyAddRecord() {
 		Record newRecord = new Record();
-		newRecord.creator = request().username();
+		newRecord.creator = new ObjectId(request().username());
 		newRecord.owner = newRecord.creator;
 		newRecord.created = DateTimeUtils.getNow();
 		newRecord.data = Form.form().bindFromRequest().get("data");
@@ -273,7 +274,7 @@ public class Spaces extends Controller {
 		List<Record> response = new ArrayList<Record>();
 		try {
 			// TODO use caching
-			String user = request().username();
+			ObjectId user = new ObjectId(request().username());
 			ObjectId sId = new ObjectId(spaceId);
 			if (search == null || search.isEmpty()) {
 				response = Record.findSharedWith(user);
@@ -295,7 +296,7 @@ public class Spaces extends Controller {
 	 * Find the spaces that contain the given record.
 	 */
 	public static Result findSpacesWith(String recordId) {
-		Set<ObjectId> spaceIds = Space.findWithRecord(new ObjectId(recordId), request().username());
+		Set<ObjectId> spaceIds = Space.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
 		Set<String> spaces = new HashSet<String>();
 		for (ObjectId id : spaceIds) {
 			spaces.add(id.toString());
@@ -304,7 +305,7 @@ public class Spaces extends Controller {
 	}
 
 	public static Result findCirclesWith(String recordId) {
-		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), request().username());
+		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
 		Set<String> circles = new HashSet<String>();
 		for (ObjectId id : circleIds) {
 			circles.add(id.toString());
@@ -314,15 +315,15 @@ public class Spaces extends Controller {
 
 	public static Result loadAllRecords() {
 		try {
-			List<Record> records = Record.findSharedWith(request().username());
+			List<Record> records = Record.findSharedWith(new ObjectId(request().username()));
 
 			// format records
 			List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
 			for (Record record : records) {
 				ObjectNode jsonRecord = Json.newObject();
 				jsonRecord.put("_id", record._id.toString());
-				jsonRecord.put("creator", record.creator);
-				jsonRecord.put("owner", record.owner);
+				jsonRecord.put("creator", record.creator.toString());
+				jsonRecord.put("owner", record.owner.toString());
 				jsonRecord.put("created", record.created);
 				jsonRecord.put("data", Record.dataToString(record.data));
 				jsonRecords.add(jsonRecord);

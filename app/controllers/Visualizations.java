@@ -49,7 +49,11 @@ public class Visualizations extends Controller {
 			}
 			String field = split[1];
 			try {
-				Record.class.getField(field).set(recordMap.get(id), data.get(key));
+				if (Record.class.getField(field).getType().equals(ObjectId.class)) {
+					Record.class.getField(field).set(recordMap.get(id), new ObjectId(data.get(key)));
+				} else {
+					Record.class.getField(field).set(recordMap.get(id), data.get(key));
+				}
 			} catch (IllegalArgumentException e) {
 				return internalServerError(e.getMessage());
 			} catch (IllegalAccessException e) {
@@ -62,7 +66,7 @@ public class Visualizations extends Controller {
 		}
 		List<Record> records = new ArrayList<Record>(recordMap.values());
 		Collections.sort(records);
-		return ok(list.render(spaceId, records, request().username()));
+		return ok(list.render(spaceId, records, new ObjectId(request().username())));
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
@@ -76,7 +80,7 @@ public class Visualizations extends Controller {
 		} else if (json.get("records") == null) {
 			return badRequest("No records found.");
 		}
-		
+
 		// parse the space id and the records
 		String spaceId = json.get("spaceId").asText();
 		List<Record> records = new ArrayList<Record>();
@@ -99,7 +103,7 @@ public class Visualizations extends Controller {
 			}
 			records.add(newRecord);
 		}
-		return ok(list.render(spaceId, records, request().username()));
+		return ok(list.render(spaceId, records, new ObjectId(request().username())));
 	}
 
 }
