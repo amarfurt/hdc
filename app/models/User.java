@@ -94,7 +94,13 @@ public class User extends Model implements Comparable<User> {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(User.class, newUser));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newUser._id = (ObjectId) insert.get("_id");
-		return result.getLastError().getErrorMessage();
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+		
+		// also set up installed entry
+		return Installed.addUser(newUser._id);
 	}
 
 	public static String remove(ObjectId userId) {

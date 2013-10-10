@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import models.Model;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -15,7 +17,7 @@ public class KeywordSearch {
 	/**
 	 * Return matches on prefix of keywords. Intersects the results from each search term.
 	 */
-	public static <T> List<T> searchByType(Class<T> modelClass, String collection, String search, int limit)
+	public static <T extends Model> List<T> searchByType(Class<T> modelClass, String collection, String search, int limit)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<T> results = new ArrayList<T>();
 		String[] terms = split(search);
@@ -35,7 +37,7 @@ public class KeywordSearch {
 	/**
 	 * Returns only the exact matches of search term and prefix. Intersects the results from each search term.
 	 */
-	public static <T> List<T> searchByTypeFullMatch(Class<T> modelClass, String collection, String search, int limit)
+	public static <T extends Model> List<T> searchByTypeFullMatch(Class<T> modelClass, String collection, String search, int limit)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		List<T> results = new ArrayList<T>();
 		DBObject query = new BasicDBObject("tags", new BasicDBObject("$all", split(search)));

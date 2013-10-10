@@ -181,17 +181,32 @@
 		"tags": [ ]
 	}
 	],
-	"visualizations": [
+	"apps": [
 	{
-		"name": "Simple List",
-		"description": "This simple visualization shows all records in a list.",
+		"_id": { "$oid" : "5255500630040546a0ddc674" },
+		"name": "Runtastic",
+		"description": "Shows statistics of its owners running performances.",
 		"tags": [ ]
 	}
 	],
-	"apps": [
+	"visualizations": [
 	{
-		"name": "Runtastic",
-		"description": "Shows statistics of its owners running performances.",
+		"_id": { "$oid" : "5255500630040546a0ddc675" },
+		"name": "List",
+		"description": "This simple visualization shows all records in a list.",
+		"url": "localhost:9000/visualizations/list",
+		"tags": [ ]
+	}
+	],
+	"installed": [
+	{
+		"_id": { "$oid" : "5255500630040546a0ddc670" },
+		"apps": [
+			{ "$oid" : "5255500630040546a0ddc674" }
+		],
+		"visualizations": [
+			{ "$oid" : "5255500630040546a0ddc674" }
+		],
 		"tags": [ ]
 	}
 	]

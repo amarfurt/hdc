@@ -177,7 +177,7 @@ public class RecordTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.order = 1;
 		space.records = new BasicDBList();
 		space.records.add(recordIds[1]);

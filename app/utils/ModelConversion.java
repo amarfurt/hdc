@@ -4,9 +4,11 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import models.Model;
+
 public class ModelConversion {
 
-	public static <T> Map<String, Object> modelToMap(Class<T> modelClass, T modelObject) throws IllegalArgumentException,
+	public static <T extends Model> Map<String, Object> modelToMap(Class<T> modelClass, T modelObject) throws IllegalArgumentException,
 			IllegalAccessException {
 		Map<String, Object> map = new HashMap<String, Object>();
 		for (Field field : modelClass.getFields()) {
@@ -15,7 +17,7 @@ public class ModelConversion {
 		return map;
 	}
 
-	public static <T> T mapToModel(Class<T> modelClass, Map modelData) throws IllegalArgumentException, IllegalAccessException,
+	public static <T extends Model> T mapToModel(Class<T> modelClass, Map modelData) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		T modelObject = modelClass.newInstance();
 		for (Field field : modelClass.getFields()) {

@@ -26,7 +26,7 @@ public class Space extends Model implements Comparable<Space> {
 
 	public String name;
 	public ObjectId owner;
-	public String visualization;
+	public ObjectId visualization;
 	public int order;
 	public BasicDBList records;
 

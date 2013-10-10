@@ -50,7 +50,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -66,7 +66,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -82,7 +82,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		assertNull(Space.add(space));
 		assertEquals(1, spaces.count());
@@ -97,7 +97,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		assertNull(Space.add(space));
 		assertEquals(1, spaces.count());
@@ -117,7 +117,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -135,7 +135,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		spaces.insert(new BasicDBObject(ModelConversion.modelToMap(Space.class, space)));
 		assertEquals(1, spaces.count());
@@ -152,7 +152,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -170,7 +170,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -187,7 +187,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = new ObjectId();
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
 		spaces.insert(spaceObject);
@@ -207,7 +207,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -229,7 +229,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -251,7 +251,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
@@ -275,7 +275,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
@@ -298,7 +298,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
@@ -321,7 +321,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -344,7 +344,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space 1";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
@@ -376,7 +376,7 @@ public class SpaceTest {
 		Space space = new Space();
 		space.name = "Test space 1";
 		space.owner = userIds[0];
-		space.visualization = "Simple List";
+		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));

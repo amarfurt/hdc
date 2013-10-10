@@ -52,10 +52,11 @@ public class Spaces extends Controller {
 	 * Validation helper for space form (we only have access to current user in controllers).
 	 */
 	public static String validateSpace(String name, String visualization) {
+		System.out.println("Hey");
 		Space newSpace = new Space();
 		newSpace.name = name;
 		newSpace.owner = new ObjectId(request().username());
-		newSpace.visualization = visualization;
+		newSpace.visualization = new ObjectId(visualization);
 		newSpace.records = new BasicDBList();
 		try {
 			String errorMessage = Space.add(newSpace);
