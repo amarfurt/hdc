@@ -1,0 +1,49 @@
+@(spotlightedVisualizations: List[Visualization], user: org.bson.types.ObjectId)
+
+@main(user, "market") {
+	<div class="page-header">
+		<h1>Market <small>Visualizations</small></h1>
+	</div>
+	<div class="row">
+		<!-- Spotlight -->
+		<div class="col-xs-12 col-md-6">
+			<p class="lead">Spotlight</p>
+			<div class="row">
+				@spotlightedVisualizations.map { visualization =>
+					<div class="col-xs-6">
+						<div class="thumbnail">
+							<a href="#">@visualization.name</a>
+							<p>@visualization.description</p>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+		<!-- Recent -->
+		<div class="col-xs-12 col-md-6">
+			<p class="lead">Recently published</p>
+			<div class="row">
+				@spotlightedVisualizations.map { visualization =>
+					<div class="col-xs-6">
+						<div class="thumbnail">
+							<a href="#">@visualization.name</a>
+							<p>@visualization.description</p>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+	
+	<!-- Use media???
+	<div class="media">
+	  <a class="pull-left" href="#">
+	    <img class="media-object" src="..." alt="...">
+	  </a>
+	  <div class="media-body">
+	    <h4 class="media-heading">Media heading</h4>
+	    ...
+	  </div>
+	</div> 
+	 -->
+}

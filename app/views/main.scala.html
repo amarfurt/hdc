@@ -48,9 +48,10 @@
 		            	<li @if("index".equals(active)){class="active"}><a href="/">News <span class="badge">0</span></a></li>
 						<li @if("spaces".equals(active)){class="active"}><a href="/spaces">Spaces</a></li>
 						<li @if("circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
+						<li @if("market".equals(active)){class="active"}><a href="/market">Market</a></li>
 					</ul>
 					<ul class="nav navbar-nav navbar-right">
-						<li><p class="navbar-text">@User.getName(user) <small class="text-muted">(@user)</small></p></li>
+						<li><p class="navbar-text">@User.getName(user)</p></li>
 						<li><a href="@routes.Application.logout()">
 							<span class="glyphicon glyphicon-off"></span> Sign out
 						</a></li>

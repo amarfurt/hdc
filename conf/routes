@@ -33,6 +33,10 @@ POST    /circles/user/:id           controllers.Circles.addUsers(id: String)
 DELETE  /circles/user/:id           controllers.Circles.removeMember(id: String)
 GET     /search/user/:id/:search    controllers.Circles.searchUsers(id: String, search: String)
 GET     /search/user/:id/           controllers.Circles.searchUsers(id: String, search: String = "")
+# Market
+GET     /market                     controllers.Market.show()
+GET     /market/app/:id             controllers.Market.showApp(id: String)
+GET     /market/visualization/:id   controllers.Market.showVisualization(id: String)
 # Share
 GET     /share                      controllers.Application.share()
 POST    /share                      controllers.Share.share()

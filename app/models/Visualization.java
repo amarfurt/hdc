@@ -10,6 +10,7 @@ import utils.Connection;
 import utils.ModelConversion;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
@@ -26,7 +27,7 @@ public class Visualization extends SearchableModel {
 		DBObject projection = new BasicDBObject("name", 1);
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
 	}
-	
+
 	public static String getURL(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("url", 1);
@@ -46,6 +47,20 @@ public class Visualization extends SearchableModel {
 		List<Visualization> visualizations = new ArrayList<Visualization>();
 		for (ObjectId visualizationId : visualizationIds) {
 			visualizations.add(find(visualizationId));
+		}
+		// TODO sort
+		return visualizations;
+	}
+
+	public static List<Visualization> findSpotlighted() throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		List<Visualization> visualizations = new ArrayList<Visualization>();
+		// TODO return only spotlighted visualizations
+		// for now: return all visualizations
+		DBCursor result = Connection.getCollection(collection).find();
+		while (result.hasNext()) {
+			DBObject cur = result.next();
+			visualizations.add(ModelConversion.mapToModel(Visualization.class, cur.toMap()));
 		}
 		// TODO sort
 		return visualizations;
