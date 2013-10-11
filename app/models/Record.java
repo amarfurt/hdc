@@ -18,7 +18,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Record extends Model implements Comparable<Record> {
+public class Record extends SearchableModel implements Comparable<Record> {
 
 	private static final String collection = "records";
 

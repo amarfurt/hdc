@@ -20,7 +20,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Space extends Model implements Comparable<Space> {
+public class Space extends SearchableModel implements Comparable<Space> {
 
 	private static final String collection = "spaces";
 

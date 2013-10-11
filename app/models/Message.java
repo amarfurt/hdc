@@ -13,7 +13,7 @@ import com.mongodb.DBObject;
 
 import controllers.database.Connection;
 
-public class Message extends Model {
+public class Message extends SearchableModel {
 
 	public ObjectId sender;
 	public ObjectId receiver;

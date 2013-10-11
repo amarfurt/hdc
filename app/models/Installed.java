@@ -19,7 +19,6 @@ public class Installed extends Model {
 	private static final String collection = "installed";
 
 	// _id is the id of the user
-	// tags are unused
 	public BasicDBList apps;
 	public BasicDBList visualizations;
 
@@ -51,7 +50,6 @@ public class Installed extends Model {
 		installed._id = userId;
 		installed.apps = new BasicDBList();
 		installed.visualizations = new BasicDBList();
-		installed.tags = new BasicDBList();
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Installed.class, installed));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		return result.getLastError().getErrorMessage();

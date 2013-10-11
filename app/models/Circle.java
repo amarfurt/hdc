@@ -20,7 +20,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Circle extends Model implements Comparable<Circle> {
+public class Circle extends SearchableModel implements Comparable<Circle> {
 
 	private static final String collection = "circles";
 

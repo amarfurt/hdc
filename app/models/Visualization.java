@@ -14,7 +14,7 @@ import com.mongodb.WriteResult;
 
 import controllers.database.Connection;
 
-public class Visualization extends Model {
+public class Visualization extends SearchableModel {
 
 	private static final String collection = "visualizations";
 
