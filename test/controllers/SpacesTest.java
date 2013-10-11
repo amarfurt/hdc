@@ -49,17 +49,18 @@ public class SpacesTest {
 	@Test
 	public void addSpace() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		ObjectId userId = User.getId("test1@example.com");
+		ObjectId visualizationId = new ObjectId();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.add(),
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Test space", "visualization", "Test visualization")));
+						ImmutableMap.of("name", "Test space", "visualization", visualizationId.toString())));
 		assertEquals(303, status(result));
 		DBObject foundSpace = TestConnection.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
 		Space space = ModelConversion.mapToModel(Space.class, foundSpace.toMap());
 		assertNotNull(space);
 		assertEquals("Test space", space.name);
 		assertEquals(userId, space.owner);
-		assertEquals("Test visualization", space.visualization);
+		assertEquals(visualizationId, space.visualization);
 		assertEquals(OrderOperations.getMax("spaces", space.owner), space.order);
 		assertEquals(0, space.records.size());
 	}

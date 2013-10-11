@@ -76,7 +76,7 @@ public class VisualizationTest {
 		visualization.name = "Test visualization";
 		visualization.description = "Test description";
 		visualization.tags = new BasicDBList();
-		DBObject dbObject = new BasicDBObject(ModelConversion.modelToMap(Visualization.class, visualization));
+		DBObject dbObject = new BasicDBObject(ModelConversion.modelToMap(visualization));
 		visualizations.insert(dbObject);
 		assertEquals(1, visualizations.count());
 		assertNull(Visualization.delete((ObjectId) dbObject.get("_id")));
@@ -91,7 +91,7 @@ public class VisualizationTest {
 		visualization.name = "Test visualization";
 		visualization.description = "Test description";
 		visualization.tags = new BasicDBList();
-		DBObject dbObject = new BasicDBObject(ModelConversion.modelToMap(Visualization.class, visualization));
+		DBObject dbObject = new BasicDBObject(ModelConversion.modelToMap(visualization));
 		visualizations.insert(dbObject);
 		assertEquals(1, visualizations.count());
 		assertNull(Visualization.delete((ObjectId) dbObject.get("_id")));

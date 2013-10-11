@@ -51,7 +51,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
-		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		ObjectId recordId = (ObjectId) recordObject.get("_id");
@@ -67,7 +67,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
-		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		ObjectId recordId = (ObjectId) recordObject.get("_id");
@@ -83,7 +83,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
-		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		ObjectId recordId = (ObjectId) recordObject.get("_id");
@@ -119,7 +119,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
-		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		assertEquals(creator, records.findOne().get("creator"));
@@ -136,7 +136,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
 		record.data = "Test data.";
-		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
 		assertNull(Record.delete(ObjectId.get()));
@@ -181,7 +181,7 @@ public class RecordTest {
 		space.order = 1;
 		space.records = new BasicDBList();
 		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		List<Record> foundRecords = Record.findSharedWith(userIds[0]);
 		foundRecords = Space.makeDisjoint((ObjectId) spaceObject.get("_id"), foundRecords);
@@ -208,7 +208,7 @@ public class RecordTest {
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		circle.shared.add(recordIds[2]);
-		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(1, circles.count());
 		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
 		assertEquals(3, foundRecords.size());
@@ -235,13 +235,13 @@ public class RecordTest {
 		circle.shared = new BasicDBList();
 		circle.shared.add(recordIds[0]);
 		circle.shared.add(recordIds[2]);
-		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		circle.owner = userIds[1];
 		circle.members.clear();
 		circle.members.add(userIds[0]);
 		circle.shared.clear();
 		circle.shared.add(recordId[0]);
-		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(2, circles.count());
 		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
 		assertEquals(3, foundRecords.size());

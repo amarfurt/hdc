@@ -85,7 +85,7 @@ public class Space extends SearchableModel implements Comparable<Space> {
 			for (String namePart : newSpace.name.toLowerCase().split(" ")) {
 				newSpace.tags.add(namePart);
 			}
-			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Space.class, newSpace));
+			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newSpace._id = (ObjectId) insert.get("_id");
 			return result.getLastError().getErrorMessage();

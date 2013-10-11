@@ -8,10 +8,10 @@ import models.Model;
 
 public class ModelConversion {
 
-	public static <T extends Model> Map<String, Object> modelToMap(Class<T> modelClass, T modelObject) throws IllegalArgumentException,
+	public static <T extends Model> Map<String, Object> modelToMap(T modelObject) throws IllegalArgumentException,
 			IllegalAccessException {
 		Map<String, Object> map = new HashMap<String, Object>();
-		for (Field field : modelClass.getFields()) {
+		for (Field field : modelObject.getClass().getFields()) {
 			map.put(field.getName(), field.get(modelObject));
 		}
 		return map;

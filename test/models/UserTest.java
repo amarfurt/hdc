@@ -48,7 +48,7 @@ public class UserTest {
 		person.name = "Test User";
 		person.password = PasswordHash.createHash("secret");
 		person.birthday = "2000-01-01";
-		DBObject personObject = new BasicDBObject(ModelConversion.modelToMap(Person.class, person));
+		DBObject personObject = new BasicDBObject(ModelConversion.modelToMap(person));
 		users.insert(personObject);
 		assertEquals(1, users.count());
 		User foundUser = User.find((ObjectId) personObject.get("_id"));
@@ -65,7 +65,7 @@ public class UserTest {
 		person.name = "Test User";
 		person.password = PasswordHash.createHash("secret");
 		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
 		assertEquals(1, users.count());
 		User foundUser = User.find(new ObjectId());
 		assertNull(foundUser);

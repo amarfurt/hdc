@@ -123,7 +123,7 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 			for (String namePart : newCircle.name.toLowerCase().split(" ")) {
 				newCircle.tags.add(namePart);
 			}
-			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Circle.class, newCircle));
+			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newCircle._id = (ObjectId) insert.get("_id");
 			return result.getLastError().getErrorMessage();

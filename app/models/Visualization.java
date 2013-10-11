@@ -56,7 +56,7 @@ public class Visualization extends SearchableModel {
 		if (visualizationWithSameNameExists(newVisualization.name)) {
 			return "A visualization with this name already exists.";
 		}
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Visualization.class, newVisualization));
+		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newVisualization._id = (ObjectId) insert.get("_id");
 		return result.getLastError().getErrorMessage();

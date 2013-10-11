@@ -91,7 +91,7 @@ public class User extends SearchableModel implements Comparable<User> {
 		for (String namePart : newUser.name.toLowerCase().split(" ")) {
 			newUser.tags.add(namePart);
 		}
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(User.class, newUser));
+		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newUser));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newUser._id = (ObjectId) insert.get("_id");
 		String errorMessage = result.getLastError().getErrorMessage();

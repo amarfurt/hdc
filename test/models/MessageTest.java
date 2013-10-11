@@ -44,7 +44,7 @@ public class MessageTest {
 		message.datetime = "2000-01-01-000000Z";
 		message.title = "Title";
 		message.content = "Content content.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
+		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
 		assertEquals(1, messages.count());
 		List<Message> foundMessages = Message.findSentTo(person._id);
 		assertEquals(1, foundMessages.size());
@@ -63,7 +63,7 @@ public class MessageTest {
 		message.datetime = "2000-01-01-000000Z";
 		message.title = "Title";
 		message.content = "Content content.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
+		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
 		assertEquals(1, messages.count());
 		List<Message> foundMessages = Message.findSentTo(person._id);
 		assertEquals(0, foundMessages.size());

@@ -134,7 +134,7 @@ public class Record extends SearchableModel implements Comparable<Record> {
 	 * object.
 	 */
 	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException {
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(Record.class, newRecord));
+		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
 		return result.getLastError().getErrorMessage();

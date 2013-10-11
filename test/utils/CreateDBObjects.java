@@ -29,7 +29,7 @@ public class CreateDBObjects {
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
 			user.password = PasswordHash.createHash("secret");
-			DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(User.class, user));
+			DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
 			users.insert(userObject);
 			userIds[i] = (ObjectId) userObject.get("_id");
 		}
@@ -49,7 +49,7 @@ public class CreateDBObjects {
 			record.created = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
 			record.data = "Random data.";
 			record.tags = new BasicDBList();
-			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(Record.class, record));
+			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 			records.insert(recordObject);
 			recordIds[i] = (ObjectId) recordObject.get("_id");
 		}

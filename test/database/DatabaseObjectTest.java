@@ -56,7 +56,7 @@ public class DatabaseObjectTest {
 		user.email = "test1@example.com";
 		user.name = "Test User";
 		user.password = "secret";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(User.class, user)));
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
 		assertTrue(foundObject.containsField("name"));
@@ -72,7 +72,7 @@ public class DatabaseObjectTest {
 		person.name = "Test User";
 		person.password = "secret";
 		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
 		assertTrue(foundObject.containsField("name"));
@@ -89,7 +89,7 @@ public class DatabaseObjectTest {
 		person.name = "Test User";
 		person.password = "secret";
 		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(Person.class, person)));
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
 		Person retrievedPerson = ModelConversion.mapToModel(Person.class, foundObject.toMap());
@@ -107,7 +107,7 @@ public class DatabaseObjectTest {
 		message.datetime = "2000-01-01-120000Z";
 		message.title = "Test";
 		message.content = "This is a test message.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(Message.class, message)));
+		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
 		assertEquals(1, messages.count());
 		DBObject foundObject = messages.findOne();
 		Message retrievedMessage = ModelConversion.mapToModel(Message.class, foundObject.toMap());
@@ -126,7 +126,7 @@ public class DatabaseObjectTest {
 		circle.members.add("test2@example.com");
 		circle.members.add("test3@example.com");
 		circle.members.add("test4@example.com");
-		circles.insert(new BasicDBObject(ModelConversion.modelToMap(Circle.class, circle)));
+		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(1, circles.count());
 		DBObject foundObject = circles.findOne();
 		Circle retrievedCircle = ModelConversion.mapToModel(Circle.class, foundObject.toMap());

@@ -52,7 +52,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
@@ -68,7 +68,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
@@ -119,7 +119,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
@@ -137,7 +137,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		spaces.insert(new BasicDBObject(ModelConversion.modelToMap(Space.class, space)));
+		spaces.insert(new BasicDBObject(ModelConversion.modelToMap(space)));
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = ObjectId.get();
 		assertEquals("This space doesn't exist.", Space.rename(spaceId, "New space"));
@@ -154,7 +154,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
@@ -172,7 +172,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals("Test space", spaces.findOne().get("name"));
@@ -189,7 +189,7 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		ObjectId randomId = ObjectId.get();
@@ -210,7 +210,7 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -232,7 +232,7 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -255,7 +255,7 @@ public class SpaceTest {
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -279,7 +279,7 @@ public class SpaceTest {
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -302,7 +302,7 @@ public class SpaceTest {
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -324,7 +324,7 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
@@ -347,12 +347,12 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(space1);
 		space.name = "Test space 2";
 		space.records.clear();
 		space.records.add(recordIds[1]);
-		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(space2);
 		assertEquals(2, spaces.count());
 		DBObject query1 = new BasicDBObject("_id", space1.get("_id"));
@@ -379,12 +379,12 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(space1);
 		space.name = "Test space 2";
 		space.records.clear();
 		space.records.add(recordIds[1]);
-		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(Space.class, space));
+		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(space2);
 		assertEquals(2, spaces.count());
 		Set<ObjectId> spaceList = Space.findWithRecord(recordIds[0], userIds[0]);

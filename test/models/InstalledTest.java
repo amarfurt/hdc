@@ -64,7 +64,7 @@ public class InstalledTest {
 		newInstalled._id = new ObjectId();
 		newInstalled.apps = new BasicDBList();
 		newInstalled.visualizations = new BasicDBList();
-		installed.insert(new BasicDBObject(ModelConversion.modelToMap(Installed.class, newInstalled)));
+		installed.insert(new BasicDBObject(ModelConversion.modelToMap(newInstalled)));
 		assertEquals(1, installed.count());
 		ObjectId appId = new ObjectId();
 		assertNull(Installed.installApp(appId, newInstalled._id));
@@ -83,7 +83,7 @@ public class InstalledTest {
 		newInstalled._id = new ObjectId();
 		newInstalled.apps = new BasicDBList();
 		newInstalled.visualizations = new BasicDBList();
-		installed.insert(new BasicDBObject(ModelConversion.modelToMap(Installed.class, newInstalled)));
+		installed.insert(new BasicDBObject(ModelConversion.modelToMap(newInstalled)));
 		assertEquals(1, installed.count());
 		ObjectId visualizationId = new ObjectId();
 		Installed.installVisualization(visualizationId, newInstalled._id);
@@ -110,13 +110,13 @@ public class InstalledTest {
 		newInstalled.apps = new BasicDBList();
 		newInstalled.visualizations = new BasicDBList();
 		newInstalled.visualizations.add(visualizationId);
-		installed.insert(new BasicDBObject(ModelConversion.modelToMap(Installed.class, newInstalled)));
+		installed.insert(new BasicDBObject(ModelConversion.modelToMap(newInstalled)));
 		newInstalled._id = installed2;
 		newInstalled.visualizations.add(visualizationId2);
-		installed.insert(new BasicDBObject(ModelConversion.modelToMap(Installed.class, newInstalled)));
+		installed.insert(new BasicDBObject(ModelConversion.modelToMap(newInstalled)));
 		newInstalled._id = installed3;
 		newInstalled.visualizations.clear();
-		installed.insert(new BasicDBObject(ModelConversion.modelToMap(Installed.class, newInstalled)));
+		installed.insert(new BasicDBObject(ModelConversion.modelToMap(newInstalled)));
 		assertEquals(3, installed.count());
 		assertNull(Installed.deleteVisualization(visualizationId));
 		DBObject dbObject1 = installed.findOne(new BasicDBObject("_id", installed1));
