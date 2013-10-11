@@ -1,6 +1,5 @@
 package utils;
 
-import controllers.database.Connection;
 
 /**
  * Make certain operations available to test classes.

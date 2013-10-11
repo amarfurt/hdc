@@ -10,8 +10,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import controllers.database.Connection;
-
 public class KeywordSearch {
 
 	/**

@@ -9,14 +9,13 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 
+import utils.Connection;
 import utils.ModelConversion;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-
-import controllers.database.Connection;
 
 public class Record extends SearchableModel implements Comparable<Record> {
 

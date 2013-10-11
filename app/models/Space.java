@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 
+import utils.Connection;
 import utils.ModelConversion;
 import utils.OrderOperations;
 
@@ -17,8 +18,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-
-import controllers.database.Connection;
 
 public class Space extends SearchableModel implements Comparable<Space> {
 

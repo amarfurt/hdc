@@ -8,8 +8,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-import controllers.database.Connection;
-
 public class OrderOperations {
 
 	/**

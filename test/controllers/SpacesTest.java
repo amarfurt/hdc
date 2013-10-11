@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import play.mvc.Result;
+import utils.Connection;
 import utils.LoadData;
 import utils.ModelConversion;
 import utils.OrderOperations;
@@ -29,8 +30,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-
-import controllers.database.Connection;
 
 public class SpacesTest {
 

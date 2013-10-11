@@ -1,4 +1,4 @@
-package controllers.database;
+package utils;
 
 import java.net.UnknownHostException;
 

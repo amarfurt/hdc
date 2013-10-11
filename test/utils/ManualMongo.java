@@ -8,8 +8,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteResult;
 
-import controllers.database.Connection;
-
 public class ManualMongo {
 
 	public static void main(String[] args) {

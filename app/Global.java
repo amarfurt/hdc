@@ -1,6 +1,6 @@
 import play.Application;
 import play.GlobalSettings;
-import controllers.database.Connection;
+import utils.Connection;
 
 public class Global extends GlobalSettings {
 

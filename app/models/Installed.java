@@ -5,14 +5,13 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 
+import utils.Connection;
 import utils.ModelConversion;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
-
-import controllers.database.Connection;
 
 public class Installed extends Model {
 
