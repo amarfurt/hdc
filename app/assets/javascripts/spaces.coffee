@@ -32,7 +32,7 @@ class Space extends Backbone.View
 				console.error(err.responseText)
 	loadSpace: (compare) ->
 		loadFilters(@records, @id, compare)
-		postForm(@records, @id, compare)
+		loadSpace(@records, @id, compare)
 	deleteSpace: (e) ->
 		e.preventDefault()
 		@loading(true)
@@ -97,23 +97,7 @@ $ ->
 			loadFilters(window.records, spaceId, false)
 			
 			# Load the space
-			postForm(window.records, spaceId, false)
-			
-			###
-			json = JSON.stringify({"spaceId": null, "records": data})
-			jsRoutes.controllers.Visualizations.jsonList().ajax
-				context: this
-				type: "POST"
-				contentType: "application/json; charset=utf-8"
-				data: json
-				success: (response) ->
-					console.log(response)
-					#$("#space-default").html(response)
-					$("#iframe-default").contents().find("html").html(response)
-				error: (err) ->
-					console.error("Error when loading visualization")
-					console.error(err.responseText)
-			###
+			loadSpace(window.records, spaceId, false)
 			
 			# Load the other spaces (window.records needs to be set)
 			tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
@@ -127,17 +111,19 @@ $ ->
 			console.error(err.responseText)
 
 # General functions
-postForm = (records, spaceId, compare) ->
-	formName = if not compare then "form" else "form2"
-	$("#"+formName+"-"+spaceId).empty()
-	$("#"+formName+"-"+spaceId).append('<input type="hidden" name="spaceId" value="' + spaceId + '">')
-	_.each records, (record) ->
-		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' creator" value="' + record.creator + '">')
-		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' owner" value="' + record.owner + '">')
-		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' created" value="' + record.created + '">')
-		$("#"+formName+"-"+spaceId).append('<input type="hidden" name="' + record._id + ' data" value="' + record.data + '">')
-	$("#"+formName+"-"+spaceId).submit()
-	
+loadSpace = (records, spaceId, compare) ->
+	iframeName = if not compare then "iframe" else "iframe2"
+	json = {"spaceId": spaceId, "records": records}
+	jsRoutes.controllers.Visualizations.list().ajax
+		context: this
+		contentType: "application/json; charset=utf-8"
+		data: JSON.stringify(json)
+		success: (response) ->
+			$("#"+iframeName+"-"+spaceId).prop("src", response)
+		error: (err) ->
+			console.error("Error when loading visualization.")
+			console.error(err.responseText)
+
 filterRecords = (records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
@@ -145,7 +131,7 @@ filterRecords = (records, spaceId, compare) ->
 	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
 	records = filterByProperty(records, "creator", creator)
 	records = filterByProperty(records, "owner", owner)
-	postForm(records, spaceId, compare)
+	loadSpace(records, spaceId, compare)
 
 filterByProperty = (list, property, value) ->
 	return _.filter list, (record) -> if value is "any" then true else record[property] is value

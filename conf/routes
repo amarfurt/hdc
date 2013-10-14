@@ -49,7 +49,7 @@ GET     /share/records              controllers.Share.sharedRecords(circleIds: j
 # Default visualization
 GET     /visualization/loading      controllers.Visualizations.loading()
 POST    /visualization/list         controllers.Visualizations.list()
-POST    /visualization/jsonList     controllers.Visualizations.jsonList()
+GET     /visualization/list/:id     controllers.Visualizations.show(id: String)
 # Public API (to be done)
 GET     /user/name                  controllers.api.UserInfo.getName(id: String)
 

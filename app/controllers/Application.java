@@ -126,7 +126,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.findCirclesWith(),
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
-				controllers.routes.javascript.Visualizations.jsonList(),
+				controllers.routes.javascript.Visualizations.list(),
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),
