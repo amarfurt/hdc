@@ -27,21 +27,24 @@ public class Installed extends Model {
 		DBObject projection = new BasicDBObject("_id", 1);
 		return Connection.getCollection(collection).findOne(query, projection) != null;
 	}
-	
+
 	public static boolean isVisualizationInstalledBy(ObjectId visualizationId, ObjectId userId) {
 		DBObject query = new BasicDBObject("_id", userId);
 		query.put("visualizations", visualizationId);
 		DBObject projection = new BasicDBObject("_id", 1);
 		return Connection.getCollection(collection).findOne(query, projection) != null;
 	}
-	
+
 	public static Set<ObjectId> findAppsInstalledBy(ObjectId userId) {
 		Set<ObjectId> appIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("apps", 1);
-		BasicDBList result = (BasicDBList) Connection.getCollection(collection).findOne(query, projection).get("apps");
-		for (Object visualizationId : result) {
-			appIds.add((ObjectId) visualizationId);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		if (result != null) {
+			BasicDBList installedAppIds = (BasicDBList) result.get("apps");
+			for (Object appId : installedAppIds) {
+				appIds.add((ObjectId) appId);
+			}
 		}
 		return appIds;
 	}
@@ -50,10 +53,12 @@ public class Installed extends Model {
 		Set<ObjectId> visualizationIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("visualizations", 1);
-		BasicDBList result = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
-				.get("visualizations");
-		for (Object visualizationId : result) {
-			visualizationIds.add((ObjectId) visualizationId);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		if (result != null) {
+			BasicDBList installedVisualizationIds = (BasicDBList) result.get("visualizations");
+			for (Object visualizationId : installedVisualizationIds) {
+				visualizationIds.add((ObjectId) visualizationId);
+			}
 		}
 		return visualizationIds;
 	}
