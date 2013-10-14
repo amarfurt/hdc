@@ -21,6 +21,20 @@ public class Installed extends Model {
 	public BasicDBList apps;
 	public BasicDBList visualizations;
 
+	public static boolean isAppInstalledBy(ObjectId appId, ObjectId userId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		query.put("apps", appId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Connection.getCollection(collection).findOne(query, projection) != null;
+	}
+	
+	public static boolean isVisualizationInstalledBy(ObjectId visualizationId, ObjectId userId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		query.put("visualizations", visualizationId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Connection.getCollection(collection).findOne(query, projection) != null;
+	}
+	
 	public static Set<ObjectId> findAppsInstalledBy(ObjectId userId) {
 		Set<ObjectId> appIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", userId);

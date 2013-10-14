@@ -23,6 +23,8 @@ GET     /search/records/:id/:search controllers.Spaces.searchRecords(id: String,
 GET     /search/records/:id/        controllers.Spaces.searchRecords(id: String, search: String = "")
 GET     /spaces/findSpaces/:id      controllers.Spaces.findSpacesWith(id: String)
 GET     /spaces/findCircles/:id     controllers.Spaces.findCirclesWith(id: String)
+GET     /records/loadAll            controllers.Spaces.loadAllRecords()
+GET     /records/load               controllers.Spaces.loadRecords(spaceId: String)
 # Circles
 GET     /circles                    controllers.Application.circles()
 GET     /circles/:id                controllers.Circles.show(id: String)
@@ -37,13 +39,14 @@ GET     /search/user/:id/           controllers.Circles.searchUsers(id: String, 
 GET     /market                     controllers.Market.show()
 GET     /market/app/:id             controllers.Market.showApp(id: String)
 GET     /market/visualization/:id   controllers.Market.showVisualization(id: String)
+PUT     /market/visualization/:id   controllers.Market.installVisualization(id: String)
+DELETE  /market/visualization/:id   controllers.Market.uninstallVisualization(id: String)
+GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Share
 GET     /share                      controllers.Application.share()
 POST    /share                      controllers.Share.share()
 GET     /share/records              controllers.Share.sharedRecords(circleIds: java.util.List[String])
 # Default visualization
-GET     /loadAllRecords             controllers.Spaces.loadAllRecords()
-GET     /loadRecords                controllers.Spaces.loadRecords(spaceId: String)
 GET     /visualization/loading      controllers.Visualizations.loading()
 POST    /visualization/list         controllers.Visualizations.list()
 POST    /visualization/jsonList     controllers.Visualizations.jsonList()
