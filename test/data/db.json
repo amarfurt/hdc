@@ -31,6 +31,13 @@
 		"password" : "1000:cb0a03eddf8846e0da1152ece93a1dc7c1e1909388c003c5:d019303e8b826faf2a2d76290b66ae6fa444577b478a6572",
 		"birthday" : "2000-01-01",
 		"tags": [ ]
+	},
+	{
+		"_id" : { "$oid" : "525d0d84e4b097a840bcae9a" },
+		"email" : "developers@healthbank.ch",
+		"name" : "Healthbank Developers",
+		"password" : "1000:a0a1208dac2cf31c2d8fad26cbc9ac6fcf5284c4bc5f2e16:730b689e672c7b120322139ead1c20d3c0376cbb8d5920ac",
+		"tags" : [ ]
 	}
 	],
 	"messages" : [
@@ -192,6 +199,7 @@
 	"visualizations": [
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc675" },
+		"creator": { "$oid" : "525d0d84e4b097a840bcae9a" },
 		"name": "List",
 		"description": "This simple visualization shows all records in a list.",
 		"url": "localhost:9000/visualizations/list",

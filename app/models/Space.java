@@ -41,6 +41,13 @@ public class Space extends SearchableModel implements Comparable<Space> {
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
 
+	public static ObjectId getVisualizationId(ObjectId spaceId, ObjectId userId) {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		query.put("owner", userId);
+		DBObject projection = new BasicDBObject("visualization", 1);
+		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("visualization");
+	}
+
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */

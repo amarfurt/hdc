@@ -18,6 +18,7 @@ public class Visualization extends SearchableModel {
 
 	private static final String collection = "visualizations";
 
+	public ObjectId creator;
 	public String name;
 	public String description;
 	public String url;
@@ -95,7 +96,7 @@ public class Visualization extends SearchableModel {
 		return Connection.getCollection(collection).findOne(query) != null;
 	}
 
-	private static boolean visualizationWithSameNameExists(String name) {
+	public static boolean visualizationWithSameNameExists(String name) {
 		DBObject query = new BasicDBObject("name", name);
 		return Connection.getCollection(collection).findOne(query) != null;
 	}

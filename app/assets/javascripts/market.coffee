@@ -30,10 +30,28 @@ class VisualizationController extends Backbone.View
 				console.error(err.responseText)
 				$("#uninstallButton").prop("disabled", false)
 
+class MarketController extends Backbone.View
+	events:
+		"click #registerVisualization": "registerVisualization"
+	registerVisualization: ->
+		name = $("#newVisualizationName").val()
+		description = $("#newVisualizationDescription").val()
+		url = $("#newVisualizationURL").val()
+		tags = $("#newVisualizationTags").val()
+		jsRoutes.controllers.Market.registerVisualization(name, description, url, tags).ajax
+			context: this
+			success: (redirect) ->
+				window.location.replace(redirect)
+			error: (err) ->
+				$("#errorMessage").html(err.responseText)
+				$("#errorMessageAlert").removeClass("hidden")
+
 # jQuery
 $ ->
 	# Instantiate views
+	# TODO separate visualization view from market?
 	new VisualizationController el: $ "body"
+	new MarketController el: $ "body"
 
 	# Load apps
 	

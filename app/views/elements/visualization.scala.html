@@ -12,7 +12,14 @@
 	</div>
 	
 	<p class="lead">@visualization.name</p>
-	<p>@visualization.description</p>
+	<div class="row">
+		<p class="col-xs-2">Created by:</p>
+		<p class="col-xs-10">@User.getName(visualization.creator)</p>
+	</div>
+	<div class="row">
+		<p class="col-xs-2">Description:</p>
+		<p class="col-xs-10">@visualization.description</p>
+	</div>
 	
 	<button type="button" id="installButton" visualization-id="@visualization._id" class="btn btn-primary @if(Installed.isVisualizationInstalledBy(visualization._id, user)){hidden}">Install</button>
 	<button type="button" id="uninstallButton" class="btn btn-default @if(!Installed.isVisualizationInstalledBy(visualization._id, user)){hidden}">Uninstall</button>

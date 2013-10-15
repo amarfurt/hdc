@@ -9,6 +9,7 @@ import java.util.Set;
 import models.Circle;
 import models.Record;
 import models.Space;
+import models.Visualization;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jackson.node.ObjectNode;
@@ -345,6 +346,12 @@ public class Spaces extends Controller {
 			recordIds.add(recordId.toString());
 		}
 		return ok(Json.toJson(recordIds));
+	}
+
+	public static Result getVisualizationURL(String spaceId) {
+		ObjectId visualizationId = Space.getVisualizationId(new ObjectId(spaceId), new ObjectId(request().username()));
+		String url = Visualization.getURL(visualizationId);
+		return ok(url);
 	}
 
 }

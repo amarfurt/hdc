@@ -1,6 +1,9 @@
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
+		jsRoutes.controllers.Spaces.getVisualizationURL(@id).ajax
+			context: this
+			success: (url) -> @url = url
 		if @el.hasClass("active")
 			@loadSpaceRecords()
 	events:
@@ -31,8 +34,8 @@ class Space extends Backbone.View
 				console.error("Error when loading spaces.")
 				console.error(err.responseText)
 	loadSpace: (compare) ->
-		loadFilters(@records, @id, compare)
-		loadSpace(@records, @id, compare)
+		loadFilters(@url, @records, @id, compare)
+		loadSpace(@url, @records, @id, compare)
 	deleteSpace: (e) ->
 		e.preventDefault()
 		@loading(true)
@@ -88,16 +91,17 @@ $ ->
 	# Load all records and default space
 	window.records = []
 	spaceId = "default"
+	url = "/visualization/list"
 	jsRoutes.controllers.Spaces.loadAllRecords().ajax
 		context: this
 		success: (data) ->
 			window.records = data
 			
 			# Load the filters
-			loadFilters(window.records, spaceId, false)
+			loadFilters(url, window.records, spaceId, false)
 			
 			# Load the space
-			loadSpace(window.records, spaceId, false)
+			loadSpace(url, window.records, spaceId, false)
 			
 			# Load the other spaces (window.records needs to be set)
 			tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
@@ -111,32 +115,31 @@ $ ->
 			console.error(err.responseText)
 
 # General functions
-loadSpace = (records, spaceId, compare) ->
+loadSpace = (url, records, spaceId, compare) ->
 	iframeName = if not compare then "iframe" else "iframe2"
 	json = {"spaceId": spaceId, "records": records}
-	jsRoutes.controllers.Visualizations.list().ajax
+	$.ajax
+		type: "POST"
+		url: url
 		context: this
 		contentType: "application/json; charset=utf-8"
 		data: JSON.stringify(json)
 		success: (response) ->
 			$("#"+iframeName+"-"+spaceId).prop("src", response)
-		error: (err) ->
-			console.error("Error when loading visualization.")
-			console.error(err.responseText)
 
-filterRecords = (records, spaceId, compare) ->
+filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
 	creator = $("#"+creatorFilter+"-"+spaceId).attr("value")
 	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
 	records = filterByProperty(records, "creator", creator)
 	records = filterByProperty(records, "owner", owner)
-	loadSpace(records, spaceId, compare)
+	loadSpace(url, records, spaceId, compare)
 
 filterByProperty = (list, property, value) ->
 	return _.filter list, (record) -> if value is "any" then true else record[property] is value
 
-loadFilters = (records, spaceId, compare) ->
+loadFilters = (url, records, spaceId, compare) ->
 	creators = []
 	owners = []
 	_.each records, (record) ->
@@ -168,6 +171,6 @@ loadFilters = (records, spaceId, compare) ->
 	
 	# Register the filter events
 	$("#"+creatorFilter+"-"+spaceId).on "change", (e) ->
-		filterRecords(records, spaceId, compare)
+		filterRecords(url, records, spaceId, compare)
 	$("#"+ownerFilter+"-"+spaceId).on "change", (e) ->
-		filterRecords(records, spaceId, compare)
+		filterRecords(url, records, spaceId, compare)

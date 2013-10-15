@@ -13,7 +13,10 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.KeywordSearch;
 import views.html.market;
+
+import com.mongodb.BasicDBList;
 
 @Security.Authenticated(Secured.class)
 public class Market extends Controller {
@@ -30,7 +33,36 @@ public class Market extends Controller {
 		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
-		return ok(market.render(spotlightedVisualizations, userId));
+		return ok(market.render(spotlightedVisualizations, spotlightedVisualizations, userId));
+	}
+
+	public static Result registerVisualization(String name, String description, String url, String tags) {
+		if (Visualization.visualizationWithSameNameExists(name)) {
+			return badRequest("A visualization with this name already exists.");
+		} else if (name.isEmpty() || description.isEmpty() || url.isEmpty() || tags.isEmpty()) {
+			return badRequest("Please fill out all fields.");
+		}
+		Visualization newVisualization = new Visualization();
+		newVisualization.creator = new ObjectId(request().username());
+		newVisualization.name = name;
+		newVisualization.description = description;
+		newVisualization.url = url;
+		newVisualization.tags = new BasicDBList();
+		for (String tag : KeywordSearch.split(tags)) {
+			newVisualization.tags.add(tag);
+		}
+		String errorMessage;
+		try {
+			errorMessage = Visualization.add(newVisualization);
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		}
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+		return ok(routes.Market.show().url());
 	}
 
 	public static Result showApp(String appIdString) {
@@ -84,6 +116,7 @@ public class Market extends Controller {
 			for (Visualization visualization : visualizations) {
 				ObjectNode jsonObject = Json.newObject();
 				jsonObject.put("_id", visualization._id.toString());
+				jsonObject.put("creator", visualization.creator.toString());
 				jsonObject.put("name", visualization.name);
 				jsonObject.put("description", visualization.description);
 				jsonObject.put("url", visualization.url);
