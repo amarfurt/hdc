@@ -127,6 +127,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Visualizations.list(),
+				controllers.routes.javascript.Visualizations.runAggregator(),
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),
