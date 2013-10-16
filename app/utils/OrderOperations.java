@@ -20,7 +20,7 @@ public class OrderOperations {
 		DBCursor maxOrder = coll.find(query, projection).sort(new BasicDBObject("order", -1)).limit(1);
 		int max = 0;
 		if (maxOrder.hasNext()) {
-			max = (int) maxOrder.next().get("order");
+			max = (Integer) maxOrder.next().get("order");
 		}
 		return max;
 	}

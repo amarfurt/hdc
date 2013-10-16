@@ -27,12 +27,12 @@ public class LoadData {
 
 			// read JSON file
 			StringBuilder sb = new StringBuilder();
-			try (BufferedReader br = new BufferedReader(new FileReader(DATA))) {
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					sb.append(line);
-				}
+			BufferedReader br = new BufferedReader(new FileReader(DATA));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
 			}
+			br.close();
 
 			// parse and insert into database
 			JsonNode node = Json.parse(sb.toString());

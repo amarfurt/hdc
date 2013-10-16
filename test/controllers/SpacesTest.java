@@ -146,7 +146,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		ObjectId userId = (ObjectId) space.get("owner");
-		int order = (int) space.get("order");
+		int order = (Integer) space.get("order");
 		BasicDBList records = (BasicDBList) space.get("records");
 		int oldSize = records.size();
 		String spaceId = id.toString();
@@ -173,7 +173,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		ObjectId userId = (ObjectId) space.get("owner");
-		int order = (int) space.get("order");
+		int order = (Integer) space.get("order");
 
 		// insert that record into that space
 		DBObject updateQuery = new BasicDBObject("_id", id);

@@ -129,7 +129,7 @@ public class Space extends SearchableModel implements Comparable<Space> {
 			return "No space with this id exists.";
 		}
 		ObjectId ownerId = (ObjectId) space.get("owner");
-		int order = (int) space.get("order");
+		int order = (Integer) space.get("order");
 
 		// remove space
 		WriteResult result = Connection.getCollection(collection).remove(query);

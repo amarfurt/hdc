@@ -25,7 +25,11 @@ public class Application extends Controller {
 		try {
 			ObjectId user = new ObjectId(request().username());
 			return ok(index.render(Message.findSentTo(user), user));
-		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -95,7 +99,8 @@ public class Application extends Controller {
 
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
-		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Circles.rename(),
+		return ok(Routes.javascriptRouter("jsRoutes",
+				controllers.routes.javascript.Circles.rename(),
 				controllers.routes.javascript.Circles.delete(),
 				controllers.routes.javascript.Circles.removeMember(),
 				controllers.routes.javascript.Circles.searchUsers(),

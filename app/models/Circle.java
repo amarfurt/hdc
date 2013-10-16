@@ -181,7 +181,7 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 			return "No circle with this id exists.";
 		}
 		ObjectId owner = (ObjectId) circle.get("owner");
-		int order = (int) circle.get("order");
+		int order = (Integer) circle.get("order");
 
 		// remove circle
 		WriteResult result = Connection.getCollection(collection).remove(query);

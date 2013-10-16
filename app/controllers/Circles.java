@@ -121,7 +121,11 @@ public class Circles extends Controller {
 					}
 				}
 				return redirect(routes.Circles.show(circleId));
-			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -140,7 +144,11 @@ public class Circles extends Controller {
 				} else {
 					return badRequest(errorMessage);
 				}
-			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {

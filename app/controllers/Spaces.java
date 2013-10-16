@@ -152,7 +152,11 @@ public class Spaces extends Controller {
 				}
 				// TODO return ok();
 				return redirect(routes.Spaces.show(spaceId));
-			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
