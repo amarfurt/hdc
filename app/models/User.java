@@ -58,11 +58,11 @@ public class User extends SearchableModel implements Comparable<User> {
 		}
 	}
 
-	public static List<User> findAllExcept(ObjectId... userIds) throws IllegalArgumentException, IllegalAccessException,
+	public static List<User> findAll(int limit) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<User> userList = new ArrayList<User>();
-		DBObject query = new BasicDBObject("_id", new BasicDBObject("$nin", userIds));
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBObject query = new BasicDBObject();
+		DBCursor result = Connection.getCollection(collection).find(query).limit(limit);
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}

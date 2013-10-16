@@ -2,12 +2,8 @@ package controllers;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Collections;
-import java.util.Set;
 
-import models.Circle;
 import models.Message;
-import models.Record;
 import models.User;
 
 import org.bson.types.ObjectId;
@@ -18,7 +14,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import views.html.index;
-import views.html.share;
 import views.html.welcome;
 import controllers.forms.Login;
 import controllers.forms.Registration;
@@ -38,26 +33,15 @@ public class Application extends Controller {
 	public static Result welcome() {
 		return ok(welcome.render(Form.form(Login.class), Form.form(Registration.class)));
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public static Result circles() {
 		return Circles.show(null);
 	}
-	
+
 	@Security.Authenticated(Secured.class)
 	public static Result spaces() {
 		return Spaces.show(null);
-	}
-	
-	@Security.Authenticated(Secured.class)
-	public static Result share() {
-		try {
-			ObjectId user = new ObjectId(request().username());
-			Set<ObjectId> emptySet = Collections.emptySet();
-			return ok(share.render(Record.findOwnedBy(user), emptySet, Circle.findOwnedBy(user), user));
-		} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
-			return internalServerError(e.getMessage());
-		}
 	}
 
 	public static Result authenticate() {
@@ -111,14 +95,12 @@ public class Application extends Controller {
 
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
-		return ok(Routes.javascriptRouter("jsRoutes", 
-				controllers.routes.javascript.Circles.rename(), 
+		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Circles.rename(),
 				controllers.routes.javascript.Circles.delete(),
 				controllers.routes.javascript.Circles.removeMember(),
 				controllers.routes.javascript.Circles.searchUsers(),
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
-				controllers.routes.javascript.Spaces.removeRecord(),
 				controllers.routes.javascript.Spaces.searchRecords(),
 				controllers.routes.javascript.Spaces.updateSpaces(),
 				controllers.routes.javascript.Spaces.updateCircles(),

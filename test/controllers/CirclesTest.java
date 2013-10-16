@@ -173,9 +173,8 @@ public class CirclesTest {
 		int oldSize = members.size();
 		String circleId = id.toString();
 		Result result = callAction(
-				controllers.routes.ref.Circles.removeMember(circleId),
-				fakeRequest().withSession("id", ownerId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("id", userId.toString())));
+				controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
+				fakeRequest().withSession("id", ownerId.toString()));
 		assertEquals(200, status(result));
 		assertEquals(oldSize - 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
@@ -193,9 +192,8 @@ public class CirclesTest {
 		int oldSize = members.size();
 		String circleId = id.toString();
 		Result result = callAction(
-				controllers.routes.ref.Circles.removeMember(circleId),
-				fakeRequest().withSession("id", ownerId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("id", userId.toString())));
+				controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
+				fakeRequest().withSession("id", ownerId.toString()));
 		assertEquals(400, status(result));
 		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}

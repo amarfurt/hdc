@@ -1,8 +1,0 @@
-@(spaceId: org.bson.types.ObjectId, record: Record)
-
-<a href="" space-id="@spaceId" id="@record._id" class="record list-group-item">
-	@Record.dataToString(record.data)
-	<button class="btn btn-xs btn-warning removeRecord">
-		<span class="glyphicon glyphicon-remove"></span>
-	</button>
-</a>

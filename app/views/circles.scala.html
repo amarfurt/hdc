@@ -29,9 +29,85 @@
 			</li>
 		</ul>
 		
+		<!-- Circle content -->
 		<div id="circleContent" class="tab-content">
 			@circles.map { circle =>
-				@views.html.elements.circle(contacts, users, circle, active(circle._id))
+				<!-- views.html.elements.circle(contacts, users, circle, active(circle._id)) -->
+				<div id="@circle._id" class="circle tab-pane fade @if(active(circle._id)){in active}">
+					<div class="list-group">
+						<span class="list-group-item active">Members</span>
+						@if(circle.members.size() > 0) {
+							@circle.members.map { member =>
+								<div circle-id="@circle._id" member-id="@member" class="list-group-item member">
+									@User.getName(member.asInstanceOf[org.bson.types.ObjectId])
+									<div class="pull-right">
+										<button class="btn btn-xs btn-danger removeMember">
+											<span class="glyphicon glyphicon-remove"></span>
+										</button>
+									</div>
+								</div>
+							}
+						} else {
+							<p class="list-group-item">This circle has no members yet.</p>
+						}
+				   	</div>
+				   	<button data-toggle="modal" data-target="#userForm@circle._id" class="btn btn-primary addUser">
+						<span class="glyphicon glyphicon-plus-sign"></span> Add user
+					</button>
+				    <button class="btn btn-danger deleteCircle">
+				    	<span class="glyphicon glyphicon-remove-sign"></span> Delete circle
+				    </button>
+				    
+				    <!-- Add users modal -->
+					@helper.form(routes.Circles.addUsers(circle._id.toString())) {
+						<div class="modal fade" id="userForm@circle._id" role="dialog" aria-labelledby="userFormLabel@circle._id" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+										<h4 class="modal-title" id="userFormLabel@circle._id">Add users to this circle</h4>
+									</div>
+									<div class="modal-body">
+										<ul class="nav nav-tabs">
+											<li class="active"><a href="#@circle._id-contacts" data-toggle="tab">Contacts</a></li>
+											<li><a href="#@circle._id-all" data-toggle="tab">All users</a></li>
+										</ul>
+										<div class="tab-content">
+											<div id="@circle._id-contacts" class="tab-pane fade active in">
+												<div class="contacts">
+													<!-- TODO: in JS -->
+													@defining(Circle.findMembers(circle._id)) { memberIds =>
+														@defining(utils.ListOperations.removeFromList(contacts, memberIds)) { users =>
+															@if(users.size() > 0) {
+																@users.map { user =>
+																	@views.html.elements.checkbox(user._id.toString()){@user.name}
+																}
+															} else {
+																<p>Either you haven't added anyone to your circles yet 
+																   or all your contacts are already in this circle.</p>
+															}
+														}
+													}
+												</div>
+											</div>
+											<div id="@circle._id-all" class="tab-pane fade">
+												<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
+												<!-- TODO: in JS -->
+												@defining(Circle.findMembers(circle._id)) { memberIds =>
+													@views.html.elements.usersearchresults(utils.ListOperations.removeFromList(users, memberIds))
+												}
+											</div>
+										</div>
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+										<button type="submit" class="btn btn-primary">Add</button>
+									</div>
+								</div> <!-- /.modal-content -->
+							</div> <!-- /.modal-dialog -->
+						</div> <!-- /.modal -->
+					}
+				</div>
 			}
 		</div>
 	}

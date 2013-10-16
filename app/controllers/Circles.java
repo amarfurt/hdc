@@ -3,6 +3,7 @@ package controllers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import models.Circle;
 import models.User;
@@ -14,14 +15,15 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.KeywordSearch;
+import utils.ListOperations;
 import views.html.circles;
-import views.html.elements.circles.userForm;
+import views.html.elements.usersearchresults;
 
 import com.mongodb.BasicDBList;
 
 @Security.Authenticated(Secured.class)
 public class Circles extends Controller {
-	
+
 	public static Result show(String activeCircleId) {
 		try {
 			ObjectId user = new ObjectId(request().username());
@@ -32,7 +34,9 @@ public class Circles extends Controller {
 			} else if (circleList.size() > 0) {
 				activeCircle = circleList.get(0)._id;
 			}
-			return ok(circles.render(Circle.findContacts(user), User.findAllExcept(user), circleList, activeCircle, user));
+			List<User> users = User.findAll(10);
+			users = ListOperations.removeFromList(users, user);
+			return ok(circles.render(Circle.findContacts(user), users, circleList, activeCircle, user));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
@@ -125,13 +129,12 @@ public class Circles extends Controller {
 		}
 	}
 
-	public static Result removeMember(String circleId) {
+	public static Result removeMember(String circleIdString, String memberIdString) {
 		// can't pass parameter of type ObjectId, using String
-		ObjectId circle = new ObjectId(circleId);
-		if (Secured.isOwnerOfCircle(circle)) {
-			ObjectId member = new ObjectId(Form.form().bindFromRequest().get("id"));
+		ObjectId circleId = new ObjectId(circleIdString);
+		if (Secured.isOwnerOfCircle(circleId)) {
 			try {
-				String errorMessage = Circle.removeMember(circle, member);
+				String errorMessage = Circle.removeMember(circleId, new ObjectId(memberIdString));
 				if (errorMessage == null) {
 					return ok();
 				} else {
@@ -149,18 +152,20 @@ public class Circles extends Controller {
 	 * Return a list of users whose name or email address matches the current search term and is not in the circle
 	 * already.
 	 */
-	public static Result searchUsers(String circleId, String search) {
+	public static Result searchUsers(String circleIdString, String search) {
 		List<User> response = new ArrayList<User>();
 		try {
 			// TODO use caching
-			ObjectId circle = new ObjectId(circleId);
+			ObjectId circleId = new ObjectId(circleIdString);
 			if (search == null || search.isEmpty()) {
-				response = User.findAllExcept(new ObjectId(request().username()));
+				response = User.findAll(10);
 			} else {
 				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
 			}
-			response = Circle.makeDisjoint(circle, response);
-			return ok(userForm.render(response));
+			Set<ObjectId> members = Circle.findMembers(circleId);
+			members.add(new ObjectId(request().username()));
+			response = ListOperations.removeFromList(response, members);
+			return ok(usersearchresults.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());
 		} catch (IllegalAccessException e) {

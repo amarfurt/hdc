@@ -1,8 +1,0 @@
-@(record: Record, shared: Boolean)
-
-<div class="checkbox">
-	<label>
-		<input type="checkbox" name="@record._id" value="record" @if(shared){checked}>
-			<span class="text-muted">@record.creator:</span> @record.data
-	</label>
-</div>

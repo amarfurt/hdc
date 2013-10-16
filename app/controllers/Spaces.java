@@ -159,28 +159,6 @@ public class Spaces extends Controller {
 		}
 	}
 
-	@Deprecated
-	public static Result removeRecord(String spaceId) {
-		// can't pass parameter of type ObjectId, using String
-		ObjectId sId = new ObjectId(spaceId);
-		if (Secured.isOwnerOfSpace(sId)) {
-			String recordId = Form.form().bindFromRequest().get("id");
-			ObjectId rId = new ObjectId(recordId);
-			try {
-				String errorMessage = Space.removeRecord(sId, rId);
-				if (errorMessage == null) {
-					return ok();
-				} else {
-					return badRequest(errorMessage);
-				}
-			} catch (IllegalArgumentException | IllegalAccessException | InstantiationException e) {
-				return internalServerError(e.getMessage());
-			}
-		} else {
-			return forbidden();
-		}
-	}
-
 	/**
 	 * Updates the spaces the given record is in.
 	 */

@@ -1,16 +1,14 @@
 class Member extends Backbone.View
 	initialize: ->
 		@circleId = @el.attr("circle-id")
-		@id = @el.attr("id")
+		@memberId = @el.attr("member-id")
 	events:
 		"click .removeMember": "removeMember"
 	removeMember: (e) ->
 		e.preventDefault()
 		@loading(true)
-		jsRoutes.controllers.Circles.removeMember(@circleId).ajax
+		jsRoutes.controllers.Circles.removeMember(@circleId, @memberId).ajax
 			context: this
-			data:
-				id: @id
 			success: (data) ->
 				@el.remove()
 				@loading(false)
@@ -55,7 +53,7 @@ class Circle extends Backbone.View
 		jsRoutes.controllers.Circles.searchUsers(@id, search).ajax
 			context: this
 			success: (data) ->
-				$(".userForm", @el).replaceWith(data)
+				$(".searchResults", @el).replaceWith(data)
 			error: (err) ->
 				console.error("User search failed.")
 				console.error(err.responseText)

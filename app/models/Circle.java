@@ -3,7 +3,6 @@ package models;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -109,6 +108,21 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 			circles.add((ObjectId) result.next().get("_id"));
 		}
 		return circles;
+	}
+
+	/**
+	 * Returns a set with ids of the members of the given circle.
+	 */
+	public static Set<ObjectId> findMembers(ObjectId circleId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("members", 1);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		BasicDBList members = (BasicDBList) result.get("members");
+		Set<ObjectId> userIds = new HashSet<ObjectId>();
+		for (Object userId : members) {
+			userIds.add((ObjectId) userId);
+		}
+		return userIds;
 	}
 
 	/**
@@ -276,28 +290,6 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("shared", recordIds.toArray()));
 		WriteResult result = Connection.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
-	}
-
-	/**
-	 * Creates a new list without the members of the given circle.
-	 */
-	public static List<User> makeDisjoint(ObjectId circleId, List<User> userList) {
-		List<User> newUserList = new ArrayList<User>(userList);
-		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject projection = new BasicDBObject("members", 1);
-		DBObject result = Connection.getCollection(collection).findOne(query, projection);
-		BasicDBList members = (BasicDBList) result.get("members");
-		Set<ObjectId> userIds = new HashSet<ObjectId>();
-		for (Object userId : members) {
-			userIds.add((ObjectId) userId);
-		}
-		Iterator<User> iterator = newUserList.iterator();
-		while (iterator.hasNext()) {
-			if (userIds.contains(iterator.next()._id)) {
-				iterator.remove();
-			}
-		}
-		return newUserList;
 	}
 
 	/**
