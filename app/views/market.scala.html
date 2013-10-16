@@ -31,11 +31,11 @@
 			<p class="lead">Recently published</p>
 			<div class="media">
 				@recentVisualizations.map { visualization =>
-					<a class="pull-left" href="#">
+					<a class="pull-left" href="@routes.Market.showVisualization(visualization._id.toString())">
 						<img class="media-object" src="" alt="Icon">
 					</a>
 					<div class="media-body">
-						<a href="#">@visualization.name</a>
+						<a href="@routes.Market.showVisualization(visualization._id.toString())">@visualization.name</a>
 						<p>@visualization.description</p>
 					</div>
 				}
