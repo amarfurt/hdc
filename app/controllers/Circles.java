@@ -162,7 +162,7 @@ public class Circles extends Controller {
 			} else {
 				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
 			}
-			Set<ObjectId> members = Circle.findMembers(circleId);
+			Set<ObjectId> members = Circle.getMembers(circleId);
 			members.add(new ObjectId(request().username()));
 			response = ListOperations.removeFromList(response, members);
 			return ok(usersearchresults.render(response));

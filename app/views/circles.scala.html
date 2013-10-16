@@ -76,7 +76,7 @@
 											<div id="@circle._id-contacts" class="tab-pane fade active in">
 												<div class="contacts">
 													<!-- TODO: in JS -->
-													@defining(Circle.findMembers(circle._id)) { memberIds =>
+													@defining(Circle.getMembers(circle._id)) { memberIds =>
 														@defining(utils.ListOperations.removeFromList(contacts, memberIds)) { users =>
 															@if(users.size() > 0) {
 																@users.map { user =>
@@ -93,7 +93,7 @@
 											<div id="@circle._id-all" class="tab-pane fade">
 												<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
 												<!-- TODO: in JS -->
-												@defining(Circle.findMembers(circle._id)) { memberIds =>
+												@defining(Circle.getMembers(circle._id)) { memberIds =>
 													@views.html.elements.usersearchresults(utils.ListOperations.removeFromList(users, memberIds))
 												}
 											</div>

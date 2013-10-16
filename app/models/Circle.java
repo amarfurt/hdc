@@ -113,7 +113,7 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 	/**
 	 * Returns a set with ids of the members of the given circle.
 	 */
-	public static Set<ObjectId> findMembers(ObjectId circleId) {
+	public static Set<ObjectId> getMembers(ObjectId circleId) {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject projection = new BasicDBObject("members", 1);
 		DBObject result = Connection.getCollection(collection).findOne(query, projection);
