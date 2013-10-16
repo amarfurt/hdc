@@ -6,7 +6,7 @@
 		<p class="list-group-item active">Records</p>
 		@if(records.size() > 0) {
 			@records.map { record =>
-				<a href="#" record-id="@record._id" class="list-group-item record">
+				<a href="javascript:;" record-id="@record._id" class="list-group-item record">
 					<span class="label label-info">@User.getName(record.creator)</span>
 					@Record.dataToString(record.data)
 					<div class="pull-right">
