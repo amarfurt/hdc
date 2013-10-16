@@ -3,7 +3,6 @@ package models;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -212,28 +211,6 @@ public class Space extends SearchableModel implements Comparable<Space> {
 			recordIds.add((ObjectId) recordId);
 		}
 		return recordIds;
-	}
-
-	/**
-	 * Creates a new list without the records that are already in the given space.
-	 */
-	public static List<Record> makeDisjoint(ObjectId spaceId, List<Record> recordList) {
-		List<Record> newRecordList = new ArrayList<Record>(recordList);
-		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject projection = new BasicDBObject("records", 1);
-		DBObject result = Connection.getCollection(collection).findOne(query, projection);
-		BasicDBList records = (BasicDBList) result.get("records");
-		Set<ObjectId> recordIds = new HashSet<ObjectId>();
-		for (Object recordId : records) {
-			recordIds.add((ObjectId) recordId);
-		}
-		Iterator<Record> iterator = newRecordList.iterator();
-		while (iterator.hasNext()) {
-			if (recordIds.contains(iterator.next()._id)) {
-				iterator.remove();
-			}
-		}
-		return newRecordList;
 	}
 
 	/**

@@ -12,6 +12,7 @@ import static play.test.Helpers.start;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
@@ -20,6 +21,7 @@ import org.junit.Test;
 
 import utils.CreateDBObjects;
 import utils.DateTimeUtils;
+import utils.ListOperations;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -184,7 +186,8 @@ public class RecordTest {
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
 		List<Record> foundRecords = Record.findSharedWith(userIds[0]);
-		foundRecords = Space.makeDisjoint((ObjectId) spaceObject.get("_id"), foundRecords);
+		Set<ObjectId> recordsInSpace = Space.getRecords((ObjectId) spaceObject.get("_id"));
+		foundRecords = ListOperations.removeFromList(foundRecords, recordsInSpace);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));

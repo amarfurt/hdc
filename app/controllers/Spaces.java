@@ -21,6 +21,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utils.DateTimeUtils;
 import utils.KeywordSearch;
+import utils.ListOperations;
 import views.html.spaces;
 import views.html.elements.recordsearchresults;
 
@@ -260,7 +261,8 @@ public class Spaces extends Controller {
 			} else {
 				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
 			}
-			response = Space.makeDisjoint(sId, response);
+			Set<ObjectId> records = Space.getRecords(sId);
+			response = ListOperations.removeFromList(response, records);
 			return ok(recordsearchresults.render(response));
 		} catch (IllegalArgumentException e) {
 			return badRequest(e.getMessage());

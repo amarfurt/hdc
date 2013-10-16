@@ -169,7 +169,9 @@
 								<div class="modal-body">
 									<input type="text" class="recordSearch" name="recordSearch" placeholder="Search in your records">
 									<!-- TODO: in JS -->
-									@views.html.elements.recordsearchresults(Space.makeDisjoint(space._id, records))
+									@defining(Space.getRecords(space._id)) { spaceRecords =>
+										@views.html.elements.recordsearchresults(utils.ListOperations.removeFromList(records, spaceRecords))
+									}
 								</div>
 								<div class="modal-footer">
 									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
