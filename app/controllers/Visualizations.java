@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import models.Record;
 
 import org.bson.types.ObjectId;
-import org.codehaus.jackson.JsonNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import play.cache.Cache;
 import play.mvc.BodyParser;
@@ -42,11 +42,11 @@ public class Visualizations extends Controller {
 		// parse the space id and the records
 		String spaceId = json.get("spaceId").asText();
 		List<Record> records = new ArrayList<Record>();
-		Iterator<JsonNode> elements = json.get("records").getElements();
+		Iterator<JsonNode> elements = json.get("records").elements();
 		while (elements.hasNext()) {
 			JsonNode cur = elements.next();
 			Record newRecord = new Record();
-			Iterator<Entry<String, JsonNode>> fields = cur.getFields();
+			Iterator<Entry<String, JsonNode>> fields = cur.fields();
 			while (fields.hasNext()) {
 				Entry<String, JsonNode> curField = fields.next();
 				try {
@@ -90,7 +90,7 @@ public class Visualizations extends Controller {
 		
 		double distance = 0;
 		double time = 0;
-		Iterator<JsonNode> elements = json.get("records").getElements();
+		Iterator<JsonNode> elements = json.get("records").elements();
 		while (elements.hasNext()) {
 			JsonNode cur = elements.next();
 			if (cur.has("data")) {
