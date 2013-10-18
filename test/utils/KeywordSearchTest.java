@@ -98,6 +98,24 @@ public class KeywordSearchTest {
 		List<Record> list = KeywordSearch.searchByType(Record.class, Record.getCollection(), "none", 10);
 		assertEquals(0, list.size());
 	}
+	
+	@Test
+	public void searchInList() throws Exception {
+		ObjectId userId = (ObjectId) TestConnection.getCollection("users").findOne().get("_id");
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(userId, userId, 2);
+		DBCollection collection = TestConnection.getCollection("records");
+		collection.update(new BasicDBObject("_id", recordIds[0]), new BasicDBObject("$push", new BasicDBObject("tags",
+				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[3] }))));
+		collection.update(new BasicDBObject("_id", recordIds[1]), new BasicDBObject("$push", new BasicDBObject("tags",
+				new BasicDBObject("$each", new String[] { keywordList[1], keywordList[2], keywordList[3] }))));
+		List<Record> list = Record.findVisible(userId);
+		assertEquals(keywordList.length + 2, list.size());
+		List<Record> result = KeywordSearch.searchInList(list, keywordList[1] + " " + keywordList[3], 10);
+		assertEquals(2, result.size());
+		for (Record record : result) {
+			assertTrue(keywordsInTags(record, keywordList[1], keywordList[3]));
+		}
+	}
 
 	private boolean keywordsInTags(Record record, String... keywords) {
 		boolean found = false;

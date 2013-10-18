@@ -259,11 +259,9 @@ public class Spaces extends Controller {
 			// TODO use caching
 			ObjectId user = new ObjectId(request().username());
 			ObjectId sId = new ObjectId(spaceId);
-			List<Record> response = new ArrayList<Record>();
-			if (search == null || search.isEmpty()) {
-				response = Record.findVisible(user);
-			} else {
-				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
+			List<Record> response = Record.findVisible(user);
+			if (search != null && !search.isEmpty()) {
+				response = KeywordSearch.searchInList(response, search, 10);
 			}
 			Set<ObjectId> records = Space.getRecords(sId);
 			response = ListOperations.removeFromList(response, records);
