@@ -12,6 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.DateTimeUtils;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -33,7 +34,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findSuccessTest() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();
@@ -41,7 +42,7 @@ public class MessageTest {
 		Message message = new Message();
 		message.sender = new ObjectId();
 		message.receiver = person._id;
-		message.datetime = "2000-01-01-000000Z";
+		message.datetime = DateTimeUtils.getNow();
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
@@ -52,7 +53,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findFailureTest() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		DBCollection messages = TestConnection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Person person = new Person();
@@ -60,7 +61,7 @@ public class MessageTest {
 		Message message = new Message();
 		message.sender = person._id;
 		message.receiver = new ObjectId();
-		message.datetime = "2000-01-01-000000Z";
+		message.datetime = DateTimeUtils.getNow();
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
