@@ -32,14 +32,9 @@ public class Record extends SearchableModel implements Comparable<Record> {
 		return -this.created.compareTo(o.created);
 	}
 
-	public static String getCollection() {
-		return collection;
-	}
-
-	/**
-	 * Return the first few words of the data up to a maximum of 40 characters.
-	 */
-	public static String dataToString(String data) {
+	@Override
+	public String toString() {
+		// Return the first few words of the data up to a maximum of 40 characters.
 		int maxChars = 40;
 		if (data.length() < maxChars) {
 			return data;
@@ -47,6 +42,10 @@ public class Record extends SearchableModel implements Comparable<Record> {
 			int lastIndex = data.lastIndexOf(" ", maxChars);
 			return data.substring(0, lastIndex + 1) + "...";
 		}
+	}
+
+	public static String getCollection() {
+		return collection;
 	}
 
 	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,

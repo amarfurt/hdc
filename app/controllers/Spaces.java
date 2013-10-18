@@ -310,7 +310,7 @@ public class Spaces extends Controller {
 				jsonRecord.put("creator", record.creator.toString());
 				jsonRecord.put("owner", record.owner.toString());
 				jsonRecord.put("created", record.created);
-				jsonRecord.put("data", Record.dataToString(record.data));
+				jsonRecord.put("data", record.toString());
 				jsonRecords.add(jsonRecord);
 			}
 			return ok(Json.toJson(jsonRecords));

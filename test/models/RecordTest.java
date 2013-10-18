@@ -254,19 +254,26 @@ public class RecordTest {
 	}
 
 	@Test
-	public void dataToString() {
+	public void recordToString() {
 		String shortString = "Some medical data.";
 		String longString = "Doctor Frankenstein detected a fracture of the bone in the patient's lower left leg.";
 		String noSpacesString = "DoctorFrankensteindetectedafractureoftheboneinthepatient'slowerleftleg.";
 		String splitAt39 = "10letters 10letters 10letters 10letters no longer shown";
 		String splitAt40 = "10letters 10letters 10letters 10letters1 no longer shown";
 		String splitAt41 = "10letters 10letters 10letters 10letters11 no longer shown";
-		assertEquals(shortString, Record.dataToString(shortString));
-		assertEquals("Doctor Frankenstein detected a fracture ...", Record.dataToString(longString));
-		assertEquals("...", Record.dataToString(noSpacesString));
-		assertEquals("10letters 10letters 10letters 10letters ...", Record.dataToString(splitAt39));
-		assertEquals("10letters 10letters 10letters 10letters1 ...", Record.dataToString(splitAt40));
-		assertEquals("10letters 10letters 10letters ...", Record.dataToString(splitAt41));
+		Record record = new Record();
+		record.data = shortString;
+		assertEquals(shortString, record.toString());
+		record.data = longString;
+		assertEquals("Doctor Frankenstein detected a fracture ...", record.toString());
+		record.data = noSpacesString;
+		assertEquals("...", record.toString());
+		record.data = splitAt39;
+		assertEquals("10letters 10letters 10letters 10letters ...", record.toString());
+		record.data = splitAt40;
+		assertEquals("10letters 10letters 10letters 10letters1 ...", record.toString());
+		record.data = splitAt41;
+		assertEquals("10letters 10letters 10letters ...", record.toString());
 	}
 
 }
