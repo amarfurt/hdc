@@ -76,9 +76,9 @@ public class Record extends SearchableModel implements Comparable<Record> {
 	}
 
 	/**
-	 * Find all records shared with the given user (including own records).
+	 * Find all records visible to the given user.
 	 */
-	public static List<Record> findSharedWith(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
+	public static List<Record> findVisible(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		// get records of this user
 		List<Record> records = findOwnedBy(userId);

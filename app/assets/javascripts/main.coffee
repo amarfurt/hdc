@@ -37,3 +37,13 @@ $.fn.editInPlace = (method, options...) ->
 			return methods.init.call(this, method)
 		else
 			$.error("Method " + method + " does not exist.")
+
+# String functions
+String.prototype.startsWith = (prefix) ->
+    this.indexOf(prefix) is 0
+
+String.prototype.endsWith = (suffix) ->
+    `this.match(suffix+"$") == suffix`
+
+String.prototype.splitSearch = (term) ->
+	term.split(/[ ,\\+]+/)

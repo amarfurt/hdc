@@ -185,7 +185,7 @@ public class RecordTest {
 		space.records.add(recordIds[1]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
-		List<Record> foundRecords = Record.findSharedWith(userIds[0]);
+		List<Record> foundRecords = Record.findVisible(userIds[0]);
 		Set<ObjectId> recordsInSpace = Space.getRecords((ObjectId) spaceObject.get("_id"));
 		foundRecords = ListOperations.removeFromList(foundRecords, recordsInSpace);
 		assertEquals(2, foundRecords.size());
@@ -194,7 +194,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findSharedWith() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
+	public void findVisible() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
@@ -213,7 +213,7 @@ public class RecordTest {
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(1, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
+		List<Record> foundRecords = Record.findVisible(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -221,7 +221,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findSharedWithOwnCircle() throws IllegalArgumentException, IllegalAccessException,
+	public void findVisibleInOwnCircle() throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
 		DBCollection records = TestConnection.getCollection("records");
 		assertEquals(0, records.count());
@@ -246,7 +246,7 @@ public class RecordTest {
 		circle.shared.add(recordId[0]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(2, circles.count());
-		List<Record> foundRecords = Record.findSharedWith(userIds[1]);
+		List<Record> foundRecords = Record.findVisible(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));

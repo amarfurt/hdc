@@ -39,7 +39,7 @@ public class Spaces extends Controller {
 			if (activeSpaceId != null) {
 				activeSpace = new ObjectId(activeSpaceId);
 			}
-			return ok(spaces.render(Form.form(SpaceForm.class), Record.findSharedWith(user), Space.findOwnedBy(user),
+			return ok(spaces.render(Form.form(SpaceForm.class), Record.findVisible(user), Space.findOwnedBy(user),
 					activeSpace, user));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
@@ -80,7 +80,7 @@ public class Spaces extends Controller {
 		if (spaceForm.hasErrors()) {
 			try {
 				ObjectId user = new ObjectId(request().username());
-				return badRequest(spaces.render(spaceForm, Record.findSharedWith(user), Space.findOwnedBy(user), null,
+				return badRequest(spaces.render(spaceForm, Record.findVisible(user), Space.findOwnedBy(user), null,
 						user));
 			} catch (IllegalArgumentException e) {
 				return internalServerError(e.getMessage());
@@ -255,13 +255,13 @@ public class Spaces extends Controller {
 	 * Return a list of records whose data contains the current search term and is not in the space already.
 	 */
 	public static Result searchRecords(String spaceId, String search) {
-		List<Record> response = new ArrayList<Record>();
 		try {
 			// TODO use caching
 			ObjectId user = new ObjectId(request().username());
 			ObjectId sId = new ObjectId(spaceId);
+			List<Record> response = new ArrayList<Record>();
 			if (search == null || search.isEmpty()) {
-				response = Record.findSharedWith(user);
+				response = Record.findVisible(user);
 			} else {
 				response = KeywordSearch.searchByType(Record.class, Record.getCollection(), search, 10);
 			}
@@ -300,7 +300,7 @@ public class Spaces extends Controller {
 
 	public static Result loadAllRecords() {
 		try {
-			List<Record> records = Record.findSharedWith(new ObjectId(request().username()));
+			List<Record> records = Record.findVisible(new ObjectId(request().username()));
 
 			// format records
 			List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
