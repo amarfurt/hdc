@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import models.Record;
 
 import org.bson.types.ObjectId;
-import com.fasterxml.jackson.databind.JsonNode;
 
 import play.cache.Cache;
 import play.mvc.BodyParser;
@@ -18,6 +17,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import views.html.visualizations.list;
 import views.html.visualizations.runaggregator;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 @Security.Authenticated(Secured.class)
 public class Visualizations extends Controller {
@@ -42,9 +43,7 @@ public class Visualizations extends Controller {
 		// parse the space id and the records
 		String spaceId = json.get("spaceId").asText();
 		List<Record> records = new ArrayList<Record>();
-		Iterator<JsonNode> elements = json.get("records").elements();
-		while (elements.hasNext()) {
-			JsonNode cur = elements.next();
+		for (JsonNode cur : json.get("records")) {
 			Record newRecord = new Record();
 			Iterator<Entry<String, JsonNode>> fields = cur.fields();
 			while (fields.hasNext()) {
@@ -78,7 +77,7 @@ public class Visualizations extends Controller {
 		Cache.set(requestId.toString() + ":" + request().username(), response);
 		return ok(routes.Visualizations.show(requestId.toString()).url());
 	}
-	
+
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result runAggregator() {
 		// check whether the request is complete
@@ -87,12 +86,10 @@ public class Visualizations extends Controller {
 		if (requestComplete != null) {
 			return badRequest(requestComplete);
 		}
-		
+
 		double distance = 0;
 		double time = 0;
-		Iterator<JsonNode> elements = json.get("records").elements();
-		while (elements.hasNext()) {
-			JsonNode cur = elements.next();
+		for (JsonNode cur : json.get("records")) {
 			if (cur.has("data")) {
 				// assume the format "... {distance}[ ]km in {time}[ ]h ..."
 				String data = cur.get("data").asText().toLowerCase();
@@ -102,7 +99,7 @@ public class Visualizations extends Controller {
 				String curDistance = data.substring(0, data.lastIndexOf("km")).trim();
 				curDistance = curDistance.substring(curDistance.lastIndexOf(" ") + 1);
 				distance += Double.parseDouble(curDistance);
-				
+
 				String curTime = data.substring(0, data.lastIndexOf("h")).trim();
 				curTime = curTime.substring(curTime.lastIndexOf(" ") + 1);
 				time += Double.parseDouble(curTime);
@@ -116,13 +113,13 @@ public class Visualizations extends Controller {
 		String timeString = String.format("%.2f", time);
 		String speedString = String.format("%.2f", speed);
 		Result response = ok(runaggregator.render(distanceString, timeString, speedString));
-		
+
 		// cache the response and return the url to retrieve it
 		ObjectId requestId = new ObjectId();
 		Cache.set(requestId.toString() + ":" + request().username(), response);
 		return ok(routes.Visualizations.show(requestId.toString()).url());
 	}
-	
+
 	private static String requestComplete(JsonNode json) {
 		if (json == null) {
 			return "No json found.";

@@ -6,10 +6,9 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import play.libs.Json;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -40,9 +39,7 @@ public class LoadData {
 			while (collections.hasNext()) {
 				Entry<String, JsonNode> curColl = collections.next();
 				DBCollection collection = TestConnection.getCollection(curColl.getKey());
-				Iterator<JsonNode> documents = curColl.getValue().elements();
-				while (documents.hasNext()) {
-					JsonNode curDoc = documents.next();
+				for (JsonNode curDoc : curColl.getValue()) {
 					collection.insert((DBObject) JSON.parse(curDoc.toString()));
 				}
 			}
