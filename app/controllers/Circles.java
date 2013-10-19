@@ -60,7 +60,6 @@ public class Circles extends Controller {
 				return badRequest(errorMessage);
 			}
 
-			// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {

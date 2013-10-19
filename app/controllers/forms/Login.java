@@ -19,7 +19,6 @@ public class Login {
 			} else {
 				return null;
 			}
-		// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return "Server error: " + e.getMessage();
 		} catch (IllegalAccessException e) {

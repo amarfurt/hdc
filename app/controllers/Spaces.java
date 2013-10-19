@@ -67,7 +67,6 @@ public class Spaces extends Controller {
 				// pass id of space back in case of success
 				return "ObjectId:" + newSpace._id.toString();
 			}
-			// multi-catch doesn't seem to work...
 		} catch (IllegalArgumentException e) {
 			return e.getMessage();
 		} catch (IllegalAccessException e) {
