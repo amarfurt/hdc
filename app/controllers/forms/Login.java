@@ -12,7 +12,9 @@ public class Login {
 
 	public String validate() {
 		try {
-			if (!User.authenticationValid(email, password)) {
+			if (email.isEmpty() || password.isEmpty()) {
+				return "Please provide an email address and a password.";
+			} else if (!User.authenticationValid(email, password)) {
 				return "Invalid user or password.";
 			} else {
 				return null;
