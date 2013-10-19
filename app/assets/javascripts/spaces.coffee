@@ -3,9 +3,10 @@ class Space extends Backbone.View
 		@id = @el.attr("id")
 		jsRoutes.controllers.Spaces.getVisualizationURL(@id).ajax
 			context: this
-			success: (url) -> @url = url
-		if @el.hasClass("active")
-			@loadSpaceRecords()
+			success: (url) ->
+				@url = url
+				if @el.hasClass("active")
+					@loadSpaceRecords()
 	events:
 		"click .showCompare": "showCompare"
 		"click .hideCompare": "hideCompare"
