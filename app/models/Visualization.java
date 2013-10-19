@@ -29,6 +29,12 @@ public class Visualization extends SearchableModel {
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
 	}
 
+	public static ObjectId getId(String visualizationName) {
+		DBObject query = new BasicDBObject("name", visualizationName);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("_id");
+	}
+
 	public static String getURL(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("url", 1);
