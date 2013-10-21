@@ -3,8 +3,14 @@ package utils;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
+import models.Installed;
+
+import org.bson.types.ObjectId;
 
 import play.libs.Json;
 
@@ -44,6 +50,24 @@ public class LoadData {
 				}
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void loadMinimalSetup() {
+		try {
+			ObjectId developerId = CreateDBObjects.createDeveloperAccount();
+			CreateDBObjects.createDefaultVisualization(developerId);
+			
+			// optional: create installed entry for developer account
+			Installed.addUser(developerId);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 		}
 	}

@@ -9,6 +9,7 @@ import java.util.Date;
 
 import models.Record;
 import models.User;
+import models.Visualization;
 
 import org.bson.types.ObjectId;
 
@@ -16,6 +17,8 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+
+import controllers.visualizations.routes;
 
 public class CreateDBObjects {
 
@@ -55,6 +58,36 @@ public class CreateDBObjects {
 		}
 		assertEquals(originalCount + numRecords, records.count());
 		return recordIds;
+	}
+
+	public static ObjectId createDeveloperAccount() throws NoSuchAlgorithmException, InvalidKeySpecException,
+			IllegalArgumentException, IllegalAccessException {
+		DBCollection users = TestConnection.getCollection("users");
+		User user = new User();
+		user.email = "developers@healthbank.ch";
+		user.name = "Healthbank Developers";
+		user.password = PasswordHash.createHash("secret");
+		user.tags = new BasicDBList();
+		user.tags.add("healthbank");
+		user.tags.add("developers");
+		user.tags.add(user.email);
+		DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
+		users.insert(userObject);
+		return (ObjectId) userObject.get("_id");
+	}
+
+	public static void createDefaultVisualization(ObjectId developerId) throws IllegalArgumentException,
+			IllegalAccessException {
+		DBCollection visualizations = TestConnection.getCollection("visualizations");
+		Visualization visualization = new Visualization();
+		visualization.creator = developerId;
+		visualization.name = "Record List";
+		visualization.description = "Default record list implementation.";
+		visualization.url = routes.RecordList.load().url();
+		visualization.tags = new BasicDBList();
+		visualization.tags.add("record");
+		visualization.tags.add("list");
+		visualizations.insert(new BasicDBObject(ModelConversion.modelToMap(visualization)));
 	}
 
 }

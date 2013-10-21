@@ -16,7 +16,7 @@
 	<button type="button" data-toggle="modal" data-target="#newRecordForm" class="btn btn-primary pull-right">
 		<span class="glyphicon glyphicon-plus"></span> Manually add a new record
 	</button>
-	@helper.form(routes.Spaces.manuallyAddRecord) {
+	@helper.form(routes.Spaces.manuallyCreateRecord) {
 		<div class="modal fade" id="newRecordForm" role="dialog" aria-labelledby="newRecordFormLabel" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -82,7 +82,7 @@
 					</div>
 				</form>
 			</div>
-			<iframe id="iframe-default" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+			<iframe id="iframe-default" src="@controllers.visualizations.routes.Visualizations.loading" height="420px" width="100%"></iframe>
 		</div>
 		<!-- Custom spaces -->
 		@spaces.map { space =>
@@ -127,7 +127,7 @@
 							</div>
 						</form>
 					</div>
-					<iframe id="iframe-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+					<iframe id="iframe-@space._id" src="@controllers.visualizations.routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
 				<!-- Comparison view (hidden at the beginning) -->
 				<div class="compare2 col-lg-6 hidden">
@@ -154,7 +154,7 @@
 							</div>
 						</form>
 					</div>
-					<iframe id="iframe2-@space._id" src="@routes.Visualizations.loading" height="420px" width="100%"></iframe>
+					<iframe id="iframe2-@space._id" src="@controllers.visualizations.routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
 				
 				<!-- Add records modal -->

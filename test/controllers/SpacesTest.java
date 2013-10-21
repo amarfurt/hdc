@@ -196,13 +196,13 @@ public class SpacesTest {
 	}
 
 	@Test
-	public void manuallyAddRecord() {
+	public void manuallyCreateRecord() {
 		DBCollection records = TestConnection.getCollection("records");
 		long oldSize = records.count();
 		DBCollection users = TestConnection.getCollection("users");
 		ObjectId userId = (ObjectId) users.findOne().get("_id");
 		Result result = callAction(
-				controllers.routes.ref.Spaces.manuallyAddRecord(),
+				controllers.routes.ref.Spaces.manuallyCreateRecord(),
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("data", "Test data", "tags", "test")));
 		assertEquals(303, status(result));

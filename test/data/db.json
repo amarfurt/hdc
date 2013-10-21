@@ -200,9 +200,9 @@
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc675" },
 		"creator": { "$oid" : "525d0d84e4b097a840bcae9a" },
-		"name": "List",
-		"description": "This simple visualization shows all records in a list.",
-		"url": "localhost:9000/visualizations/list",
+		"name": "Record List",
+		"description": "Default record list implementation.",
+		"url": "/visualizations/recordlist",
 		"tags": [ ]
 	}
 	],

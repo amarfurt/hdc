@@ -92,7 +92,7 @@ $ ->
 	# Load all records and default space
 	window.records = []
 	spaceId = "default"
-	url = "/visualization/list"
+	url = jsRoutes.controllers.visualizations.RecordList.load().url
 	jsRoutes.controllers.Spaces.loadAllRecords().ajax
 		context: this
 		success: (data) ->

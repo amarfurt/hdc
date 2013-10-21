@@ -5,7 +5,7 @@ class Record extends Backbone.View
 		"click .spacesButton": "findSpaces"
 		"click .circlesButton": "findCircles"
 	findSpaces: ->
-		jsRoutes.controllers.Spaces.findSpacesWith(@id).ajax
+		jsRoutes.controllers.visualizations.RecordList.findSpacesWith(@id).ajax
 			context: this
 			success: (data) ->
 				_.each $(":checkbox"), (checkbox) -> $(checkbox).prop("checked", false)
@@ -15,7 +15,7 @@ class Record extends Backbone.View
 				console.error("Error when finding spaces with record.")
 				console.error(err.responseText)
 	findCircles: ->
-		jsRoutes.controllers.Spaces.findCirclesWith(@id).ajax
+		jsRoutes.controllers.visualizations.RecordList.findCirclesWith(@id).ajax
 			context: this
 			success: (data) ->
 				_.each $(":checkbox"), (checkbox) -> $(checkbox).prop("checked", false)
@@ -28,7 +28,7 @@ class Record extends Backbone.View
 		if @parent.curRecord == @id
 			spaces = []
 			_.each $(":checkbox"), (checkbox) -> spaces.push $(checkbox).attr("name") if $(checkbox).prop("checked")
-			jsRoutes.controllers.Spaces.updateSpaces(@id, spaces).ajax
+			jsRoutes.controllers.visualizations.RecordList.updateSpaces(@id, spaces).ajax
 				context: this
 				success: ->
 					# if record has been removed from this space, remove it from the visualization
@@ -41,7 +41,7 @@ class Record extends Backbone.View
 		if @parent.curRecord == @id
 			circles = []
 			_.each $(":checkbox"), (checkbox) -> circles.push $(checkbox).attr("name") if $(checkbox).prop("checked")
-			jsRoutes.controllers.Spaces.updateCircles(@id, circles).ajax
+			jsRoutes.controllers.visualizations.RecordList.updateCircles(@id, circles).ajax
 				context: this
 				error: (err) ->
 					console.error("Updating the circles of this record failed.")

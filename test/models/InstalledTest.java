@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.LoadData;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -40,20 +41,24 @@ public class InstalledTest {
 	public void addUser() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
 		DBCollection users = TestConnection.getCollection("users");
-		assertEquals(0, users.count());
 		DBCollection installed = TestConnection.getCollection("installed");
+		assertEquals(0, users.count());
 		assertEquals(0, installed.count());
+		LoadData.loadMinimalSetup();
+		assertEquals(1, users.count());
+		assertEquals(1, installed.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
 		user.password = "secret";
 		assertNull(User.add(user));
-		assertEquals(1, users.count());
-		assertEquals(1, installed.count());
-		DBObject dbObject = installed.findOne();
+		assertEquals(2, users.count());
+		assertEquals(2, installed.count());
+		DBObject query = new BasicDBObject("_id", user._id);
+		DBObject dbObject = installed.findOne(query);
 		assertEquals(user._id, dbObject.get("_id"));
 		assertEquals(0, ((BasicDBList) dbObject.get("apps")).size());
-		assertEquals(0, ((BasicDBList) dbObject.get("visualizations")).size());
+		assertEquals(1, ((BasicDBList) dbObject.get("visualizations")).size());
 	}
 
 	@Test

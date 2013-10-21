@@ -1,18 +1,15 @@
 package controllers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import models.Circle;
 import models.Record;
 import models.Space;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.data.Form;
 import play.libs.Json;
@@ -25,6 +22,7 @@ import utils.ListOperations;
 import views.html.spaces;
 import views.html.elements.recordsearchresults;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.BasicDBList;
 
 import controllers.forms.SpaceForm;
@@ -163,70 +161,7 @@ public class Spaces extends Controller {
 		}
 	}
 
-	/**
-	 * Updates the spaces the given record is in.
-	 */
-	public static Result updateSpaces(String recordId, List<String> spaces) {
-		List<ObjectId> spaceIds = new ArrayList<ObjectId>();
-		for (String id : spaces) {
-			spaceIds.add(new ObjectId(id));
-		}
-		try {
-			String errorMessage = Space.updateRecords(spaceIds, new ObjectId(recordId), new ObjectId(request()
-					.username()));
-			if (errorMessage == null) {
-				return ok();
-			} else {
-				return badRequest(errorMessage);
-			}
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
-			return internalServerError(e.getMessage());
-		}
-	}
-
-	/**
-	 * Updates the circles the given record is shared with.
-	 */
-	public static Result updateCircles(String record, List<String> circles) {
-		ObjectId recordId = new ObjectId(record);
-		List<ObjectId> circleIds = new ArrayList<ObjectId>();
-		for (String id : circles) {
-			circleIds.add(new ObjectId(id));
-		}
-
-		// TODO Security checks here?
-		if (!Secured.isCreatorOrOwnerOfRecord(recordId)) {
-			return forbidden();
-		}
-		for (ObjectId circleId : circleIds) {
-			if (!Secured.isOwnerOfCircle(circleId)) {
-				return forbidden();
-			}
-		}
-
-		// update circles
-		try {
-			String errorMessage = Circle.updateShared(circleIds, recordId, new ObjectId(request().username()));
-			if (errorMessage == null) {
-				return ok();
-			} else {
-				return badRequest(errorMessage);
-			}
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
-			return internalServerError(e.getMessage());
-		}
-
-	}
-
-	public static Result manuallyAddRecord() {
+	public static Result manuallyCreateRecord() {
 		Record newRecord = new Record();
 		newRecord.creator = new ObjectId(request().username());
 		newRecord.owner = newRecord.creator;
@@ -272,27 +207,6 @@ public class Spaces extends Controller {
 		} catch (InstantiationException e) {
 			return badRequest(e.getMessage());
 		}
-	}
-
-	/**
-	 * Find the spaces that contain the given record.
-	 */
-	public static Result findSpacesWith(String recordId) {
-		Set<ObjectId> spaceIds = Space.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
-		Set<String> spaces = new HashSet<String>();
-		for (ObjectId id : spaceIds) {
-			spaces.add(id.toString());
-		}
-		return ok(Json.toJson(spaces));
-	}
-
-	public static Result findCirclesWith(String recordId) {
-		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
-		Set<String> circles = new HashSet<String>();
-		for (ObjectId id : circleIds) {
-			circles.add(id.toString());
-		}
-		return ok(Json.toJson(circles));
 	}
 
 	public static Result loadAllRecords() {

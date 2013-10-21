@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
+import utils.LoadData;
 import utils.ModelConversion;
 import utils.PasswordHash;
 import utils.TestConnection;
@@ -76,13 +77,16 @@ public class UserTest {
 			InvalidKeySpecException, InstantiationException {
 		DBCollection users = TestConnection.getCollection("users");
 		assertEquals(0, users.count());
+		LoadData.loadMinimalSetup();
+		assertEquals(1, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
 		user.password = "secret";
 		assertNull(User.add(user));
-		assertEquals(1, users.count());
-		assertEquals(user.email, users.findOne().get("email"));
+		assertEquals(2, users.count());
+		DBObject query = new BasicDBObject("_id", user._id);
+		assertEquals(user.email, users.findOne(query).get("email"));
 	}
 
 	@Test

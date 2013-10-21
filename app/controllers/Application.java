@@ -107,20 +107,19 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.rename(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.searchRecords(),
-				controllers.routes.javascript.Spaces.updateSpaces(),
-				controllers.routes.javascript.Spaces.updateCircles(),
-				controllers.routes.javascript.Spaces.findSpacesWith(),
-				controllers.routes.javascript.Spaces.findCirclesWith(),
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Spaces.getVisualizationURL(),
-				controllers.routes.javascript.Visualizations.list(),
-				controllers.routes.javascript.Visualizations.runAggregator(),
 				controllers.routes.javascript.Market.registerVisualization(),
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),
-				controllers.api.routes.javascript.UserInfo.getName()));
+				controllers.api.routes.javascript.UserInfo.getName(),
+				controllers.visualizations.routes.javascript.RecordList.load(),
+				controllers.visualizations.routes.javascript.RecordList.findSpacesWith(),
+				controllers.visualizations.routes.javascript.RecordList.findCirclesWith(),
+				controllers.visualizations.routes.javascript.RecordList.updateSpaces(),
+				controllers.visualizations.routes.javascript.RecordList.updateCircles()));
 	}
 
 }

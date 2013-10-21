@@ -68,7 +68,7 @@ public class Installed extends Model {
 		installed._id = userId;
 		installed.apps = new BasicDBList();
 		installed.visualizations = new BasicDBList();
-		installed.visualizations.add(Visualization.getId("List"));
+		installed.visualizations.add(Visualization.getId("Record List"));
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(installed));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		return result.getLastError().getErrorMessage();
