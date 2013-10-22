@@ -31,10 +31,15 @@ public class User extends SearchableModel implements Comparable<User> {
 		return this.name.compareTo(o.name);
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	public static String getCollection() {
 		return collection;
 	}
-	
+
 	public static ObjectId getId(String email) {
 		DBObject query = new BasicDBObject("email", email);
 		DBObject projection = new BasicDBObject("_id", 1);
@@ -51,11 +56,7 @@ public class User extends SearchableModel implements Comparable<User> {
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject result = Connection.getCollection(collection).findOne(query);
-		if (result != null) {
-			return ModelConversion.mapToModel(User.class, result.toMap());
-		} else {
-			return null;
-		}
+		return ModelConversion.mapToModel(User.class, result.toMap());
 	}
 
 	public static List<User> findAll(int limit) throws IllegalArgumentException, IllegalAccessException,
@@ -97,7 +98,7 @@ public class User extends SearchableModel implements Comparable<User> {
 		if (errorMessage != null) {
 			return errorMessage;
 		}
-		
+
 		// also set up installed entry
 		return Installed.addUser(newUser._id);
 	}
@@ -117,7 +118,7 @@ public class User extends SearchableModel implements Comparable<User> {
 		DBObject query = new BasicDBObject("_id", userId);
 		return (Connection.getCollection(collection).findOne(query) != null);
 	}
-	
+
 	public static boolean userExists(String email) {
 		DBObject query = new BasicDBObject("email", email);
 		return (Connection.getCollection(collection).findOne(query) != null);

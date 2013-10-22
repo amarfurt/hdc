@@ -114,6 +114,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),
+				controllers.routes.javascript.Search.find(),
 				controllers.api.routes.javascript.UserInfo.getName(),
 				controllers.visualizations.routes.javascript.RecordList.load(),
 				controllers.visualizations.routes.javascript.RecordList.findSpacesWith(),

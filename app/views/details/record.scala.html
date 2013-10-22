@@ -1,0 +1,24 @@
+@(record: Record, user: org.bson.types.ObjectId)
+
+@main(user, "Record Details") {
+	<div class="page-header">
+		<h1>Record Details</h1>
+	</div>
+	
+	<div class="row">
+		<p class="col-sm-2">Created by:</p>
+		<p class="col-sm-10">@User.getName(record.creator)</p>
+	</div>
+	<div class="row">
+		<p class="col-sm-2">Created on:</p>
+		<p class="col-sm-10">@utils.DateTimeUtils.getDate(record.created) at @utils.DateTimeUtils.getTime(record.created)</p>
+	</div>
+	<div class="row">
+		<p class="col-sm-2">Owned by:</p>
+		<p class="col-sm-10">@User.getName(record.owner)</p>
+	</div>
+	<div class="row">
+		<p class="col-sm-2">Data:</p>
+		<p class="col-sm-10">@record.data</p>
+	</div>
+}

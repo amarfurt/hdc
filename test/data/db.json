@@ -44,7 +44,7 @@
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc670" },
 		"receiver": { "$oid" : "5255500630040546a0ddc671" },
-		"datetime": "2001-01-01-120000Z",
+		"created": "2001-01-01 12:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
@@ -52,7 +52,7 @@
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc671" },
 		"receiver": { "$oid" : "5255500630040546a0ddc672" },
-		"datetime": "2001-01-01-130000Z",
+		"created": "2001-01-01 13:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
@@ -60,7 +60,7 @@
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc672" },
 		"receiver": { "$oid" : "5255500630040546a0ddc673" },
-		"datetime": "2001-01-01-140000Z",
+		"created": "2001-01-01 14:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
@@ -68,7 +68,7 @@
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc673" },
 		"receiver": { "$oid" : "5255500630040546a0ddc670" },
-		"datetime": "2001-01-01-150000Z",
+		"created": "2001-01-01 15:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?",
 		"tags": [ ]
@@ -76,7 +76,7 @@
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc671" },
 		"receiver": { "$oid" : "5255500630040546a0ddc670" },
-		"datetime": "2001-01-01-160000Z",
+		"created": "2001-01-01 16:00:00",
 		"title": "RE: How are you?",
 		"content": "Thanks I'm fine.",
 		"tags": [ ]
@@ -191,6 +191,7 @@
 	"apps": [
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc674" },
+		"creator": { "$oid" : "525d0d84e4b097a840bcae9a" },
 		"name": "Runtastic",
 		"description": "Shows statistics of its owners running performances.",
 		"tags": [ ]

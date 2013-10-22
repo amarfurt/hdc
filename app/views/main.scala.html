@@ -50,6 +50,23 @@
 						<li @if("circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
 						<li @if("market".equals(active)){class="active"}><a href="/market">Market</a></li>
 					</ul>
+					<form class="navbar-form navbar-left" role="search">
+						<div class="form-group">
+							<input type="text" id="globalSearch" name="globalSearch" class="form-control" placeholder="Search">
+						</div>
+						in my
+						<div class="form-group">
+							<select id="searchDomain" class="form-control">
+								<option value="records">records</option>
+								<option value="messages">messages</option>
+								<option value="spaces">spaces</option>
+								<option value="contacts">contacts</option>
+								<option value="circles">circles</option>
+								<option value="apps">apps</option>
+								<option value="visualizations">visualizations</option>
+							</select>
+						</div>
+					</form>
 					<ul class="nav navbar-nav navbar-right">
 						<li><p class="navbar-text">@User.getName(user)</p></li>
 						<li><a href="@routes.Application.logout()">
@@ -60,12 +77,13 @@
 			</div>
 		</div>
 		
-		<div class="container">
+		<div id="page-content" class="container">
 			@content
 		</div>
 		
 		<!-- Scripts at the end for faster page loading -->
 		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script type="text/javascript" src="@routes.Assets.at("javascripts/search.js")"></script>
 		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>
 	</body>
 </html>

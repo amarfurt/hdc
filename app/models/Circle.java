@@ -33,6 +33,11 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 		return this.order - o.order;
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
 	public static boolean isOwner(ObjectId circleId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
@@ -70,6 +75,23 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
 		}
 		return circles;
+	}
+
+	/**
+	 * Returns the ids of the records that are shared with this user.
+	 */
+	public static Set<ObjectId> getSharedWith(ObjectId userId) {
+		Set<ObjectId> recordIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("members", userId);
+		DBObject projection = new BasicDBObject("shared", 1);
+		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		while (result.hasNext()) {
+			BasicDBList shared = (BasicDBList) result.next().get("shared");
+			for (Object id : shared) {
+				recordIds.add((ObjectId) id);
+			}
+		}
+		return recordIds;
 	}
 
 	/**

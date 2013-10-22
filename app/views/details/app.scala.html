@@ -1,0 +1,29 @@
+@(app: App, user: org.bson.types.ObjectId)
+
+@main(user, "market") {
+
+	<div class="page-header">
+		<h1>Market <small>Apps</small></h1>
+	</div>
+	
+	<div id="redirectNotice" class="alert alert-success alert-dismissable hidden">
+		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+		You have successfully installed a new app. Go to your <a href="@routes.Application.spaces()">spaces</a> now to create a rule for adding new records to a space.
+	</div>
+	
+	<p class="lead">@app.name</p>
+	<div class="row">
+		<p class="col-xs-2">Created by:</p>
+		<p class="col-xs-10">@User.getName(app.creator)</p>
+	</div>
+	<div class="row">
+		<p class="col-xs-2">Description:</p>
+		<p class="col-xs-10">@app.description</p>
+	</div>
+	
+	<button type="button" id="installButton" app-id="@app._id" class="btn btn-primary @if(Installed.isAppInstalledBy(app._id, user)){hidden}">Install</button>
+	<button type="button" id="uninstallButton" class="btn btn-default @if(!Installed.isAppInstalledBy(app._id, user)){hidden}">Uninstall</button>
+	
+	<!-- Load specific js -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>
+}

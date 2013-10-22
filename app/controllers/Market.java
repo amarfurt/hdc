@@ -83,7 +83,7 @@ public class Market extends Controller {
 		} catch (InstantiationException e) {
 			return internalServerError(e.getMessage());
 		}
-		return ok(views.html.elements.visualization.render(visualization, userId));
+		return ok(views.html.details.visualization.render(visualization, userId));
 	}
 
 	public static Result installVisualization(String visualizationIdString) {

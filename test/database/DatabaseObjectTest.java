@@ -15,6 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.DateTimeUtils;
 import utils.ModelConversion;
 import utils.TestConnection;
 
@@ -104,7 +105,7 @@ public class DatabaseObjectTest {
 		Message message = new Message();
 		message.sender = new ObjectId();
 		message.receiver = new ObjectId();
-		message.datetime = "2000-01-01-120000Z";
+		message.created = DateTimeUtils.getNow();
 		message.title = "Test";
 		message.content = "This is a test message.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));

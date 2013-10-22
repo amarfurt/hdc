@@ -42,7 +42,7 @@ public class MessageTest {
 		Message message = new Message();
 		message.sender = new ObjectId();
 		message.receiver = person._id;
-		message.datetime = DateTimeUtils.getNow();
+		message.created = DateTimeUtils.getNow();
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
@@ -61,7 +61,7 @@ public class MessageTest {
 		Message message = new Message();
 		message.sender = person._id;
 		message.receiver = new ObjectId();
-		message.datetime = DateTimeUtils.getNow();
+		message.created = DateTimeUtils.getNow();
 		message.title = "Title";
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));

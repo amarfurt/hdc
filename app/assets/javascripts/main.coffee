@@ -38,6 +38,9 @@ $.fn.editInPlace = (method, options...) ->
 		else
 			$.error("Method " + method + " does not exist.")
 
+$.fn.exists = () ->
+    this.length isnt 0
+
 # String functions
 String.prototype.startsWith = (prefix) ->
     this.indexOf(prefix) is 0

@@ -52,11 +52,19 @@ public class Record extends SearchableModel implements Comparable<Record> {
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject result = Connection.getCollection(collection).findOne(query);
-		if (result != null) {
-			return ModelConversion.mapToModel(Record.class, result.toMap());
-		} else {
-			return null;
+		return ModelConversion.mapToModel(Record.class, result.toMap());
+	}
+
+	public static Set<Record> findAll(ObjectId... recordIds) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		Set<Record> records = new HashSet<Record>();
+		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", recordIds));
+		DBCursor result = Connection.getCollection(collection).find(query);
+		while (result.hasNext()) {
+			DBObject cur = result.next();
+			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
 		}
+		return records;
 	}
 
 	/**
@@ -114,6 +122,27 @@ public class Record extends SearchableModel implements Comparable<Record> {
 			}
 		}
 		return foundRecords;
+	}
+
+	public static Set<ObjectId> getOwnedBy(ObjectId userId) {
+		Set<ObjectId> ownedRecordIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("owner", userId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		while (result.hasNext()) {
+			ownedRecordIds.add((ObjectId) result.next().get("_id"));
+		}
+		return ownedRecordIds;
+	}
+
+	public static Set<ObjectId> getVisible(ObjectId userId) {
+		// get all owned records
+		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
+		visibleRecordIds.addAll(getOwnedBy(userId));
+
+		// get all records that are shared with this user
+		visibleRecordIds.addAll(Circle.getSharedWith(userId));
+		return visibleRecordIds;
 	}
 
 	/**

@@ -1,0 +1,16 @@
+@(user: User, userId: org.bson.types.ObjectId)
+
+@main(userId, "User Details") {
+	<div class="page-header">
+		<h1>User Details</h1>
+	</div>
+	
+	<div class="row">
+		<p class="col-sm-2">Name:</p>
+		<p class="col-sm-10">@user.name</p>
+	</div>
+	<div class="row">
+		<p class="col-sm-2">Email:</p>
+		<p class="col-sm-10">@user.email</p>
+	</div>
+}

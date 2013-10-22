@@ -1,6 +1,7 @@
 package models;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class Visualization extends SearchableModel {
+public class Visualization extends SearchableModel implements Comparable<Visualization> {
 
 	private static final String collection = "visualizations";
 
@@ -23,6 +24,16 @@ public class Visualization extends SearchableModel {
 	public String description;
 	public String url;
 
+	@Override
+	public int compareTo(Visualization o) {
+		return this.name.compareTo(o.name);
+	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
+	
 	public static String getName(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("name", 1);
@@ -55,7 +66,7 @@ public class Visualization extends SearchableModel {
 		for (ObjectId visualizationId : visualizationIds) {
 			visualizations.add(find(visualizationId));
 		}
-		// TODO sort
+		Collections.sort(visualizations);
 		return visualizations;
 	}
 

@@ -32,6 +32,11 @@ public class Space extends SearchableModel implements Comparable<Space> {
 	public int compareTo(Space o) {
 		return this.order - o.order;
 	}
+	
+	@Override
+	public String toString() {
+		return name;
+	}
 
 	public static boolean isOwner(ObjectId spaceId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
