@@ -126,7 +126,8 @@ loadSpace = (url, records, spaceId, compare) ->
 		contentType: "application/json; charset=utf-8"
 		data: JSON.stringify(json)
 		success: (response) ->
-			$("#"+iframeName+"-"+spaceId).prop("src", response)
+			iframeId = iframeName+"-"+spaceId
+			$("#"+iframeId).replaceWith('<iframe id="'+iframeId+'" src="'+response+'" height="420px" width="100%"></iframe>')
 
 filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
