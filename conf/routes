@@ -40,6 +40,8 @@ GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Search
 GET     /search                     controllers.Search.find(search: String, domain: String)
 GET     /search/:model/:id          controllers.Search.show(model: String, id: String)
+# Users
+GET     /users/:id/name             controllers.Users.getName(id: String)
 # Default visualizations
 GET     /visualizations/loading     controllers.visualizations.Visualizations.loading()
 GET     /visualizations/:id         controllers.visualizations.Visualizations.show(id: String)
@@ -49,8 +51,6 @@ GET     /visualizations/recordlist/circles/findwith/:id controllers.visualizatio
 POST    /visualizations/recordlist/spaces/update controllers.visualizations.RecordList.updateSpaces(id: String, spaceIds: java.util.List[String])
 POST    /visualiaztions/recordlist/circles/update controllers.visualizations.RecordList.updateCircles(id: String, spaceIds: java.util.List[String])
 POST    /visualization/runaggregator controllers.visualizations.RunAggregator.load()
-# Public API (to be done)
-GET     /user/name                  controllers.api.UserInfo.getName(id: String)
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()

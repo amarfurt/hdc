@@ -151,7 +151,7 @@ loadFilters = (url, records, spaceId, compare) ->
 	ids = _.union(creators, owners)
 	idsToNames = {}
 	_.each ids, (id) ->
-		jsRoutes.controllers.api.UserInfo.getName(id).ajax
+		jsRoutes.controllers.Users.getName(id).ajax
 			async: false
 			success: (name) ->
 				idsToNames[id] = name
