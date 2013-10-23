@@ -4,7 +4,7 @@
 
 <html>
 	<head>
-		<title>Healthbank</title>
+		<title>Healthbank@if(!active.isEmpty()){ - @active}</title>
 		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
 		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 		<meta charset="utf-8">
@@ -45,10 +45,10 @@
 				</div>
 				<div class="collapse navbar-collapse navbar-ex1-collapse">
 					<ul class="nav navbar-nav">
-		            	<li @if("index".equals(active)){class="active"}><a href="/">News <span class="badge">0</span></a></li>
-						<li @if("spaces".equals(active)){class="active"}><a href="/spaces">Spaces</a></li>
-						<li @if("circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
-						<li @if("market".equals(active)){class="active"}><a href="/market">Market</a></li>
+		            	<li @if("News".equals(active)){class="active"}><a href="/">News <span class="badge">0</span></a></li>
+						<li @if("Spaces".equals(active)){class="active"}><a href="/spaces">Spaces</a></li>
+						<li @if("Circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
+						<li @if("Market".equals(active)){class="active"}><a href="/market">Market</a></li>
 					</ul>
 					<form class="navbar-form navbar-left" role="search">
 						<div class="form-group">
