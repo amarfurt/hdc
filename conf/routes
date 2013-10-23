@@ -49,8 +49,8 @@ POST    /visualizations/recordlist  controllers.visualizations.RecordList.load()
 GET     /visualizations/recordlist/spaces/findwith/:id controllers.visualizations.RecordList.findSpacesWith(id: String)
 GET     /visualizations/recordlist/circles/findwith/:id controllers.visualizations.RecordList.findCirclesWith(id: String)
 POST    /visualizations/recordlist/spaces/update controllers.visualizations.RecordList.updateSpaces(id: String, spaceIds: java.util.List[String])
-POST    /visualiaztions/recordlist/circles/update controllers.visualizations.RecordList.updateCircles(id: String, spaceIds: java.util.List[String])
-POST    /visualization/runaggregator controllers.visualizations.RunAggregator.load()
+POST    /visualizations/recordlist/circles/update controllers.visualizations.RecordList.updateCircles(id: String, spaceIds: java.util.List[String])
+POST    /visualizations/runaggregator controllers.visualizations.RunAggregator.load()
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
