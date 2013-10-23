@@ -3,6 +3,7 @@ package controllers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.callAction;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
@@ -152,11 +153,16 @@ public class CirclesTest {
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(
-				controllers.routes.ref.Circles.addUsers(circleId),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of(new ObjectId().toString(), "on")));
-		assertEquals(400, status(result));
+		boolean exceptionCaught = false;
+		try {
+			callAction(
+					controllers.routes.ref.Circles.addUsers(circleId),
+					fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
+							ImmutableMap.of(new ObjectId().toString(), "on")));
+		} catch (NullPointerException e) {
+			exceptionCaught = true;
+		}
+		assertTrue(exceptionCaught);
 		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 
@@ -172,8 +178,7 @@ public class CirclesTest {
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(
-				controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
+		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
 				fakeRequest().withSession("id", ownerId.toString()));
 		assertEquals(200, status(result));
 		assertEquals(oldSize - 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
@@ -191,8 +196,7 @@ public class CirclesTest {
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(
-				controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
+		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
 				fakeRequest().withSession("id", ownerId.toString()));
 		assertEquals(400, status(result));
 		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());

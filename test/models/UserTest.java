@@ -3,6 +3,7 @@ package models;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
@@ -68,8 +69,13 @@ public class UserTest {
 		person.birthday = "2000-01-01";
 		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
 		assertEquals(1, users.count());
-		User foundUser = User.find(new ObjectId());
-		assertNull(foundUser);
+		boolean exceptionCaught = false;
+		try {
+			User.find(new ObjectId());
+		} catch (NullPointerException e) {
+			exceptionCaught = true;
+		}
+		assertTrue(exceptionCaught);
 	}
 
 	@Test
