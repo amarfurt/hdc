@@ -13,7 +13,8 @@ object ApplicationBuild extends Build {
     javaCore,
     javaJdbc,
     javaEbean,
-    "org.mongodb" % "mongo-java-driver" % "2.11.3"
+    "org.mongodb" % "mongo-java-driver" % "2.11.3",
+    "org.elasticsearch" % "elasticsearch" % "0.90.5"
   )
 
   val main = play.Project(appName, appVersion, appDependencies).settings(
