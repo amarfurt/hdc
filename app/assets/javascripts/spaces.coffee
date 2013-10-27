@@ -1,6 +1,7 @@
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
+		
 		jsRoutes.controllers.Spaces.getVisualizationURL(@id).ajax
 			context: this
 			success: (url) ->
@@ -92,6 +93,7 @@ $ ->
 	# Load all records and default space
 	window.records = []
 	spaceId = "default"
+	
 	url = jsRoutes.controllers.visualizations.RecordList.load().url
 	jsRoutes.controllers.Spaces.loadAllRecords().ajax
 		context: this
@@ -132,14 +134,29 @@ loadSpace = (url, records, spaceId, compare) ->
 filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	sliderFilter = if not compare then "filterSlider" else "filterSlider2"
+	
 	creator = $("#"+creatorFilter+"-"+spaceId).attr("value")
 	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
+	range = $("#"+sliderFilter+"-"+spaceId).attr("value")	
+	day = 1000 * 60 * 60 *24
+	startdate = formatDate(new Date(Number(range.substr(0, range.indexOf(",")))))	
+	enddate = formatDate(new Date(day+Number(range.substr(range.indexOf(",")+1))))
+	$("#"+sliderFilter+"Range-"+spaceId).text(startdate + " to " + enddate) 
+	
 	records = filterByProperty(records, "creator", creator)
 	records = filterByProperty(records, "owner", owner)
+	records = filterByPropertyRange(records, "created", startdate, enddate)
 	loadSpace(url, records, spaceId, compare)
 
 filterByProperty = (list, property, value) ->
 	return _.filter list, (record) -> if value is "any" then true else record[property] is value
+
+filterByPropertyRange = (list, property, minvalue, maxvalue) ->
+	return _.filter list, (record) -> console.log(record[property]);return (record[property] >= minvalue && record[property] <= maxvalue)
+
+formatDate = (date) -> 
+     return (date.getFullYear()+"-"+(if date.getMonth()<9 then "0" else "")+(1+date.getMonth())+"-"+(if date.getDate()<10 then "0" else "")+date.getDate()) 
 
 loadFilters = (url, records, spaceId, compare) ->
 	creators = []
@@ -162,6 +179,7 @@ loadFilters = (url, records, spaceId, compare) ->
 	# Define the names
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	sliderFilter = if not compare then "filterSlider" else "filterSlider2"
 	
 	# Add filter options to select
 	$("#"+creatorFilter+"-"+spaceId).empty()
@@ -171,8 +189,17 @@ loadFilters = (url, records, spaceId, compare) ->
 	_.each (_.uniq creators), (creator) -> $("#"+creatorFilter+"-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
 	_.each (_.uniq owners), (owner) -> $("#"+ownerFilter+"-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
 	
+	# Date filter slider
+	day = 1000 * 60 * 60 *24
+	lastdate = new Date()
+	firstdate = new Date(lastdate - day * 365 * 5) 	
+	$("#"+sliderFilter+"-"+spaceId).slider({ min:firstdate.getTime(), max:lastdate.getTime(), step:day, value:[firstdate.getTime(), lastdate.getTime()], formater:(a) -> return formatDate(new Date(a))  })
+	
+		
 	# Register the filter events
 	$("#"+creatorFilter+"-"+spaceId).on "change", (e) ->
 		filterRecords(url, records, spaceId, compare)
 	$("#"+ownerFilter+"-"+spaceId).on "change", (e) ->
 		filterRecords(url, records, spaceId, compare)
+	$("#"+sliderFilter+"-"+spaceId).on "slideStop", (e) -> 
+	    filterRecords(url, records, spaceId, compare)	
