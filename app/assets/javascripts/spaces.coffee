@@ -132,21 +132,46 @@ loadSpace = (url, records, spaceId, compare) ->
 filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	sliderFilter = if not compare then "filterSlider" else "filterSlider2"
+	
 	creator = $("#"+creatorFilter+"-"+spaceId).attr("value")
 	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
+	range = $("#"+sliderFilter+"-"+spaceId).attr("value")
+	split = range.split(/\,/)
+	startdate = dateToString(new Date(Number(split[0])))	
+	enddate = dateToString(new Date(Number(split[1])))
+	$("#"+sliderFilter+"Range-"+spaceId).text(startdate + " to " + enddate) 
+	
 	records = filterByProperty(records, "creator", creator)
 	records = filterByProperty(records, "owner", owner)
+	records = filterByPropertyRangeDate(records, "created", startdate, enddate)
 	loadSpace(url, records, spaceId, compare)
 
 filterByProperty = (list, property, value) ->
-	return _.filter list, (record) -> if value is "any" then true else record[property] is value
+	_.filter list, (record) -> if value is "any" then true else record[property] is value
+
+filterByPropertyRangeDate = (list, property, minvalue, maxvalue) ->
+	_.filter list, (record) ->
+		# extract only date (skip time)
+		date = record[property].split(" ")[0]
+		date >= minvalue && date <= maxvalue
+
+stringToDate = (dateString) ->
+	split = dateString.split(/[ -]/)
+	split = _.map split, (number) -> Number(number)
+	date = new Date(split[0], split[1] - 1, split[2])
+
+dateToString = (date) ->
+     date.getFullYear()+"-"+(if date.getMonth()<9 then "0" else "")+(1+date.getMonth())+"-"+(if date.getDate()<10 then "0" else "")+date.getDate() 
 
 loadFilters = (url, records, spaceId, compare) ->
 	creators = []
 	owners = []
+	created = []
 	_.each records, (record) ->
 		creators.push record.creator
 		owners.push record.owner
+		created.push record.created
 	# Load the names (synchronously; needed afterwards)
 	ids = _.union(creators, owners)
 	idsToNames = {}
@@ -162,6 +187,7 @@ loadFilters = (url, records, spaceId, compare) ->
 	# Define the names
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
+	sliderFilter = if not compare then "filterSlider" else "filterSlider2"
 	
 	# Add filter options to select
 	$("#"+creatorFilter+"-"+spaceId).empty()
@@ -171,8 +197,17 @@ loadFilters = (url, records, spaceId, compare) ->
 	_.each (_.uniq creators), (creator) -> $("#"+creatorFilter+"-"+spaceId).append('<option value="' + creator + '">' + idsToNames[creator] + '</option>')
 	_.each (_.uniq owners), (owner) -> $("#"+ownerFilter+"-"+spaceId).append('<option value="' + owner + '">' + idsToNames[owner] + '</option>')
 	
+	# Date filter slider
+	created.sort()
+	firstdate = if created.length > 0 then stringToDate(created[0]) else new Date()
+	lastdate = if created.length > 0 then stringToDate(created[created.length - 1]) else new Date()
+	day = 1000 * 60 * 60 * 24
+	$("#"+sliderFilter+"-"+spaceId).slider({min:firstdate.getTime(), max:lastdate.getTime(), step:day, value:[firstdate.getTime(), lastdate.getTime()], formater: (a) -> dateToString(new Date(a))})
+		
 	# Register the filter events
 	$("#"+creatorFilter+"-"+spaceId).on "change", (e) ->
 		filterRecords(url, records, spaceId, compare)
 	$("#"+ownerFilter+"-"+spaceId).on "change", (e) ->
 		filterRecords(url, records, spaceId, compare)
+	$("#"+sliderFilter+"-"+spaceId).on "slideStop", (e) -> 
+	    filterRecords(url, records, spaceId, compare)	

@@ -59,26 +59,21 @@
 	<!-- Default space -->
 	<div id="spaceContent" class="tab-content">
 		<div id="tab-default" class="tab-pane fade @if(activeSpace == null){active in}">
-			<div class="well well-sm">
-				<form class="form-horizontal" role="form">
-					<div class="form-group">
-						<label for="filterCreator-default" class="col-lg-2 control-label">Created by: </label>
-						<div class="col-lg-10">
-							<select id="filterCreator-default" class="form-control"></select>
-						</div>
+			<div class="">
+				<form class="form-inline" role="form">
+					<div class="form-group col-lg-3">
+						<label for="filterCreator-default" class="control-label">Created by: </label>						
+						<select id="filterCreator-default" class="form-control"></select>						
 					</div>
-					<div class="form-group">
-						<label for="filterOwner-default" class="col-lg-2 control-label">Owned by: </label>
-						<div class="col-lg-10">
-							<select id="filterOwner-default" class="form-control"></select>
-						</div>
+					<div class="form-group col-lg-3">
+						<label for="filterOwner-default" class="control-label">Owned by: </label>						
+						<select id="filterOwner-default" class="form-control"></select>						
 					</div>
-					<div class="form-group">
-						<label for="filterDate-default" class="col-lg-2 control-label">Created between: </label>
-						<div class="col-lg-10">
-							<!-- TODO -->
-							TODO
-						</div>
+					<div class="form-group col-lg-6">
+						<label for="filterDate-default" class="control-label">Created between: <span style="color:#707070" id="filterSliderRange-default">any</span></label>
+						<div style="width:100%">						
+						<input id="filterSlider-default" style="width:450px" />
+						</div>						
 					</div>
 				</form>
 			</div>
@@ -104,56 +99,46 @@
 					</div>
 				</div>
 				<div class="compare1">
-					<div class="well well-sm">
-						<form class="form-horizontal" role="form">
-							<div class="form-group">
-								<label for="filterCreator-@space._id" class="col-lg-2 control-label">Created by</label>
-								<div class="col-lg-10">
-									<select id="filterCreator-@space._id" class="form-control"></select>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="filterOwner-@space._id" class="col-lg-2 control-label">Owned by</label>
-								<div class="col-lg-10">
-									<select id="filterOwner-@space._id" class="form-control"></select>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="filterDate-@space._id" class="col-lg-2 control-label">Created between</label>
-								<div class="col-lg-10">
-									<!-- TODO -->
-									TODO
-								</div>
-							</div>
-						</form>
-					</div>
+				  <div class="">
+				    <form class="form-inline" role="form">
+					  <div class="form-group col-lg-3">
+						<label for="filterCreator-@space._id" class="control-label">Created by: </label>						
+						<select id="filterCreator-@space._id" class="form-control"></select>						
+					  </div>
+					  <div class="form-group col-lg-3">
+						<label for="filterOwner-@space._id" class="control-label">Owned by: </label>						
+						<select id="filterOwner-@space._id" class="form-control"></select>						
+					  </div>
+					  <div class="form-group col-lg-6">
+						<label for="filterDate-@space._id" class="control-label">Created between: <span style="color:#707070" id="filterSliderRange-@space._id">any</span></label>
+						<div style="width:100%">						
+						  <input id="filterSlider-@space._id" style="width:450px" />
+					    </div>						
+					  </div>
+				    </form>
+			      </div>					
 					<iframe id="iframe-@space._id" src="@controllers.visualizations.routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
 				<!-- Comparison view (hidden at the beginning) -->
 				<div class="compare2 col-lg-6 hidden">
-					<div class="well well-sm">
-						<form class="form-horizontal" role="form">
-							<div class="form-group">
-								<label for="filterCreator2-@space._id" class="col-lg-2 control-label">Created by</label>
-								<div class="col-lg-10">
-									<select id="filterCreator2-@space._id" class="form-control"></select>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="filterOwner2-@space._id" class="col-lg-2 control-label">Owned by</label>
-								<div class="col-lg-10">
-									<select id="filterOwner2-@space._id" class="form-control"></select>
-								</div>
-							</div>
-							<div class="form-group">
-								<label for="filterDate2-@space._id" class="col-lg-2 control-label">Created between</label>
-								<div class="col-lg-10">
-									<!-- TODO -->
-									TODO
-								</div>
-							</div>
-						</form>
-					</div>
+					<div class="">
+				    <form class="form-inline" role="form">
+					  <div class="form-group col-lg-3">
+						<label for="filterCreator2-@space._id" class="control-label">Created by: </label>						
+						<select id="filterCreator2-@space._id" class="form-control"></select>						
+					  </div>
+					  <div class="form-group col-lg-3">
+						<label for="filterOwner2-@space._id" class="control-label">Owned by: </label>						
+						<select id="filterOwner2-@space._id" class="form-control"></select>						
+					  </div>
+					  <div class="form-group col-lg-6">
+						<label for="filterDate2-@space._id" class="control-label">Created between: <span style="color:#707070" id="filterSlider2Range-@space._id">any</span></label>
+						<div style="width:100%">						
+						  <input id="filterSlider2-@space._id" style="width:450px" />
+					    </div>						
+					  </div>
+				    </form>
+			      </div>		
 					<iframe id="iframe2-@space._id" src="@controllers.visualizations.routes.Visualizations.loading" height="420px" width="100%"></iframe>
 				</div>
 				
