@@ -1,4 +1,4 @@
-package utils;
+package search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +16,10 @@ import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import utils.CreateDBObjects;
+import utils.KeywordSearch;
+import utils.TestConnection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

@@ -28,7 +28,6 @@ public class TextSearch {
 	private static final String INDEX = "records";
 	private static final String TYPE = "record";
 	private static final String FIELD = "data";
-	private static final int MAX_SEARCH_SIZE = 100;
 
 	private static Node node;
 	private static Client client;
@@ -39,7 +38,7 @@ public class TextSearch {
 	}
 
 	public static void connectToTest() {
-		node = NodeBuilder.nodeBuilder().clusterName("test").local(true).node();
+		node = NodeBuilder.nodeBuilder().local(true).node();
 		client = node.client();
 	}
 
@@ -100,14 +99,13 @@ public class TextSearch {
 		}
 		SearchResponse response = client.prepareSearch(INDEX).setTypes(TYPE)
 				.setQuery(QueryBuilders.matchQuery(FIELD, search))
-				.setFilter(FilterBuilders.idsFilter(TYPE).ids(visibleIds)).setSize(MAX_SEARCH_SIZE).execute()
-				.actionGet();
+				.setFilter(FilterBuilders.idsFilter(TYPE).ids(visibleIds)).execute().actionGet();
 		List<SearchResult> searchResults = new ArrayList<SearchResult>();
 		for (SearchHit hit : response.getHits()) {
 			SearchResult searchResult = new SearchResult();
 			searchResult.id = hit.getId();
 			searchResult.score = hit.getScore();
-			searchResult.data = hit.field(FIELD).getValue();
+			searchResult.data = (String) hit.getSource().get(FIELD);
 			searchResults.add(searchResult);
 		}
 		Collections.sort(searchResults);
@@ -122,7 +120,8 @@ public class TextSearch {
 
 		@Override
 		public int compareTo(SearchResult o) {
-			return (int) Math.signum(score - o.score);
+			// higher score is "less", i.e. earlier in sorted list
+			return (int) -Math.signum(score - o.score);
 		}
 
 	}
