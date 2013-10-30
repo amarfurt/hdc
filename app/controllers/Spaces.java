@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import models.Space;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import play.data.Form;
 import play.libs.Json;
@@ -181,6 +183,10 @@ public class Spaces extends Controller {
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (ElasticSearchException e) {
+			return internalServerError(e.getMessage());
+		} catch (IOException e) {
 			return internalServerError(e.getMessage());
 		}
 	}

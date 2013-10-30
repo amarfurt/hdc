@@ -23,6 +23,8 @@ import utils.LoadData;
 import utils.ModelConversion;
 import utils.OrderOperations;
 import utils.TestConnection;
+import utils.TextSearch;
+import utils.TextSearchTestHelper;
 
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBList;
@@ -197,6 +199,12 @@ public class SpacesTest {
 
 	@Test
 	public void manuallyCreateRecord() {
+		// set up text search
+		TextSearch.connectToTest();
+		TextSearch.clearIndex();
+		TextSearch.createIndex();
+		TextSearchTestHelper.refreshIndex();
+		
 		DBCollection records = TestConnection.getCollection("records");
 		long oldSize = records.count();
 		DBCollection users = TestConnection.getCollection("users");

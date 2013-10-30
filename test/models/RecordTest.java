@@ -9,12 +9,14 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +26,8 @@ import utils.DateTimeUtils;
 import utils.ListOperations;
 import utils.ModelConversion;
 import utils.TestConnection;
+import utils.TextSearch;
+import utils.TextSearchTestHelper;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -93,7 +97,14 @@ public class RecordTest {
 	}
 
 	@Test
-	public void addRecord() throws IllegalArgumentException, IllegalAccessException {
+	public void addRecord() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
+			IOException {
+		// set up text search
+		TextSearch.connectToTest();
+		TextSearch.clearIndex();
+		TextSearch.createIndex();
+		TextSearchTestHelper.refreshIndex();
+
 		DBCollection records = TestConnection.getCollection("records");
 		ObjectId creator = new ObjectId();
 		ObjectId owner = new ObjectId();

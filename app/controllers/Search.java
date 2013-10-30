@@ -22,6 +22,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.KeywordSearch;
+import utils.TextSearch;
+import utils.TextSearch.SearchResult;
 import views.html.details.app;
 import views.html.details.message;
 import views.html.details.record;
@@ -100,8 +102,20 @@ public class Search extends Controller {
 			return internalServerError(e.getMessage());
 		}
 		List<Record> recordList = new ArrayList<Record>(recordSet);
-		Collections.sort(recordList);
-		return ok(searchresults.render(recordList, "No record matched your search.", "record"));
+		if (recordList.size() > 0) {
+			Collections.sort(recordList);
+			return ok(searchresults.render(recordList, "No record matched your search.", "record"));
+		} else {
+			List<SearchResult> textResults = TextSearch.search(search, visibleRecordIds);
+			List<Record> textList = new ArrayList<Record>();
+			for (SearchResult result : textResults) {
+				Record record = new Record();
+				record._id = new ObjectId(result.id);
+				record.data = result.data;
+				textList.add(record);
+			}
+			return ok(searchresults.render(textList, "No record matched your search.", "record"));
+		}
 	}
 
 	public static Result findMessages(String search) {

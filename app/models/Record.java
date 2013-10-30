@@ -1,5 +1,6 @@
 package models;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,9 +9,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
+import utils.TextSearch;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -160,11 +163,19 @@ public class Record extends SearchableModel implements Comparable<Record> {
 	 * Adds a record and returns the error message (null in absence of errors). Also adds the generated id to the record
 	 * object.
 	 */
-	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException {
+	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
-		return result.getLastError().getErrorMessage();
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// also index the data for the text search
+		TextSearch.add(newRecord._id, newRecord.data);
+		return null;
 	}
 
 	/**
