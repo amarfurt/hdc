@@ -1,13 +1,17 @@
-package utils;
+package mongo;
 
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
+import utils.Connection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteResult;
 
+/**
+ * Manually insert documents into MongoDB.
+ */
 public class ManualMongo {
 
 	public static void main(String[] args) {
@@ -18,7 +22,8 @@ public class ManualMongo {
 		start(fakeApplication(fakeGlobal()));
 		Connection.connect();
 		DBCollection coll = Connection.getCollection(collection);
-		WriteResult wr = coll.updateMulti(new BasicDBObject(), new BasicDBObject("$set", new BasicDBObject(field, value)));
+		WriteResult wr = coll.updateMulti(new BasicDBObject(), new BasicDBObject("$set",
+				new BasicDBObject(field, value)));
 		if (wr.getLastError().getErrorMessage() == null) {
 			System.out.println("Successful.");
 		} else {
