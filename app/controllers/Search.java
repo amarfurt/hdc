@@ -111,7 +111,11 @@ public class Search extends Controller {
 			for (SearchResult result : textResults) {
 				Record record = new Record();
 				record._id = new ObjectId(result.id);
-				record.data = result.data;
+				if (result.highlighted != null && !result.highlighted.isEmpty()) {
+					record.data = result.highlighted;
+				} else {
+					record.data = result.data;
+				}
 				textList.add(record);
 			}
 			return ok(searchresults.render(textList, "No record matched your search.", "record"));

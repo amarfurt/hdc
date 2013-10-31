@@ -8,7 +8,7 @@
 	@if(list.size() > 0) {
 		<div class="list-group">
 			@list.map { model =>
-				<a href="@routes.Search.show(domain, model._id.toString())" class="list-group-item">@model.toString()</a>
+				<a href="@routes.Search.show(domain, model._id.toString())" class="list-group-item">@Html(model.toString())</a>
 			}
 		</div>
 	} else {

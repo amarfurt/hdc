@@ -15,6 +15,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -99,13 +100,24 @@ public class TextSearch {
 		}
 		SearchResponse response = client.prepareSearch(INDEX).setTypes(TYPE)
 				.setQuery(QueryBuilders.matchQuery(FIELD, search))
-				.setFilter(FilterBuilders.idsFilter(TYPE).ids(visibleIds)).execute().actionGet();
+				.setFilter(FilterBuilders.idsFilter(TYPE).ids(visibleIds)).addHighlightedField(FIELD, 150)
+				.setHighlighterPreTags("<span class=\"text-info\"><strong>").setHighlighterPostTags("</strong></span>")
+				.execute().actionGet();
 		List<SearchResult> searchResults = new ArrayList<SearchResult>();
 		for (SearchHit hit : response.getHits()) {
 			SearchResult searchResult = new SearchResult();
 			searchResult.id = hit.getId();
 			searchResult.score = hit.getScore();
 			searchResult.data = (String) hit.getSource().get(FIELD);
+			if (!hit.getHighlightFields().isEmpty()) {
+				Text[] fragments = hit.getHighlightFields().get(FIELD).getFragments();
+				if (fragments.length > 0) {
+					searchResult.highlighted = fragments[0].toString();
+					for (int j = 1; j < fragments.length; j++) {
+						searchResult.highlighted += "<br>" + fragments[j].toString();
+					}
+				}
+			}
 			searchResults.add(searchResult);
 		}
 		Collections.sort(searchResults);
@@ -117,6 +129,7 @@ public class TextSearch {
 		public String id;
 		public float score;
 		public String data;
+		public String highlighted;
 
 		@Override
 		public int compareTo(SearchResult o) {
