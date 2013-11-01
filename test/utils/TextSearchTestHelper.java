@@ -9,6 +9,8 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import utils.search.TextSearch;
+
 public class TextSearchTestHelper extends TextSearch {
 
 	/**

@@ -18,8 +18,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
-import utils.KeywordSearch;
 import utils.TestConnection;
+import utils.search.KeywordSearch;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;

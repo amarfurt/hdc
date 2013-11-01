@@ -9,7 +9,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 
-import utils.TextSearch;
+import utils.search.TextSearch;
 
 /**
  * Displays all the data currently indexed by elasticsearch.

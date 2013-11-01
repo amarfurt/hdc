@@ -10,7 +10,7 @@ import java.util.Map;
 import org.bson.types.ObjectId;
 
 import utils.Connection;
-import utils.TextSearch;
+import utils.search.TextSearch;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;

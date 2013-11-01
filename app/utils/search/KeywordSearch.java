@@ -1,4 +1,4 @@
-package utils;
+package utils.search;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -10,6 +10,9 @@ import models.Model;
 import models.SearchableModel;
 
 import org.bson.types.ObjectId;
+
+import utils.Connection;
+import utils.ModelConversion;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;

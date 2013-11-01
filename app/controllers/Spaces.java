@@ -19,8 +19,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.DateTimeUtils;
-import utils.KeywordSearch;
 import utils.ListOperations;
+import utils.search.KeywordSearch;
 import views.html.spaces;
 import views.html.elements.recordsearchresults;
 

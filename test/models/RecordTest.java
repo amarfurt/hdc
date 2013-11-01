@@ -26,8 +26,8 @@ import utils.DateTimeUtils;
 import utils.ListOperations;
 import utils.ModelConversion;
 import utils.TestConnection;
-import utils.TextSearch;
 import utils.TextSearchTestHelper;
+import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;

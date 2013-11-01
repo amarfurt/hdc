@@ -23,8 +23,8 @@ import utils.LoadData;
 import utils.ModelConversion;
 import utils.OrderOperations;
 import utils.TestConnection;
-import utils.TextSearch;
 import utils.TextSearchTestHelper;
+import utils.search.TextSearch;
 
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBList;

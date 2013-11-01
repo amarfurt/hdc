@@ -13,7 +13,7 @@ import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
-import utils.TextSearch;
+import utils.search.TextSearch;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;

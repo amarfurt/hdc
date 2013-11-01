@@ -1,7 +1,7 @@
 import play.Application;
 import play.GlobalSettings;
 import utils.Connection;
-import utils.TextSearch;
+import utils.search.TextSearch;
 
 public class Global extends GlobalSettings {
 

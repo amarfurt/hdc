@@ -14,8 +14,8 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.KeywordSearch;
 import utils.ListOperations;
+import utils.search.KeywordSearch;
 import views.html.circles;
 import views.html.elements.usersearchresults;
 

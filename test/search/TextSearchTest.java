@@ -14,8 +14,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.TextSearch;
-import utils.TextSearch.SearchResult;
+import utils.search.TextSearch;
+import utils.search.TextSearch.SearchResult;
 import utils.TextSearchTestHelper;
 
 public class TextSearchTest {

@@ -7,13 +7,14 @@ import models.Installed;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.KeywordSearch;
+import utils.search.KeywordSearch;
 import views.html.market;
 
 import com.mongodb.BasicDBList;
