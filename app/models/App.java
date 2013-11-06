@@ -2,6 +2,7 @@ package models;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ import utils.ModelConversion;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
-public class App extends SearchableModel implements Comparable<App> {
+public class App extends Model implements Comparable<App> {
 
 	private static final String collection = "apps";
 
@@ -40,7 +41,8 @@ public class App extends SearchableModel implements Comparable<App> {
 
 	public static List<App> findInstalledBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		Set<ObjectId> visualizationIds = Installed.findAppsInstalledBy(userId);
+		Set<ObjectId> visualizationIds = new HashSet<ObjectId>();
+		// TODO: User.findAppsInstalledBy(userId);
 		List<App> visualizations = new ArrayList<App>();
 		for (ObjectId visualizationId : visualizationIds) {
 			visualizations.add(find(visualizationId));

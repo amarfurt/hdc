@@ -15,12 +15,13 @@ import utils.Connection;
 import utils.ModelConversion;
 import utils.search.TextSearch;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class Record extends SearchableModel implements Comparable<Record> {
+public class Record extends Model implements Comparable<Record> {
 
 	private static final String collection = "records";
 
@@ -28,6 +29,7 @@ public class Record extends SearchableModel implements Comparable<Record> {
 	public ObjectId owner; // any user of type person
 	public String created; // date + time created
 	public String data;
+	public BasicDBList keywords;
 
 	@Override
 	public int compareTo(Record o) {
@@ -163,8 +165,8 @@ public class Record extends SearchableModel implements Comparable<Record> {
 	 * Adds a record and returns the error message (null in absence of errors). Also adds the generated id to the record
 	 * object.
 	 */
-	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException,
-			ElasticSearchException, IOException {
+	public static String add(Record newRecord) throws IllegalArgumentException,
+			IllegalAccessException, ElasticSearchException, IOException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
@@ -174,7 +176,7 @@ public class Record extends SearchableModel implements Comparable<Record> {
 		}
 
 		// also index the data for the text search
-		TextSearch.add(newRecord._id, newRecord.data);
+		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.data);
 		return null;
 	}
 

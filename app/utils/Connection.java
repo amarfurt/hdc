@@ -44,6 +44,27 @@ public class Connection {
 	}
 
 	/**
+	 * Closes all connections.
+	 */
+	public static void close() {
+		mongoClient.close();
+	}
+
+	/**
+	 * Sets up the collections and creates all indices.
+	 */
+	public static void initialize() {
+		// TODO
+	}
+
+	/**
+	 * Drops the database.
+	 */
+	public static void destroy() {
+		getDB().dropDatabase();
+	}
+
+	/**
 	 * Get a connection to the database in use.
 	 */
 	private static DB getDB() {
@@ -55,20 +76,6 @@ public class Connection {
 	 */
 	public static DBCollection getCollection(String collection) {
 		return getDB().getCollection(collection);
-	}
-
-	/**
-	 * Drops the database.
-	 */
-	protected static void dropDatabase() {
-		getDB().dropDatabase();
-	}
-
-	/**
-	 * Closes all connections.
-	 */
-	public static void close() {
-		mongoClient.close();
 	}
 
 }

@@ -4,21 +4,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
@@ -26,58 +30,110 @@ import org.elasticsearch.search.SearchHit;
 
 public class TextSearch {
 
-	private static final String CLUSTER_NAME = "elasticsearch";
+	public static enum Type {
+		USER, APP, VISUALIZATION
+	}
 
-	private static Node node;
+	private static final int CLUSTER_SIZE = 1;
+	private static final String CLUSTER_NAME = "healthbank";
+	private static final String PUBLIC = "public"; // public index visible to all users
+	private static final String FIELD = "data";
+
+	private static Node[] dataNodes;
+	private static Node clientNode;
 	private static Client client;
 
+	public static void start() {
+		// start a data node
+		dataNodes = new Node[CLUSTER_SIZE];
+		for (int i = 0; i < CLUSTER_SIZE; i++) {
+			dataNodes[i] = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).data(true).node();
+		}
+	}
+
+	public static void shutdown() {
+		for (Node dataNode : dataNodes) {
+			dataNode.close();
+		}
+	}
+
 	public static void connect() {
-		node = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).node();
-		client = node.client();
+		// start a client node (holds no data)
+		clientNode = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).node();
+		client = clientNode.client();
 	}
 
 	public static void connectToTest() {
-		node = NodeBuilder.nodeBuilder().local(true).node();
-		client = node.client();
-	}
-
-	public static void createIndex(ObjectId userId) throws ElasticSearchException, IOException {
-		client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
-	}
-
-	public static void clearIndex(ObjectId userId) {
-		IndicesExistsResponse response = client.admin().indices().prepareExists(userId.toString()).execute()
-				.actionGet();
-		if (response.isExists()) {
-			client.admin().indices().prepareDelete(userId.toString()).execute().actionGet();
-		}
-		client.admin().indices().prepareClearCache().execute().actionGet();
+		clientNode = NodeBuilder.nodeBuilder().local(true).node();
+		client = clientNode.client();
 	}
 
 	public static void close() {
-		node.close();
+		clientNode.close();
 	}
 
-	public static void add(ObjectId userId, String type, ObjectId modelId, String field, Object data)
-			throws ElasticSearchException, IOException {
-		IndexData indexData = new IndexData();
-		indexData.id = modelId;
-		indexData.field = field;
-		indexData.data = data;
-		add(userId, type, indexData);
+	/**
+	 * Create global indices.
+	 */
+	public static void initialize() {
+		// check whether the public index exists and create it otherwise
+		if (!client.admin().indices().prepareExists(PUBLIC).execute().actionGet().isExists()) {
+			client.admin().indices().prepareCreate(PUBLIC).execute().actionGet();
+		}
 	}
 
-	public static void add(ObjectId userId, String type, IndexData data) throws ElasticSearchException, IOException {
-		client.prepareIndex(userId.toString(), type, data.id.toString())
-				.setSource(XContentFactory.jsonBuilder().startObject().field(data.field, data.data).endObject())
-				.execute().actionGet();
+	/**
+	 * Delete all indices.
+	 */
+	public static void destroy() {
+		client.admin().indices().prepareDelete().execute().actionGet();
+		client.admin().indices().prepareClearCache().execute().actionGet();
 	}
 
-	public static void addMultiple(ObjectId userId, String type, Set<IndexData> data) throws IOException {
+	/**
+	 * Create a user's index.
+	 */
+	public static void createIndex(ObjectId userId) throws ElasticSearchException, IOException {
+		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
+			client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
+		}
+	}
+
+	/**
+	 * Delete a user's index.
+	 */
+	public static void deleteIndex(ObjectId userId) {
+		if (client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
+			client.admin().indices().prepareDelete(userId.toString()).execute().actionGet();
+			client.admin().indices().prepareClearCache(userId.toString()).execute().actionGet();
+		}
+	}
+
+	private static String getType(Type type) {
+		switch (type) {
+		case USER:
+			return "user";
+		case APP:
+			return "app";
+		case VISUALIZATION:
+			return "visualization";
+		default:
+			throw new NoSuchElementException("There is no such type.");
+		}
+	}
+
+	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws ElasticSearchException,
+			IOException {
+		client.prepareIndex(userId.toString(), type, modelId.toString())
+				.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
+				.actionGet();
+	}
+
+	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws IOException {
 		BulkRequestBuilder bulkRequest = client.prepareBulk();
-		for (IndexData indexData : data) {
-			bulkRequest.add(client.prepareIndex(userId.toString(), type, indexData.id.toString()).setSource(
-					XContentFactory.jsonBuilder().startObject().field(indexData.field, indexData.data).endObject()));
+		for (ObjectId modelId : data.keySet()) {
+			bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
+					XContentFactory.jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
 		}
 		BulkResponse bulkResponse = bulkRequest.execute().actionGet();
 		if (bulkResponse.hasFailures()) {
@@ -85,6 +141,31 @@ public class TextSearch {
 				// TODO error handling
 				System.out.println(response.getFailureMessage());
 			}
+		}
+	}
+
+	public static void addPublic(Type type, ObjectId documentId, String data) throws ElasticSearchException,
+			IOException {
+		switch (type) {
+		case USER:
+			// add the user to the global user index and create an own index for the user
+			client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
+					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
+					.actionGet();
+			createIndex(documentId);
+			break;
+		case APP:
+			client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
+					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
+					.actionGet();
+			break;
+		case VISUALIZATION:
+			client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
+					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
+					.actionGet();
+			break;
+		default:
+			throw new NoSuchElementException("There is no such type.");
 		}
 	}
 
@@ -100,41 +181,141 @@ public class TextSearch {
 		bulkRequest.execute().actionGet();
 	}
 
+	public static void deletePublic(Type type, ObjectId documentId) {
+		switch (type) {
+		case USER:
+			// remove the user from the global user index and delete the user's index
+			ListenableActionFuture<DeleteResponse> deleteRequest = client.prepareDelete(PUBLIC, getType(Type.USER),
+					documentId.toString()).execute();
+			deleteIndex(documentId);
+			deleteRequest.actionGet();
+			break;
+		case APP:
+			client.prepareDelete(PUBLIC, getType(Type.APP), documentId.toString()).execute().actionGet();
+			break;
+		case VISUALIZATION:
+			client.prepareDelete(PUBLIC, getType(Type.VISUALIZATION), documentId.toString()).execute().actionGet();
+			break;
+		default:
+			throw new NoSuchElementException("There is no such type.");
+		}
+	}
+
 	public static List<SearchResult> prefixSearch() {
 		// TODO
 		return null;
 	}
 
-	public static Map<String, List<SearchResult>> search(ObjectId userId, Set<VisibleRecords> visibleRecords,
-			String search) {
-		// search in user's index
-		ListenableActionFuture<SearchResponse> userQuery = client.prepareSearch(userId.toString())
-				.setQuery(QueryBuilders.multiMatchQuery(search, "data", "keywords"))
-				.addHighlightedField("data", 150)
-				.addHighlightedField("keywords")
-				.setHighlighterPreTags("<span class=\"text-info\"><strong>")
-				.setHighlighterPostTags("</strong></span>")
+	public static List<SearchResult> searchPublic(Type type, String query) {
+		SearchResponse response = client.prepareSearch(PUBLIC).setQuery(QueryBuilders.matchQuery(FIELD, query))
+				.execute().actionGet();
+		Map<String, List<SearchResult>> searchResults = getSearchResults(response);
+		if (!searchResults.containsKey("record")) {
+			return new ArrayList<SearchResult>();
+		}
+		return searchResults.get(getType(type));
+	}
+
+	public static List<SearchResult> searchRecords(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
+			String query) {
+		// search in user's records
+		ListenableActionFuture<SearchResponse> privateRecordsQuery = searchPrivateIndex(userId, query, "record")
 				.execute();
 
-		// search in visible records, i.e. in other user's indices
-		String[] queriedIndices = new String[visibleRecords.size()];
-		int i = 0;
-		for (VisibleRecords visible : visibleRecords) {
-			queriedIndices[i++] = visible.userId.toString();
-		}
-		ListenableActionFuture<SearchResponse> visibleQuery = client.prepareSearch()
-				.setQuery(QueryBuilders.indicesQuery(QueryBuilders.matchQuery("data", search), queriedIndices))
-				.addHighlightedField("data", 150)
-				.setHighlighterPreTags("<span class=\"text-info\"><strong>")
-				.setHighlighterPostTags("</strong></span>")
+		// search in other users' visible records
+		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query)
 				.execute();
 
 		// wait for the results
-		SearchResponse userResponse = userQuery.actionGet();
-		SearchResponse visibleResponse = visibleQuery.actionGet();
-		SearchResponse[] responses = new SearchResponse[] { userResponse, visibleResponse };
+		SearchResponse privateRecordsResponse = privateRecordsQuery.actionGet();
+		SearchResponse visibleRecordsResponse = visibleRecordsQuery.actionGet();
 
 		// construct response
+		Map<String, List<SearchResult>> searchResults = getSearchResults(privateRecordsResponse, visibleRecordsResponse);
+
+		// sort the results according to score
+		if (!searchResults.containsKey("record")) {
+			return new ArrayList<SearchResult>();
+		}
+		Collections.sort(searchResults.get("record"));
+		return searchResults.get("record");
+	}
+
+	/**
+	 * Search in all the user's data and all further visible records.
+	 */
+	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
+			String query) {
+		// search in user's index
+		ListenableActionFuture<SearchResponse> privateIndexQuery = searchPrivateIndex(userId, query).execute();
+
+		// search in other users' visible records
+		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query)
+				.execute();
+
+		// search in public index
+		ListenableActionFuture<SearchResponse> publicIndexQuery = searchPublicIndex(query).execute();
+
+		// wait for the results
+		SearchResponse privateIndexResponse = privateIndexQuery.actionGet();
+		SearchResponse visibleRecordsResponse = visibleRecordsQuery.actionGet();
+		SearchResponse publicIndexResponse = publicIndexQuery.actionGet();
+
+		// construct response
+		Map<String, List<SearchResult>> searchResults = getSearchResults(privateIndexResponse, visibleRecordsResponse,
+				publicIndexResponse);
+
+		// sort the results of the records according to its score
+		// rest is already sorted
+		if (searchResults.containsKey("record")) {
+			Collections.sort(searchResults.get("record"));
+		}
+		return searchResults;
+	}
+
+	private static SearchRequestBuilder searchPrivateIndex(ObjectId userId, String query, String... types) {
+		SearchRequestBuilder builder = client.prepareSearch(userId.toString()).setQuery(
+				QueryBuilders.matchQuery(FIELD, query));
+		if (types != null) {
+			builder.setTypes(types);
+		}
+		return addHighlighting(builder);
+	}
+
+	private static SearchRequestBuilder searchPublicIndex(String query) {
+		SearchRequestBuilder builder = client.prepareSearch(PUBLIC).setQuery(QueryBuilders.matchQuery(FIELD, query));
+		return addHighlighting(builder);
+	}
+
+	/**
+	 * Builds the search request for other users' visible records.
+	 * @param visibleRecords Key: User id, Value: Set of record ids of records that are visible
+	 */
+	private static SearchRequestBuilder searchVisibleRecords(Map<ObjectId, Set<ObjectId>> visibleRecords, String query) {
+		String[] queriedIndices = new String[visibleRecords.size()];
+		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
+		int i = 0;
+		for (ObjectId curUserId : visibleRecords.keySet()) {
+			queriedIndices[i++] = curUserId.toString();
+			visibleRecordIds.addAll(visibleRecords.get(curUserId));
+		}
+		String[] recordIds = new String[visibleRecordIds.size()];
+		int j = 0;
+		for (ObjectId recordId : visibleRecordIds) {
+			recordIds[j++] = recordId.toString();
+		}
+		SearchRequestBuilder builder = client.prepareSearch(queriedIndices)
+				.setQuery(QueryBuilders.matchQuery(FIELD, query))
+				.setFilter(FilterBuilders.idsFilter("record").ids(recordIds));
+		return addHighlighting(builder);
+	}
+
+	private static SearchRequestBuilder addHighlighting(SearchRequestBuilder builder) {
+		return builder.addHighlightedField(FIELD, 150).setHighlighterPreTags("<span class=\"text-info\"><strong>")
+				.setHighlighterPostTags("</strong></span>");
+	}
+
+	private static Map<String, List<SearchResult>> getSearchResults(SearchResponse... responses) {
 		Map<String, List<SearchResult>> searchResults = new HashMap<String, List<SearchResult>>();
 		for (SearchResponse response : responses) {
 			for (SearchHit hit : response.getHits()) {
@@ -147,14 +328,14 @@ public class TextSearch {
 				SearchResult searchResult = new SearchResult();
 				searchResult.id = hit.getId();
 				searchResult.score = hit.getScore();
-				searchResult.data = (String) hit.getSource().get("data");
+				searchResult.data = (String) hit.getSource().get(FIELD);
 				if (!hit.getHighlightFields().isEmpty()) {
 					for (String field : hit.getHighlightFields().keySet()) {
 						Text[] fragments = hit.getHighlightFields().get(field).getFragments();
 						if (fragments.length > 0) {
 							searchResult.highlighted = fragments[0].toString();
-							for (int j = 1; j < fragments.length; j++) {
-								searchResult.highlighted += "<br>" + fragments[j].toString();
+							for (int k = 1; k < fragments.length; k++) {
+								searchResult.highlighted += "<br>" + fragments[k].toString();
 							}
 						}
 					}
@@ -164,56 +345,7 @@ public class TextSearch {
 				searchResults.get(hit.getType()).add(searchResult);
 			}
 		}
-
-		// sort the results of the records according to its score
-		// done automatically for the rest
-		Collections.sort(searchResults.get("record"));
 		return searchResults;
 	}
 
-	public static class VisibleRecords {
-
-		public ObjectId userId;
-		public Set<ObjectId> visibleRecords;
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof VisibleRecords) {
-				return this.userId.equals(((VisibleRecords) obj).userId);
-			}
-			return false;
-		}
-
-	}
-
-	public static class IndexData {
-
-		public ObjectId id;
-		public String field;
-		public Object data;
-
-		@Override
-		public boolean equals(Object obj) {
-			if (obj instanceof IndexData) {
-				return this.id.equals(((IndexData) obj).id);
-			}
-			return false;
-		}
-
-	}
-
-	public static class SearchResult implements Comparable<SearchResult> {
-
-		public String id;
-		public float score;
-		public String data;
-		public String highlighted;
-
-		@Override
-		public int compareTo(SearchResult o) {
-			// higher score is "less", i.e. earlier in sorted list
-			return (int) -Math.signum(score - o.score);
-		}
-
-	}
 }

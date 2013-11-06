@@ -1,23 +1,26 @@
 package models;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
+import utils.search.TextSearch;
+import utils.search.TextSearch.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class Visualization extends SearchableModel implements Comparable<Visualization> {
+public class Visualization extends Model implements Comparable<Visualization> {
 
 	private static final String collection = "visualizations";
+	private static final String DEFAULT_VISUALIZATION = "Record List";
 
 	public ObjectId creator;
 	public String name;
@@ -28,12 +31,16 @@ public class Visualization extends SearchableModel implements Comparable<Visuali
 	public int compareTo(Visualization o) {
 		return this.name.compareTo(o.name);
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;
 	}
-	
+
+	public static String getDefaultVisualization() {
+		return DEFAULT_VISUALIZATION;
+	}
+
 	public static String getName(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("name", 1);
@@ -59,17 +66,6 @@ public class Visualization extends SearchableModel implements Comparable<Visuali
 		return ModelConversion.mapToModel(Visualization.class, result.toMap());
 	}
 
-	public static List<Visualization> findInstalledBy(ObjectId userId) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
-		Set<ObjectId> visualizationIds = Installed.findVisualizationsInstalledBy(userId);
-		List<Visualization> visualizations = new ArrayList<Visualization>();
-		for (ObjectId visualizationId : visualizationIds) {
-			visualizations.add(find(visualizationId));
-		}
-		Collections.sort(visualizations);
-		return visualizations;
-	}
-
 	public static List<Visualization> findSpotlighted() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<Visualization> visualizations = new ArrayList<Visualization>();
@@ -84,14 +80,23 @@ public class Visualization extends SearchableModel implements Comparable<Visuali
 		return visualizations;
 	}
 
-	public static String add(Visualization newVisualization) throws IllegalArgumentException, IllegalAccessException {
+	public static String add(Visualization newVisualization) throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
 		if (visualizationWithSameNameExists(newVisualization.name)) {
 			return "A visualization with this name already exists.";
 		}
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newVisualization._id = (ObjectId) insert.get("_id");
-		return result.getLastError().getErrorMessage();
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// add to search index (concatenate name and description)
+		TextSearch.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + " "
+				+ newVisualization.description);
+		return null;
 	}
 
 	public static String delete(ObjectId visualizationId) {
@@ -99,8 +104,10 @@ public class Visualization extends SearchableModel implements Comparable<Visuali
 			return "No visualizations with this id exists.";
 		}
 
-		// remove from installed
-		Installed.deleteVisualization(visualizationId);
+		// remove from search index
+		TextSearch.deletePublic(Type.VISUALIZATION, visualizationId);
+
+		// TODO only hide or remove from all users (including deleting their spaces associated with it)?
 
 		// remove from visualizations
 		DBObject remove = new BasicDBObject("_id", visualizationId);

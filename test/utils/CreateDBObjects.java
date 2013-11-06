@@ -81,7 +81,7 @@ public class CreateDBObjects {
 		DBCollection visualizations = TestConnection.getCollection("visualizations");
 		Visualization visualization = new Visualization();
 		visualization.creator = developerId;
-		visualization.name = "Record List";
+		visualization.name = Visualization.DEFAULT_VISUALIZATION;
 		visualization.description = "Default record list implementation.";
 		visualization.url = routes.RecordList.load().url();
 		visualization.tags = new BasicDBList();

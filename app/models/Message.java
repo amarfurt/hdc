@@ -12,7 +12,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-public class Message extends SearchableModel implements Comparable<Message> {
+public class Message extends Model implements Comparable<Message> {
 
 	private static final String collection = "messages";
 

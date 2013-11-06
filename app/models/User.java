@@ -1,16 +1,25 @@
 package models;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
 import utils.PasswordHash;
+import utils.search.TextSearch;
+import utils.search.TextSearch.Type;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -18,13 +27,16 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class User extends SearchableModel implements Comparable<User> {
+public class User extends Model implements Comparable<User> {
 
 	private static final String collection = "users";
 
 	public String email; // must be unique
 	public String name;
 	public String password;
+	public BasicDBObject visible; // records that are shared with this user (grouped by owner)
+	public BasicDBList apps; // installed apps
+	public BasicDBList visualizations; // installed visualizations
 
 	@Override
 	public int compareTo(User o) {
@@ -50,6 +62,24 @@ public class User extends SearchableModel implements Comparable<User> {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("name", 1);
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
+	}
+
+	public static Map<ObjectId, Set<ObjectId>> getVisibleRecords(ObjectId userId) {
+		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject projection = new BasicDBObject("visible", 1);
+		BasicDBObject visible = (BasicDBObject) Connection.getCollection(collection).findOne(query, projection)
+				.get("visible");
+		for (String sharingUserId : visible.keySet()) {
+			Set<ObjectId> recordIds = new HashSet<ObjectId>();
+			BasicDBList sharedRecords = (BasicDBList) visible.get(sharingUserId);
+			ListIterator<Object> iterator = sharedRecords.listIterator();
+			while (iterator.hasNext()) {
+				recordIds.add((ObjectId) iterator.next());
+			}
+			visibleRecords.put(new ObjectId(sharingUserId), recordIds);
+		}
+		return visibleRecords;
 	}
 
 	public static User find(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
@@ -81,16 +111,17 @@ public class User extends SearchableModel implements Comparable<User> {
 	}
 
 	public static String add(User newUser) throws IllegalArgumentException, IllegalAccessException,
-			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
+			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException, ElasticSearchException,
+			IOException {
 		if (userExists(newUser.email)) {
 			return "A user with this email address already exists.";
 		}
 		newUser.password = PasswordHash.createHash(newUser.password);
-		newUser.tags = new BasicDBList();
-		newUser.tags.add(newUser.email.toLowerCase());
-		for (String namePart : newUser.name.toLowerCase().split(" ")) {
-			newUser.tags.add(namePart);
-		}
+		newUser.visible = new BasicDBObject();
+		newUser.apps = new BasicDBList();
+		newUser.visualizations = new BasicDBList();
+		ObjectId defaultVisualizationId = Visualization.getId(Visualization.getDefaultVisualization());
+		newUser.visualizations.add(defaultVisualizationId);
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newUser));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newUser._id = (ObjectId) insert.get("_id");
@@ -99,14 +130,19 @@ public class User extends SearchableModel implements Comparable<User> {
 			return errorMessage;
 		}
 
-		// also set up installed entry
-		return Installed.addUser(newUser._id);
+		// add to search index (concatenate email and name)
+		TextSearch.addPublic(Type.USER, newUser._id, newUser.email + " " + newUser.name);
+		return null;
 	}
 
 	public static String remove(ObjectId userId) {
 		if (!userExists(userId)) {
 			return "No user with this id exists.";
 		}
+
+		// remove from search index
+		TextSearch.deletePublic(Type.USER, userId);
+
 		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
 		// the marketplace), ...
 		DBObject query = new BasicDBObject("_id", userId);
@@ -134,6 +170,52 @@ public class User extends SearchableModel implements Comparable<User> {
 		// TODO security check before casting to person?
 		// requirement for record owners?
 		return true;
+	}
+
+	// Visualization methods
+	public static boolean hasVisualization(ObjectId userId, ObjectId visualizationId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		query.put("visualizations", visualizationId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Connection.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	public static Set<ObjectId> getVisualizations(ObjectId userId) {
+		Set<ObjectId> installedVisualizationIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject projection = new BasicDBObject("visualizations", 1);
+		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		if (result != null) {
+			BasicDBList visualizationIds = (BasicDBList) result.get("visualizations");
+			for (Object visualizationId : visualizationIds) {
+				installedVisualizationIds.add((ObjectId) visualizationId);
+			}
+		}
+		return installedVisualizationIds;
+	}
+
+	public static List<Visualization> findVisualizations(ObjectId userId) throws IllegalArgumentException,
+			IllegalAccessException, InstantiationException {
+		Set<ObjectId> installedVisualizationIds = getVisualizations(userId);
+		List<Visualization> installedVisualizations = new ArrayList<Visualization>();
+		for (ObjectId visualizationId : installedVisualizationIds) {
+			installedVisualizations.add(Visualization.find(visualizationId));
+		}
+		return installedVisualizations;
+	}
+
+	public static String addVisualization(ObjectId userId, ObjectId visualizationId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("visualizations", visualizationId));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
+	}
+
+	public static String removeVisualization(ObjectId userId, ObjectId visualizationId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("visualizations", visualizationId));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
 	}
 
 }

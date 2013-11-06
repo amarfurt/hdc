@@ -71,6 +71,10 @@ public class Spaces extends Controller {
 			return e.getMessage();
 		} catch (IllegalAccessException e) {
 			return e.getMessage();
+		} catch (ElasticSearchException e) {
+			return e.getMessage();
+		} catch (IOException e) {
+			return e.getMessage();
 		}
 	}
 
@@ -169,9 +173,9 @@ public class Spaces extends Controller {
 		newRecord.owner = newRecord.creator;
 		newRecord.created = DateTimeUtils.getNow();
 		newRecord.data = Form.form().bindFromRequest().get("data");
-		newRecord.tags = new BasicDBList();
-		for (String tag : Form.form().bindFromRequest().get("tags").toLowerCase().split("[ ,\\+]+")) {
-			newRecord.tags.add(tag);
+		newRecord.keywords = new BasicDBList();
+		for (String keyword : Form.form().bindFromRequest().get("keywords").toLowerCase().split("[ ,\\+]+")) {
+			newRecord.keywords.add(keyword);
 		}
 		try {
 			String errorMessage = Record.add(newRecord);

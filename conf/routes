@@ -31,14 +31,14 @@ DELETE  /circles/:id/members/:memberId controllers.Circles.removeMember(id: Stri
 GET     /circles/users/search       controllers.Circles.searchUsers(id: String, search: String)
 # Market
 GET     /market                     controllers.Market.show()
-POST    /market/visualizations      controllers.Market.registerVisualization(name: String, description: String, url: String, tags: String)
+POST    /market/visualizations      controllers.Market.registerVisualization(name: String, description: String, url: String)
 GET     /market/apps/:id            controllers.Market.showApp(id: String)
 GET     /market/visualizations/:id  controllers.Market.showVisualization(id: String)
 PUT     /market/visualizations/:id  controllers.Market.installVisualization(id: String)
 DELETE  /market/visualizations/:id  controllers.Market.uninstallVisualization(id: String)
 GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Search
-GET     /search                     controllers.Search.find(search: String, domain: String)
+POST    /search                     controllers.Search.globalSearch()
 GET     /search/:model/:id          controllers.Search.show(model: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)

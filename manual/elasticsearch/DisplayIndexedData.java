@@ -12,12 +12,15 @@ import org.elasticsearch.search.SearchHit;
 import utils.search.TextSearch;
 
 /**
- * Displays all the data currently indexed by elasticsearch.
+ * Displays all the data currently indexed by ElasticSearch.
  */
-public class DisplayAll {
+public class DisplayIndexedData {
 
 	public static void main(String[] args) throws Exception {
-		// connect to elasticsearch and make the client accessible
+		// starting ElasticSearch cluster
+		TextSearch.start();
+		
+		// connect to ElasticSearch and make the client accessible
 		TextSearch.connect();
 		Field field = TextSearch.class.getDeclaredField("client");
 		field.setAccessible(true);
@@ -48,6 +51,7 @@ public class DisplayAll {
 
 		// close connection
 		TextSearch.close();
+		TextSearch.shutdown();
 	}
 
 }

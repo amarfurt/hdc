@@ -37,8 +37,7 @@ class MarketController extends Backbone.View
 		name = $("#newVisualizationName").val()
 		description = $("#newVisualizationDescription").val()
 		url = $("#newVisualizationURL").val()
-		tags = $("#newVisualizationTags").val()
-		jsRoutes.controllers.Market.registerVisualization(name, description, url, tags).ajax
+		jsRoutes.controllers.Market.registerVisualization(name, description, url).ajax
 			context: this
 			success: (redirect) ->
 				window.location.replace(redirect)

@@ -26,7 +26,7 @@
 					</div>
 					<div class="modal-body">
 						<textarea class="form-control" rows="3" placeholder="Record data" name="data" autofocus></textarea>
-						<input type="text" class="form-control" placeholder="Tags (by which you can find this record when searching)" name="tags">
+						<input type="text" class="form-control" placeholder="Keywords (by which you can find this record when searching)" name="keywords">
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
@@ -190,7 +190,7 @@
 							<label for="newSpaceVisualization" class="col-lg-2 control-label">Visualization</label>
 							<div class="col-lg-10">
 								<select name="visualization" id="newSpaceVisualization" class="form-control">
-									@Visualization.findInstalledBy(user).map { visualization =>
+									@User.findVisualizations(user).map { visualization =>
 										<option value="@visualization._id">@visualization.name</option>
 									}
 								</select>

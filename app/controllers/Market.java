@@ -1,23 +1,22 @@
 package controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import models.Installed;
+import models.User;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.elasticsearch.ElasticSearchException;
 
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.search.KeywordSearch;
 import views.html.market;
 
-import com.mongodb.BasicDBList;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class Market extends Controller {
@@ -37,10 +36,10 @@ public class Market extends Controller {
 		return ok(market.render(spotlightedVisualizations, spotlightedVisualizations, userId));
 	}
 
-	public static Result registerVisualization(String name, String description, String url, String tags) {
+	public static Result registerVisualization(String name, String description, String url) {
 		if (Visualization.visualizationWithSameNameExists(name)) {
 			return badRequest("A visualization with this name already exists.");
-		} else if (name.isEmpty() || description.isEmpty() || url.isEmpty() || tags.isEmpty()) {
+		} else if (name.isEmpty() || description.isEmpty() || url.isEmpty()) {
 			return badRequest("Please fill out all fields.");
 		}
 		Visualization newVisualization = new Visualization();
@@ -48,16 +47,16 @@ public class Market extends Controller {
 		newVisualization.name = name;
 		newVisualization.description = description;
 		newVisualization.url = url;
-		newVisualization.tags = new BasicDBList();
-		for (String tag : KeywordSearch.split(tags)) {
-			newVisualization.tags.add(tag);
-		}
 		String errorMessage;
 		try {
 			errorMessage = Visualization.add(newVisualization);
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (ElasticSearchException e) {
+			return internalServerError(e.getMessage());
+		} catch (IOException e) {
 			return internalServerError(e.getMessage());
 		}
 		if (errorMessage != null) {
@@ -90,7 +89,7 @@ public class Market extends Controller {
 	public static Result installVisualization(String visualizationIdString) {
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId visualizationId = new ObjectId(visualizationIdString);
-		String errorMessage = Installed.installVisualization(visualizationId, userId);
+		String errorMessage = User.addVisualization(userId, visualizationId);
 		if (errorMessage != null) {
 			return badRequest(errorMessage);
 		}
@@ -100,7 +99,7 @@ public class Market extends Controller {
 	public static Result uninstallVisualization(String visualizationIdString) {
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId visualizationId = new ObjectId(visualizationIdString);
-		String errorMessage = Installed.uninstallVisualization(visualizationId, userId);
+		String errorMessage = User.removeVisualization(userId, visualizationId);
 		if (errorMessage != null) {
 			return badRequest(errorMessage);
 		}
@@ -110,7 +109,7 @@ public class Market extends Controller {
 	public static Result loadVisualizations() {
 		ObjectId userId = new ObjectId(request().username());
 		try {
-			List<Visualization> visualizations = Visualization.findInstalledBy(userId);
+			List<Visualization> visualizations = User.findVisualizations(userId);
 
 			// format visualizations
 			List<ObjectNode> json = new ArrayList<ObjectNode>(visualizations.size());

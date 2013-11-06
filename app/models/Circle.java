@@ -1,5 +1,6 @@
 package models;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -7,10 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
 import utils.OrderOperations;
+import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -18,7 +21,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class Circle extends SearchableModel implements Comparable<Circle> {
+public class Circle extends Model implements Comparable<Circle> {
 
 	private static final String collection = "circles";
 
@@ -151,17 +154,21 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle
 	 * object.
 	 */
-	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException {
+	public static String add(Circle newCircle) throws IllegalArgumentException,
+			IllegalAccessException, ElasticSearchException, IOException {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
 			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
-			newCircle.tags = new BasicDBList();
-			for (String namePart : newCircle.name.toLowerCase().split(" ")) {
-				newCircle.tags.add(namePart);
-			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newCircle._id = (ObjectId) insert.get("_id");
-			return result.getLastError().getErrorMessage();
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+
+			// also add this circle to the user's search index
+			TextSearch.add(newCircle.owner, "circle", newCircle._id, newCircle.name);
+			return null;
 		} else {
 			return "A circle with this name already exists.";
 		}
@@ -170,23 +177,25 @@ public class Circle extends SearchableModel implements Comparable<Circle> {
 	/**
 	 * Tries to rename the circle with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String rename(ObjectId circleId, String newName) {
+	public static String rename(ObjectId circleId, String newName) throws ElasticSearchException, IOException {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject foundCircle = Connection.getCollection(collection).findOne(query);
 		if (foundCircle == null) {
 			return "No circle with this id exists.";
 		}
-		ObjectId owner = (ObjectId) foundCircle.get("owner");
-		if (!circleWithSameNameExists(newName, owner)) {
-			DBObject setFields = new BasicDBObject("name", newName);
-			BasicDBList newTags = new BasicDBList();
-			for (String namePart : newName.split(" ")) {
-				newTags.add(namePart);
-			}
-			setFields.put("tags", newTags);
-			DBObject update = new BasicDBObject("$set", setFields);
+		ObjectId ownerId = (ObjectId) foundCircle.get("owner");
+		if (!circleWithSameNameExists(newName, ownerId)) {
+			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+			
+			// update search index
+			TextSearch.delete(ownerId, "circle", circleId);
+			TextSearch.add(ownerId, "circle", circleId, newName);
+			return null;
 		} else {
 			return "A circle with this name already exists.";
 		}

@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import models.Model;
-import models.SearchableModel;
 
 import org.bson.types.ObjectId;
 
@@ -18,6 +17,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
+@Deprecated
 public class KeywordSearch {
 
 	public static <T extends Model> Set<ObjectId> boundedSearch(Set<ObjectId> recordIds, String collection,
@@ -58,19 +58,19 @@ public class KeywordSearch {
 		return results;
 	}
 
-	public static <T extends SearchableModel> List<T> searchInList(List<T> list, String search, int limit) {
+	public static <T extends Model> List<T> searchInList(List<T> list, String search, int limit) {
 		String[] terms = split(search);
 		List<T> result = new ArrayList<T>();
 		for (T cur : list) {
 			boolean allFound = true;
 			for (String term : terms) {
 				boolean termFound = false;
-				for (Object tag : cur.tags) {
-					if (((String) tag).startsWith(term)) {
-						termFound = true;
-						break;
-					}
-				}
+//				for (Object tag : cur.tags) {
+//					if (((String) tag).startsWith(term)) {
+//						termFound = true;
+//						break;
+//					}
+//				}
 				if (!termFound) {
 					allFound = false;
 					break;

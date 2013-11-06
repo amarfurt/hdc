@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -7,6 +8,7 @@ import models.Message;
 import models.User;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import play.Routes;
 import play.data.Form;
@@ -87,6 +89,10 @@ public class Application extends Controller {
 				return internalServerError(e.getMessage());
 			} catch (InstantiationException e) {
 				return internalServerError(e.getMessage());
+			} catch (ElasticSearchException e) {
+				return internalServerError(e.getMessage());
+			} catch (IOException e) {
+				return internalServerError(e.getMessage());
 			}
 		}
 	}
@@ -114,7 +120,6 @@ public class Application extends Controller {
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),
-				controllers.routes.javascript.Search.find(),
 				controllers.routes.javascript.Users.getName(),
 				controllers.visualizations.routes.javascript.RecordList.load(),
 				controllers.visualizations.routes.javascript.RecordList.findSpacesWith(),

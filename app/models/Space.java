@@ -1,5 +1,6 @@
 package models;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -7,10 +8,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import utils.Connection;
 import utils.ModelConversion;
 import utils.OrderOperations;
+import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -18,7 +21,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
-public class Space extends SearchableModel implements Comparable<Space> {
+public class Space extends Model implements Comparable<Space> {
 
 	private static final String collection = "spaces";
 
@@ -32,7 +35,7 @@ public class Space extends SearchableModel implements Comparable<Space> {
 	public int compareTo(Space o) {
 		return this.order - o.order;
 	}
-	
+
 	@Override
 	public String toString() {
 		return name;
@@ -88,17 +91,21 @@ public class Space extends SearchableModel implements Comparable<Space> {
 	 * Adds a space and returns the error message (null in absence of errors). Also adds the generated id to the space
 	 * object.
 	 */
-	public static String add(Space newSpace) throws IllegalArgumentException, IllegalAccessException {
+	public static String add(Space newSpace) throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
 			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
-			newSpace.tags = new BasicDBList();
-			for (String namePart : newSpace.name.toLowerCase().split(" ")) {
-				newSpace.tags.add(namePart);
-			}
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
 			WriteResult result = Connection.getCollection(collection).insert(insert);
 			newSpace._id = (ObjectId) insert.get("_id");
-			return result.getLastError().getErrorMessage();
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+
+			// also add this space to the user's search index
+			TextSearch.add(newSpace.owner, "space", newSpace._id, newSpace.name);
+			return null;
 		} else {
 			return "A space with this name already exists.";
 		}

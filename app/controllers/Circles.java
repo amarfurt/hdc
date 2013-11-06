@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import models.Circle;
 import models.User;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 
 import play.data.Form;
 import play.mvc.Controller;
@@ -59,10 +61,13 @@ public class Circles extends Controller {
 			} else {
 				return badRequest(errorMessage);
 			}
-
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (ElasticSearchException e) {
+			return internalServerError(e.getMessage());
+		} catch (IOException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -72,11 +77,17 @@ public class Circles extends Controller {
 		ObjectId id = new ObjectId(circleId);
 		if (Secured.isOwnerOfCircle(id)) {
 			String newName = Form.form().bindFromRequest().get("name");
-			String errorMessage = Circle.rename(id, newName);
-			if (errorMessage == null) {
-				return ok(newName);
-			} else {
-				return badRequest(errorMessage);
+			try {
+				String errorMessage = Circle.rename(id, newName);
+				if (errorMessage == null) {
+					return ok(newName);
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (ElasticSearchException e) {
+				return internalServerError(e.getMessage());
+			} catch (IOException e) {
+				return internalServerError(e.getMessage());
 			}
 		} else {
 			return forbidden();
