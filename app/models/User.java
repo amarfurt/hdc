@@ -71,6 +71,18 @@ public class User extends Model implements Comparable<User> {
 		return ModelConversion.mapToModel(User.class, result.toMap());
 	}
 
+	public static List<User> find(Set<ObjectId> userIds) throws IllegalArgumentException, IllegalAccessException,
+			InstantiationException {
+		List<User> users = new ArrayList<User>();
+		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
+		DBCursor result = Connection.getCollection(collection).find(query);
+		while (result.hasNext()) {
+			users.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
+		}
+		return users;
+	}
+
+	@Deprecated
 	public static List<User> findAll(int limit) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		List<User> userList = new ArrayList<User>();

@@ -207,10 +207,10 @@ public class TextSearch {
 	}
 
 	public static List<SearchResult> searchPublic(Type type, String query) {
-		SearchResponse response = client.prepareSearch(PUBLIC).setQuery(QueryBuilders.matchQuery(FIELD, query))
+		SearchResponse response = client.prepareSearch(PUBLIC).setTypes(getType(type)).setQuery(QueryBuilders.matchQuery(FIELD, query))
 				.execute().actionGet();
 		Map<String, List<SearchResult>> searchResults = getSearchResults(response);
-		if (!searchResults.containsKey("record")) {
+		if (!searchResults.containsKey(getType(type))) {
 			return new ArrayList<SearchResult>();
 		}
 		return searchResults.get(getType(type));

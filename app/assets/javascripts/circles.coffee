@@ -50,13 +50,14 @@ class Circle extends Backbone.View
 			@el.children(".deleteCircle").show()
 	userSearch: (e) ->
 		search = $(".userSearch", @el).val()
-		jsRoutes.controllers.Circles.searchUsers(@id, search).ajax
-			context: this
-			success: (data) ->
-				$(".searchResults", @el).replaceWith(data)
-			error: (err) ->
-				console.error("User search failed.")
-				console.error(err.responseText)
+		if search.length >= 3
+			jsRoutes.controllers.Circles.searchUsers(@id, search).ajax
+				context: this
+				success: (data) ->
+					$(".searchResults", @el).replaceWith(data)
+				error: (err) ->
+					console.error("User search failed.")
+					console.error(err.responseText)
 
 class CircleTab extends Backbone.View
 	initialize: ->

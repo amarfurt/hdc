@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +18,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.ListOperations;
-import utils.search.KeywordSearch;
+import utils.search.SearchResult;
+import utils.search.TextSearch;
+import utils.search.TextSearch.Type;
 import views.html.circles;
 import views.html.elements.usersearchresults;
 
@@ -171,26 +174,35 @@ public class Circles extends Controller {
 	 * already.
 	 */
 	public static Result searchUsers(String circleIdString, String search) {
-		List<User> response = new ArrayList<User>();
-		try {
-			// TODO use caching
+		List<User> users = new ArrayList<User>();
+		if (search.length() >= 3) {
+			int limit = 10;
 			ObjectId circleId = new ObjectId(circleIdString);
-			if (search == null || search.isEmpty()) {
-				response = User.findAll(10);
-			} else {
-				response = KeywordSearch.searchByType(User.class, User.getCollection(), search, 10);
-			}
 			Set<ObjectId> members = Circle.getMembers(circleId);
 			members.add(new ObjectId(request().username()));
-			response = ListOperations.removeFromList(response, members);
-			return ok(usersearchresults.render(response));
-		} catch (IllegalArgumentException e) {
-			return badRequest(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return badRequest(e.getMessage());
-		} catch (InstantiationException e) {
-			return badRequest(e.getMessage());
+			while (users.size() < limit) {
+				// TODO use caching/incremental retrieval of results (scrolls)
+				List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, search);
+				Set<ObjectId> userIds = new HashSet<ObjectId>();
+				for (SearchResult searchResult : searchResults) {
+					userIds.add(new ObjectId(searchResult.id));
+				}
+				userIds.removeAll(members);
+				try {
+					users.addAll(User.find(userIds));
+				} catch (IllegalArgumentException e) {
+					return internalServerError(e.getMessage());
+				} catch (IllegalAccessException e) {
+					return internalServerError(e.getMessage());
+				} catch (InstantiationException e) {
+					return internalServerError(e.getMessage());
+				}
+				
+				// TODO break if scrolling finds no more results
+				break;
+			}
 		}
+		return ok(usersearchresults.render(users));
 	}
 
 }
