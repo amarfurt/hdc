@@ -58,13 +58,14 @@ class Space extends Backbone.View
 			@el.children(".deleteSpace").show()
 	recordSearch: (e) ->
 		search = $(".recordSearch", @el).val()
-		jsRoutes.controllers.Spaces.searchRecords(@id, search).ajax
-			context: this
-			success: (data) ->
-				$(".searchResults", @el).replaceWith(data)
-			error: (err) ->
-				console.error("Record search failed.")
-				console.error(err.responseText)
+		if search.length > 3
+			jsRoutes.controllers.Spaces.searchRecords(@id, search).ajax
+				context: this
+				success: (data) ->
+					$(".searchResults", @el).replaceWith(data)
+				error: (err) ->
+					console.error("Record search failed.")
+					console.error(err.responseText)
 
 class SpaceTab extends Backbone.View
 	initialize: ->

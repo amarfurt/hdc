@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.ListOperations;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
@@ -39,8 +39,7 @@ public class Circles extends Controller {
 			} else if (circleList.size() > 0) {
 				activeCircle = circleList.get(0)._id;
 			}
-			List<User> users = User.findAll(10);
-			users = ListOperations.removeFromList(users, user);
+			List<User> users = new ArrayList<User>();
 			return ok(circles.render(Circle.findContacts(user), users, circleList, activeCircle, user));
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
@@ -175,33 +174,32 @@ public class Circles extends Controller {
 	 */
 	public static Result searchUsers(String circleIdString, String search) {
 		List<User> users = new ArrayList<User>();
-		if (search.length() >= 3) {
-			int limit = 10;
-			ObjectId circleId = new ObjectId(circleIdString);
-			Set<ObjectId> members = Circle.getMembers(circleId);
-			members.add(new ObjectId(request().username()));
-			while (users.size() < limit) {
-				// TODO use caching/incremental retrieval of results (scrolls)
-				List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, search);
-				Set<ObjectId> userIds = new HashSet<ObjectId>();
-				for (SearchResult searchResult : searchResults) {
-					userIds.add(new ObjectId(searchResult.id));
-				}
-				userIds.removeAll(members);
-				try {
-					users.addAll(User.find(userIds));
-				} catch (IllegalArgumentException e) {
-					return internalServerError(e.getMessage());
-				} catch (IllegalAccessException e) {
-					return internalServerError(e.getMessage());
-				} catch (InstantiationException e) {
-					return internalServerError(e.getMessage());
-				}
-				
-				// TODO break if scrolling finds no more results
-				break;
+		int limit = 10;
+		ObjectId circleId = new ObjectId(circleIdString);
+		Set<ObjectId> members = Circle.getMembers(circleId);
+		members.add(new ObjectId(request().username()));
+		while (users.size() < limit) {
+			// TODO use caching/incremental retrieval of results (scrolls)
+			List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, search);
+			Set<ObjectId> userIds = new HashSet<ObjectId>();
+			for (SearchResult searchResult : searchResults) {
+				userIds.add(new ObjectId(searchResult.id));
 			}
+			userIds.removeAll(members);
+			try {
+				users.addAll(User.find(userIds));
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
+				return internalServerError(e.getMessage());
+			}
+
+			// TODO break if scrolling finds no more results
+			break;
 		}
+		Collections.sort(users);
 		return ok(usersearchresults.render(users));
 	}
 

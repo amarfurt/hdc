@@ -2,12 +2,15 @@ package controllers;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import models.Record;
 import models.Space;
+import models.User;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
@@ -19,8 +22,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import utils.DateTimeUtils;
-import utils.ListOperations;
-import utils.search.KeywordSearch;
+import utils.search.SearchResult;
+import utils.search.TextSearch;
 import views.html.spaces;
 import views.html.elements.recordsearchresults;
 
@@ -198,25 +201,37 @@ public class Spaces extends Controller {
 	/**
 	 * Return a list of records whose data contains the current search term and is not in the space already.
 	 */
-	public static Result searchRecords(String spaceId, String search) {
-		try {
-			// TODO use caching
-			ObjectId user = new ObjectId(request().username());
-			ObjectId sId = new ObjectId(spaceId);
-			List<Record> response = Record.findVisible(user);
-			if (search != null && !search.isEmpty()) {
-				response = KeywordSearch.searchInList(response, search, 10);
+	public static Result searchRecords(String spaceIdString, String query) {
+		List<Record> records = new ArrayList<Record>();
+		int limit = 10;
+		ObjectId userId = new ObjectId(request().username());
+		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
+		ObjectId spaceId = new ObjectId(spaceIdString);
+		Set<ObjectId> recordsAlreadyInSpace = Space.getRecords(spaceId);
+		while (records.size() < limit) {
+			// TODO use caching/incremental retrieval of results (scrolls)
+			List<SearchResult> searchResults = TextSearch.searchRecords(userId, visibleRecords, query);
+			Set<ObjectId> recordIds = new HashSet<ObjectId>();
+			for (SearchResult searchResult : searchResults) {
+				recordIds.add(new ObjectId(searchResult.id));
 			}
-			Set<ObjectId> records = Space.getRecords(sId);
-			response = ListOperations.removeFromList(response, records);
-			return ok(recordsearchresults.render(response));
-		} catch (IllegalArgumentException e) {
-			return badRequest(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return badRequest(e.getMessage());
-		} catch (InstantiationException e) {
-			return badRequest(e.getMessage());
+			recordIds.removeAll(recordsAlreadyInSpace);
+			try {
+				ObjectId[] targetArray = new ObjectId[recordIds.size()];
+				records.addAll(Record.findAll(recordIds.toArray(targetArray)));
+			} catch (IllegalArgumentException e) {
+				return internalServerError(e.getMessage());
+			} catch (IllegalAccessException e) {
+				return internalServerError(e.getMessage());
+			} catch (InstantiationException e) {
+				return internalServerError(e.getMessage());
+			}
+
+			// TODO break if scrolling finds no more results
+			break;
 		}
+		Collections.sort(records);
+		return ok(recordsearchresults.render(records));
 	}
 
 	public static Result loadAllRecords() {
