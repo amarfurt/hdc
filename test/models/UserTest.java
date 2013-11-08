@@ -132,5 +132,10 @@ public class UserTest {
 		assertEquals("No user with this id exists.", User.remove(new ObjectId()));
 		assertEquals(1, users.count());
 	}
+	
+	@Test
+	public void makeRecordsVisible() {
+		// TODO
+	}
 
 }

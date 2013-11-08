@@ -20,6 +20,7 @@ class Record extends Backbone.View
 			success: (data) ->
 				_.each $(":checkbox"), (checkbox) -> $(checkbox).prop("checked", false)
 				_.each data, (id) -> $(":checkbox[name=" + id + "]").prop("checked", true)
+				@prevCheckedCircles = data
 				@parent.curRecord = @id
 			error: (err) ->
 				console.error("Error when finding circles with record.")
@@ -39,12 +40,15 @@ class Record extends Backbone.View
 					console.error(err.responseText)
 	updateCircles: ->
 		if @parent.curRecord == @id
-			circles = []
-			_.each $(":checkbox"), (checkbox) -> circles.push $(checkbox).attr("name") if $(checkbox).prop("checked")
-			jsRoutes.controllers.visualizations.RecordList.updateCircles(@id, circles).ajax
+			checkedCircles = []
+			_.each $(":checkbox"), (checkbox) -> checkedCircles.push $(checkbox).attr("name") if $(checkbox).prop("checked")
+			intersection = _.intersection @prevCheckedCircles, checkedCircles
+			sharingStopped = _.difference @prevCheckedCircles, intersection
+			sharingStarted = _.difference checkedCircles, intersection
+			jsRoutes.controllers.visualizations.RecordList.updateSharing(@id, sharingStarted, sharingStopped).ajax
 				context: this
 				error: (err) ->
-					console.error("Updating the circles of this record failed.")
+					console.error("Updating the sharing settings of this record failed.")
 					console.error(err.responseText)
 					
 class List extends Backbone.View

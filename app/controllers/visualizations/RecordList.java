@@ -11,6 +11,7 @@ import java.util.Set;
 import models.Circle;
 import models.Record;
 import models.Space;
+import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -128,38 +129,54 @@ public class RecordList extends Controller {
 	/**
 	 * Updates the circles the given record is shared with.
 	 */
-	public static Result updateCircles(String record, List<String> circles) {
+	public static Result updateSharing(String record, List<String> circlesStarted, List<String> circlesStopped) {
 		ObjectId recordId = new ObjectId(record);
-		List<ObjectId> circleIds = new ArrayList<ObjectId>();
-		for (String id : circles) {
-			circleIds.add(new ObjectId(id));
+		Set<ObjectId> circleIdsStarted = new HashSet<ObjectId>();
+		for (String id : circlesStarted) {
+			circleIdsStarted.add(new ObjectId(id));
+		}
+		Set<ObjectId> circleIdsStopped = new HashSet<ObjectId>();
+		for (String id : circlesStopped) {
+			circleIdsStopped.add(new ObjectId(id));
 		}
 
 		// TODO Security checks here?
-		if (!Secured.isCreatorOrOwnerOfRecord(recordId)) {
-			return forbidden();
-		}
-		for (ObjectId circleId : circleIds) {
-			if (!Secured.isOwnerOfCircle(circleId)) {
-				return forbidden();
-			}
-		}
 
 		// update circles
-		try {
-			String errorMessage = Circle.updateShared(circleIds, recordId, new ObjectId(request().username()));
-			if (errorMessage == null) {
-				return ok();
-			} else {
-				return badRequest(errorMessage);
-			}
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
-			return internalServerError(e.getMessage());
+		ObjectId userId = new ObjectId(request().username());
+		String errorMessage = Circle.startSharingWith(userId, recordId, circleIdsStarted);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
 		}
+
+		errorMessage = Circle.stopSharingWith(userId, recordId, circleIdsStopped);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+
+		// update visible field of all involved users
+		HashSet<ObjectId> recordIds = new HashSet<ObjectId>();
+		recordIds.add(recordId);
+		HashSet<ObjectId> userIdsStarted = new HashSet<ObjectId>();
+		for (ObjectId circleId : circleIdsStarted) {
+			userIdsStarted.addAll(Circle.getMembers(circleId));
+		}
+		errorMessage = User.makeRecordsVisible(userId, recordIds, userIdsStarted);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+		// TODO don't remove from users that are part of another circle of the owner that this record is also shared with
+		// TODO solve with pushing records so that there are duplicates in visible field? retrieve and add to set to
+		// avoid duplicates in the application
+		HashSet<ObjectId> userIdsStopped = new HashSet<ObjectId>();
+		for (ObjectId circleId : circleIdsStopped) {
+			userIdsStopped.addAll(Circle.getMembers(circleId));
+		}
+		errorMessage = User.makeRecordsInvisible(userId, recordIds, userIdsStopped);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+		return ok();
 	}
 
 }

@@ -136,6 +136,15 @@ public class Circle extends Model implements Comparable<Circle> {
 	}
 
 	/**
+	 * Returns the owner of the circle
+	 */
+	public static ObjectId getOwner(ObjectId circleId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("owner", 1);
+		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("owner");
+	}
+
+	/**
 	 * Returns a set with ids of the members of the given circle.
 	 */
 	public static Set<ObjectId> getMembers(ObjectId circleId) {
@@ -154,8 +163,8 @@ public class Circle extends Model implements Comparable<Circle> {
 	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle
 	 * object.
 	 */
-	public static String add(Circle newCircle) throws IllegalArgumentException,
-			IllegalAccessException, ElasticSearchException, IOException {
+	public static String add(Circle newCircle) throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
 			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
@@ -191,7 +200,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			if (errorMessage != null) {
 				return errorMessage;
 			}
-			
+
 			// update search index
 			TextSearch.delete(ownerId, "circle", circleId);
 			TextSearch.add(ownerId, "circle", circleId, newName);
@@ -240,7 +249,17 @@ public class Circle extends Model implements Comparable<Circle> {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+
+			// also add all the records shared with this circle to the visible records of the newly added member
+			ObjectId ownerId = Circle.getOwner(circleId);
+			Set<ObjectId> recordIds = Circle.getShared(circleId);
+			Set<ObjectId> userIds = new HashSet<ObjectId>();
+			userIds.add(userId);
+			return User.makeRecordsVisible(ownerId, recordIds, userIds);
 		}
 	}
 
@@ -257,26 +276,35 @@ public class Circle extends Model implements Comparable<Circle> {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", userId));
 			WriteResult result = Connection.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
+			String errorMessage = result.getLastError().getErrorMessage();
+			if (errorMessage != null) {
+				return errorMessage;
+			}
+
+			// also remove the records shared with this circle from the visible records of the removed member
+			// TODO if records are are still in another circle that this is user is a member of: don't remove from
+			// visible records
+			ObjectId ownerId = Circle.getOwner(circleId);
+			Set<ObjectId> recordIds = Circle.getShared(circleId);
+			Set<ObjectId> userIds = new HashSet<ObjectId>();
+			userIds.add(userId);
+			return User.makeRecordsInvisible(ownerId, recordIds, userIds);
 		}
 	}
 
 	/**
 	 * Returns a list of all records shared with this circle.
 	 */
-	public static Set<ObjectId> getShared(ObjectId circleId, ObjectId userId) {
-		Set<ObjectId> shared = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject();
-		query.put("_id", circleId);
-		query.put("owner", userId);
-		DBObject foundObject = Connection.getCollection(collection).findOne(query);
-		if (foundObject != null) {
-			BasicDBList sharedRecords = (BasicDBList) foundObject.get("shared");
-			for (Object obj : sharedRecords) {
-				shared.add((ObjectId) obj);
-			}
+	public static Set<ObjectId> getShared(ObjectId circleId) {
+		Set<ObjectId> sharedRecordIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("shared", 1);
+		BasicDBList shared = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
+				.get("shared");
+		for (Object sharedRecord : shared) {
+			sharedRecordIds.add((ObjectId) sharedRecord);
 		}
-		return shared;
+		return sharedRecordIds;
 	}
 
 	public static String updateShared(List<ObjectId> circleIds, ObjectId recordId, ObjectId userId)
@@ -300,27 +328,18 @@ public class Circle extends Model implements Comparable<Circle> {
 		}
 	}
 
-	/**
-	 * Shares the given records with the given circle.
-	 */
-	public static String shareRecords(ObjectId circleId, Set<ObjectId> recordIds) {
-		// TODO check whether circle owner is also record owner?
-		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", new BasicDBObject("$each",
-				recordIds.toArray())));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+	public static String startSharingWith(ObjectId userId, ObjectId recordId, Set<ObjectId> circleIds) {
+		DBObject query = new BasicDBObject("owner", userId);
+		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
+		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
-	/**
-	 * Stops sharing the given records with the given circle.
-	 */
-	public static String pullRecords(ObjectId circleId, Set<ObjectId> recordIds) {
-		// TODO check whether circle owner is also record owner?
-		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("shared", recordIds.toArray()));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+	public static String stopSharingWith(ObjectId userId, ObjectId recordId, Set<ObjectId> circleIds) {
+		DBObject query = new BasicDBObject("owner", userId);
+		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
+		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
 	/**

@@ -34,7 +34,7 @@ public class User extends Model implements Comparable<User> {
 	public String email; // must be unique
 	public String name;
 	public String password;
-	public BasicDBObject visible; // records that are shared with this user (grouped by owner)
+	public BasicDBList visible; // records that are shared with this user (grouped by owner)
 	public BasicDBList apps; // installed apps
 	public BasicDBList visualizations; // installed visualizations
 
@@ -62,24 +62,6 @@ public class User extends Model implements Comparable<User> {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("name", 1);
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
-	}
-
-	public static Map<ObjectId, Set<ObjectId>> getVisibleRecords(ObjectId userId) {
-		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
-		DBObject query = new BasicDBObject("_id", userId);
-		DBObject projection = new BasicDBObject("visible", 1);
-		BasicDBObject visible = (BasicDBObject) Connection.getCollection(collection).findOne(query, projection)
-				.get("visible");
-		for (String sharingUserId : visible.keySet()) {
-			Set<ObjectId> recordIds = new HashSet<ObjectId>();
-			BasicDBList sharedRecords = (BasicDBList) visible.get(sharingUserId);
-			ListIterator<Object> iterator = sharedRecords.listIterator();
-			while (iterator.hasNext()) {
-				recordIds.add((ObjectId) iterator.next());
-			}
-			visibleRecords.put(new ObjectId(sharingUserId), recordIds);
-		}
-		return visibleRecords;
 	}
 
 	public static User find(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
@@ -117,7 +99,7 @@ public class User extends Model implements Comparable<User> {
 			return "A user with this email address already exists.";
 		}
 		newUser.password = PasswordHash.createHash(newUser.password);
-		newUser.visible = new BasicDBObject();
+		newUser.visible = new BasicDBList();
 		newUser.apps = new BasicDBList();
 		newUser.visualizations = new BasicDBList();
 		ObjectId defaultVisualizationId = Visualization.getId(Visualization.getDefaultVisualization());
@@ -170,6 +152,60 @@ public class User extends Model implements Comparable<User> {
 		// TODO security check before casting to person?
 		// requirement for record owners?
 		return true;
+	}
+
+	// Record visibility methods
+	/**
+	 * Makes the given records of an owner visible to the given users.
+	 */
+	public static String makeRecordsVisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) {
+		// create an entry for the owner if it doesn't exist yet in the users' visible field
+		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
+		query.put("visible", new BasicDBObject("$not", new BasicDBObject("$elemMatch", new BasicDBObject("owner",
+				ownerId))));
+		DBObject visibleEntry = new BasicDBObject("owner", ownerId);
+		visibleEntry.put("records", new BasicDBList());
+		DBObject update = new BasicDBObject("$push", new BasicDBObject("visible", visibleEntry));
+		String errorMessage = Connection.getCollection(collection).updateMulti(query, update).getLastError()
+				.getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// add records to visible records
+		query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
+		query.put("visible.owner", ownerId);
+		update = new BasicDBObject("$addToSet", new BasicDBObject("visible.$.records", new BasicDBObject("$each",
+				recordIds.toArray())));
+		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+	}
+
+	/**
+	 * Removes records from the visible records of the given users.
+	 */
+	public static String makeRecordsInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) {
+		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
+		query.put("visible.owner", ownerId);
+		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("visible.$.records", recordIds.toArray()));
+		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+	}
+
+	public static Map<ObjectId, Set<ObjectId>> getVisibleRecords(ObjectId userId) {
+		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject projection = new BasicDBObject("visible", 1);
+		BasicDBObject visible = (BasicDBObject) Connection.getCollection(collection).findOne(query, projection)
+				.get("visible");
+		for (String sharingUserId : visible.keySet()) {
+			Set<ObjectId> recordIds = new HashSet<ObjectId>();
+			BasicDBList sharedRecords = (BasicDBList) visible.get(sharingUserId);
+			ListIterator<Object> iterator = sharedRecords.listIterator();
+			while (iterator.hasNext()) {
+				recordIds.add((ObjectId) iterator.next());
+			}
+			visibleRecords.put(new ObjectId(sharingUserId), recordIds);
+		}
+		return visibleRecords;
 	}
 
 	// Visualization methods

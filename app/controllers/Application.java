@@ -125,7 +125,7 @@ public class Application extends Controller {
 				controllers.visualizations.routes.javascript.RecordList.findSpacesWith(),
 				controllers.visualizations.routes.javascript.RecordList.findCirclesWith(),
 				controllers.visualizations.routes.javascript.RecordList.updateSpaces(),
-				controllers.visualizations.routes.javascript.RecordList.updateCircles()));
+				controllers.visualizations.routes.javascript.RecordList.updateSharing()));
 	}
 
 }
