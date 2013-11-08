@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -202,20 +201,24 @@ public class User extends Model implements Comparable<User> {
 		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
+	/**
+	 * Returns the visible records, grouped by their respective owner.
+	 */
 	public static Map<ObjectId, Set<ObjectId>> getVisibleRecords(ObjectId userId) {
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("visible", 1);
-		BasicDBObject visible = (BasicDBObject) Connection.getCollection(collection).findOne(query, projection)
+		BasicDBList visible = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
 				.get("visible");
-		for (String sharingUserId : visible.keySet()) {
+		for (Object visibleEntry : visible) {
+			DBObject curEntry = (DBObject) visibleEntry;
+			ObjectId ownerId = (ObjectId) curEntry.get("owner");
 			Set<ObjectId> recordIds = new HashSet<ObjectId>();
-			BasicDBList sharedRecords = (BasicDBList) visible.get(sharingUserId);
-			ListIterator<Object> iterator = sharedRecords.listIterator();
-			while (iterator.hasNext()) {
-				recordIds.add((ObjectId) iterator.next());
+			BasicDBList sharedRecordIds = (BasicDBList) curEntry.get("records");
+			for (Object sharedRecordId : sharedRecordIds) {
+				recordIds.add((ObjectId) sharedRecordId);
 			}
-			visibleRecords.put(new ObjectId(sharingUserId), recordIds);
+			visibleRecords.put(ownerId, recordIds);
 		}
 		return visibleRecords;
 	}
