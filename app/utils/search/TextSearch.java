@@ -34,42 +34,26 @@ public class TextSearch {
 		USER, APP, VISUALIZATION
 	}
 
-	private static final int CLUSTER_SIZE = 1;
 	private static final String CLUSTER_NAME = "healthbank";
 	private static final String PUBLIC = "public"; // public index visible to all users
 	private static final String FIELD = "data";
 
-	private static Node[] dataNodes;
-	private static Node clientNode;
+	private static Node node;
 	private static Client client;
-
-	public static void start() {
-		// start a data node
-		dataNodes = new Node[CLUSTER_SIZE];
-		for (int i = 0; i < CLUSTER_SIZE; i++) {
-			dataNodes[i] = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).data(true).node();
-		}
-	}
-
-	public static void shutdown() {
-		for (Node dataNode : dataNodes) {
-			dataNode.close();
-		}
-	}
 
 	public static void connect() {
 		// start a client node (holds no data)
-		clientNode = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).node();
-		client = clientNode.client();
+		node = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).node();
+		client = node.client();
 	}
 
 	public static void connectToTest() {
-		clientNode = NodeBuilder.nodeBuilder().local(true).node();
-		client = clientNode.client();
+		node = NodeBuilder.nodeBuilder().local(true).node();
+		client = node.client();
 	}
 
 	public static void close() {
-		clientNode.close();
+		node.close();
 	}
 
 	/**
@@ -207,8 +191,8 @@ public class TextSearch {
 	}
 
 	public static List<SearchResult> searchPublic(Type type, String query) {
-		SearchResponse response = client.prepareSearch(PUBLIC).setTypes(getType(type)).setQuery(QueryBuilders.matchQuery(FIELD, query))
-				.execute().actionGet();
+		SearchResponse response = client.prepareSearch(PUBLIC).setTypes(getType(type))
+				.setQuery(QueryBuilders.matchQuery(FIELD, query)).execute().actionGet();
 		Map<String, List<SearchResult>> searchResults = getSearchResults(response);
 		if (!searchResults.containsKey(getType(type))) {
 			return new ArrayList<SearchResult>();

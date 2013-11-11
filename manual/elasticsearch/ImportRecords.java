@@ -22,9 +22,6 @@ import com.mongodb.DBObject;
 public class ImportRecords {
 
 	public static void main(String[] args) throws Exception {
-		// starting ElasticSearch cluster
-		TextSearch.start();
-		
 		// connect to MongoDB
 		start(fakeApplication(fakeGlobal()));
 		Connection.connect();
@@ -57,7 +54,6 @@ public class ImportRecords {
 		// disconnect
 		Connection.close();
 		TextSearch.close();
-		TextSearch.shutdown();
 	}
 
 }

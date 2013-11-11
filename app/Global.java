@@ -7,11 +7,10 @@ public class Global extends GlobalSettings {
 
 	@Override
 	public void onStart(Application app) {
-		// Create connection to production database
+		// Connect to production database
 		Connection.connect();
 
-		// Start up search cluster and connect to it
-		TextSearch.start();
+		// Connect to search cluster
 		TextSearch.connect();
 	}
 
@@ -20,9 +19,8 @@ public class Global extends GlobalSettings {
 		// Close connection to database
 		Connection.close();
 
-		// Close connection to search cluster and shut it down
+		// Close connection to search cluster
 		TextSearch.close();
-		TextSearch.shutdown();
 	}
 
 }

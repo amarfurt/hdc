@@ -19,10 +19,6 @@ public class MinimalSetup {
 
 	public static void main(String[] args) throws Exception {
 		System.out.println("Starting to create minimal setup for Healthbank platform.");
-		// starting ElasticSearch cluster
-		System.out.print("Starting ElasticSearch cluster...");
-		TextSearch.start();
-		System.out.println("done.");
 
 		// connecting
 		System.out.print("Connecting to MongoDB...");
@@ -80,7 +76,6 @@ public class MinimalSetup {
 		System.out.println("Shutting down...");
 		Connection.close();
 		TextSearch.close();
-		TextSearch.shutdown();
 		System.out.println("Minimal setup complete.");
 	}
 

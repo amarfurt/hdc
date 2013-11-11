@@ -17,9 +17,6 @@ import utils.search.TextSearch;
 public class DisplayIndexedData {
 
 	public static void main(String[] args) throws Exception {
-		// starting ElasticSearch cluster
-		TextSearch.start();
-		
 		// connect to ElasticSearch and make the client accessible
 		TextSearch.connect();
 		Field field = TextSearch.class.getDeclaredField("client");
@@ -51,7 +48,6 @@ public class DisplayIndexedData {
 
 		// close connection
 		TextSearch.close();
-		TextSearch.shutdown();
 	}
 
 }

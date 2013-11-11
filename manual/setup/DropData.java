@@ -9,11 +9,6 @@ import utils.search.TextSearch;
 public class DropData {
 
 	public static void main(String[] args) {
-		// starting ElasticSearch cluster
-		System.out.print("Starting ElasticSearch cluster...");
-		TextSearch.start();
-		System.out.println("done.");
-		
 		// connecting
 		System.out.print("Connecting to MongoDB...");
 		start(fakeApplication(fakeGlobal()));
@@ -30,12 +25,11 @@ public class DropData {
 		System.out.print("Deleting existing ElasticSearch indices...");
 		TextSearch.destroy();
 		System.out.println("done.");
-		
+
 		// shutting down
 		System.out.println("Shutting down...");
 		Connection.close();
 		TextSearch.close();
-		TextSearch.shutdown();
 		System.out.println("Finished.");
 	}
 
