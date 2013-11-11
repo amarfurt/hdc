@@ -36,11 +36,18 @@ public class Search extends Controller {
 	 */
 	public static Result globalSearch() {
 		String query = Form.form().bindFromRequest().get("globalSearch");
+		return redirect(routes.Search.search(query));
+	}
+
+	public static Result search(String query) {
 		ObjectId userId = new ObjectId(request().username());
 		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
 		Map<String, List<SearchResult>> searchResults = TextSearch.search(userId, visibleRecords, query);
-		// TODO redirect
 		return ok(search.render(searchResults, userId));
+	}
+	
+	public static Result prefixSearch(String query) {
+		return ok();
 	}
 
 	/**

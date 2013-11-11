@@ -91,11 +91,13 @@
 												</div>
 											</div>
 											<div id="@circle._id-all" class="tab-pane fade">
-												<input type="text" class="userSearch" name="userSearch" placeholder="Search for a user">
-												<!-- TODO: in JS -->
-												@defining(Circle.getMembers(circle._id)) { memberIds =>
-													@views.html.elements.usersearchresults(utils.ListOperations.removeFromList(users, memberIds))
-												}
+												<div class="form-group">
+													<input type="text" class="userSearch form-control" name="userSearch" placeholder="Search for a user">
+													<!-- TODO: in JS -->
+													@defining(Circle.getMembers(circle._id)) { memberIds =>
+														@views.html.elements.usersearchresults(utils.ListOperations.removeFromList(users, memberIds))
+													}
+												</div>
 											</div>
 										</div>
 									</div>

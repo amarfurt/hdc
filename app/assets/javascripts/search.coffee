@@ -9,9 +9,9 @@ class SearchController extends Backbone.View
 		else
 			$("#page-content").html("Loading search results...")
 			$(".nav > .active").removeClass("active")
-		search = $("#globalSearch").val()
+		query = $("#globalSearch").val()
 		domain = $("#searchDomain").attr("value")
-		jsRoutes.controllers.Search.find(search, domain).ajax
+		jsRoutes.controllers.Search.prefixSearch(query).ajax
 			context: this
 			success: (data) ->
 				$("#page-content").html(data)

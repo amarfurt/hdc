@@ -152,11 +152,13 @@
 									<h4 class="modal-title" id="label-@space._id">Add records to this space</h4>
 								</div>
 								<div class="modal-body">
-									<input type="text" class="recordSearch" name="recordSearch" placeholder="Search in your records">
-									<!-- TODO: in JS -->
-									@defining(Space.getRecords(space._id)) { spaceRecords =>
-										@views.html.elements.recordsearchresults(utils.ListOperations.removeFromList(records, spaceRecords))
-									}
+									<div class="form-group">
+										<input type="text" class="recordSearch form-control" name="recordSearch" placeholder="Search in your records">
+										<!-- TODO: in JS -->
+										@defining(Space.getRecords(space._id)) { spaceRecords =>
+											@views.html.elements.recordsearchresults(utils.ListOperations.removeFromList(records, spaceRecords))
+										}
+									</div>
 								</div>
 								<div class="modal-footer">
 									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

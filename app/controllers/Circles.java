@@ -172,7 +172,7 @@ public class Circles extends Controller {
 	 * Return a list of users whose name or email address matches the current search term and is not in the circle
 	 * already.
 	 */
-	public static Result searchUsers(String circleIdString, String search) {
+	public static Result searchUsers(String circleIdString, String query) {
 		List<User> users = new ArrayList<User>();
 		int limit = 10;
 		ObjectId circleId = new ObjectId(circleIdString);
@@ -180,7 +180,7 @@ public class Circles extends Controller {
 		members.add(new ObjectId(request().username()));
 		while (users.size() < limit) {
 			// TODO use caching/incremental retrieval of results (scrolls)
-			List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, search);
+			List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, query);
 			Set<ObjectId> userIds = new HashSet<ObjectId>();
 			for (SearchResult searchResult : searchResults) {
 				userIds.add(new ObjectId(searchResult.id));
