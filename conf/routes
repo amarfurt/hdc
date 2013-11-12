@@ -40,7 +40,7 @@ GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Search
 POST    /search                     controllers.Search.globalSearch()
 GET     /search/:query              controllers.Search.search(query: String)
-GET     /search/prefix/:query       controllers.Search.prefixSearch(query: String)
+GET     /search/complete/:query     controllers.Search.complete(query: String)
 GET     /search/:model/:id          controllers.Search.show(model: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)

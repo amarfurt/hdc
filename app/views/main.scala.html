@@ -14,7 +14,9 @@
 		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 		<!-- Bootstrap core CSS -->
 		<link href="@routes.Assets.at("bootstrap/css/bootstrap.css")" rel="stylesheet">
+		<!-- Plugin CSS -->
 		<link href="@routes.Assets.at("bootstrap/css/slider.css")" rel="stylesheet">
+		<link href="@routes.Assets.at("bootstrap/css/typeahead.css")" rel="stylesheet">
 		<!-- Bootstrap theme -->
 		<link href="@routes.Assets.at("bootstrap/css/bootstrap-theme.min.css")" rel="stylesheet">
 
@@ -66,7 +68,7 @@
 			</div>
 		</div>
 		
-		<div id="page-content" class="container">
+		<div class="container">
 			@content
 		</div>
 		
@@ -75,5 +77,6 @@
 		<script type="text/javascript" src="@routes.Assets.at("javascripts/search.js")"></script>
 		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>
 		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/bootstrap-slider.js")"></script>
+		<script type="text/javascript" src="@routes.Assets.at("javascripts/typeahead.min.js")"></script>
 	</body>
 </html>

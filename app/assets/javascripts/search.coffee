@@ -1,23 +1,18 @@
 class SearchController extends Backbone.View
+	initialize: ->
+		$("#globalSearch").typeahead({
+			name: "records",
+			remote: {
+				url: null
+				replace: (url, query) ->
+					jsRoutes.controllers.Search.complete(query).url
+			}
+		})
 	events:
 		"keyup #globalSearch": "globalSearch"
-		"change #searchDomain": "globalSearch"
-	globalSearch: ->
-		# special treatment on the first keypress of a query
-		if $("#search-content").exists()
-			$("#search-content").html("Loading search results...")
-		else
-			$("#page-content").html("Loading search results...")
-			$(".nav > .active").removeClass("active")
-		query = $("#globalSearch").val()
-		domain = $("#searchDomain").attr("value")
-		jsRoutes.controllers.Search.prefixSearch(query).ajax
-			context: this
-			success: (data) ->
-				$("#page-content").html(data)
-			error: (err) ->
-				console.error("Error in global search.")
-				console.error(err.responseText)
+	globalSearch: (e) ->
+		# typeahead somehow disables the form submit on pressing enter...
+		if e.keyCode is 13 then $("#globalSearchForm").submit()
 
 # Instantiate views
 $ ->

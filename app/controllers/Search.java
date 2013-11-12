@@ -2,6 +2,7 @@ package controllers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.bson.types.ObjectId;
 
 import play.data.Form;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -27,6 +29,8 @@ import views.html.details.message;
 import views.html.details.record;
 import views.html.details.user;
 import views.html.details.visualization;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class Search extends Controller {
@@ -45,9 +49,43 @@ public class Search extends Controller {
 		Map<String, List<SearchResult>> searchResults = TextSearch.search(userId, visibleRecords, query);
 		return ok(search.render(searchResults, userId));
 	}
-	
-	public static Result prefixSearch(String query) {
-		return ok();
+
+	/**
+	 * Suggests completions for the given query. Used by the auto-completion feature.
+	 */
+	public static Result complete(String query) {
+		// TODO for now, simply complete with record keywords to test the UI feature
+		List<Record> records;
+		try {
+			records = Record.findVisible(new ObjectId(request().username()));
+		} catch (IllegalArgumentException e) {
+			return internalServerError(e.getMessage());
+		} catch (IllegalAccessException e) {
+			return internalServerError(e.getMessage());
+		} catch (InstantiationException e) {
+			return internalServerError(e.getMessage());
+		}
+		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
+		for (Record record : records) {
+			// check whether one of the keywords matches
+			boolean matches = false;
+			for (Object keyword : record.keywords) {
+				String curKeyword = (String) keyword;
+				if (curKeyword.startsWith(query)) {
+					matches = true;
+					break;
+				}
+			}
+
+			// if one does, add the record to the result
+			if (matches) {
+				ObjectNode datum = Json.newObject();
+				datum.put("value", record.data.substring(0, Math.min(40, record.data.length())));
+				datum.put("tokens", Json.toJson(record.keywords));
+				jsonRecords.add(datum);
+			}
+		}
+		return ok(Json.toJson(jsonRecords));
 	}
 
 	/**
