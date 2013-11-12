@@ -159,12 +159,6 @@ public class User extends Model implements Comparable<User> {
 		return (String) Connection.getCollection(collection).findOne(query, projection).get("password");
 	}
 
-	public static boolean isPerson(ObjectId userId) {
-		// TODO security check before casting to person?
-		// requirement for record owners?
-		return true;
-	}
-
 	// Record visibility methods
 	/**
 	 * Makes the given records of an owner visible to the given users.
