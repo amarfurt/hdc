@@ -114,6 +114,9 @@ public class TextSearch {
 	}
 
 	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws IOException {
+		if (data.size() == 0) {
+			return;
+		}
 		BulkRequestBuilder bulkRequest = client.prepareBulk();
 		for (ObjectId modelId : data.keySet()) {
 			bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
@@ -158,11 +161,15 @@ public class TextSearch {
 	}
 
 	public static void deleteMultiple(ObjectId userId, String type, Set<ObjectId> modelIds) {
+		if (modelIds.size() == 0) {
+			return;
+		}
 		BulkRequestBuilder bulkRequest = client.prepareBulk();
 		for (ObjectId modelId : modelIds) {
 			bulkRequest.add(client.prepareDelete(userId.toString(), type, modelId.toString()));
 		}
 		bulkRequest.execute().actionGet();
+
 	}
 
 	public static void deletePublic(Type type, ObjectId documentId) {

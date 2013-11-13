@@ -4,7 +4,6 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import com.mongodb.DBObject;
 public class ImportData {
 
 	public static void main(String[] args) throws Exception {
+		System.out.print("Connecting...");
 		// connect to MongoDB
 		start(fakeApplication(fakeGlobal()));
 		Connection.connect();
@@ -40,9 +40,11 @@ public class ImportData {
 
 		// waiting for previous operations to finish...
 		Thread.sleep(1000);
+		System.out.println("done.");
 
 		// users
-		List<ObjectId> userIds = new ArrayList<ObjectId>();
+		System.out.print("Importing users...");
+		Map<ObjectId, String> users = new HashMap<ObjectId, String>();
 		DBObject query = new BasicDBObject();
 		DBObject projection = new BasicDBObject("email", 1);
 		projection.put("name", 1);
@@ -53,14 +55,16 @@ public class ImportData {
 			String email = (String) cur.get("email");
 			String name = (String) cur.get("name");
 			TextSearch.addPublic(Type.USER, userId, email + " " + name);
-			userIds.add(userId);
+			users.put(userId, name);
 		}
 
 		// waiting for previous operations to finish...
 		Thread.sleep(1000);
+		System.out.println("done.");
 
 		// for each user: add all the data
-		for (ObjectId userId : userIds) {
+		for (ObjectId userId : users.keySet()) {
+			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
 			// messages
 			List<Message> messages = Message.findSentTo(userId);
 			Map<ObjectId, String> data = new HashMap<ObjectId, String>();
@@ -92,11 +96,13 @@ public class ImportData {
 				data.put(record._id, record.data);
 			}
 			TextSearch.addMultiple(userId, "record", data);
+			System.out.println("done.");
 		}
 
 		// TODO apps
 
 		// visualizations
+		System.out.print("Importing visualizations...");
 		query = new BasicDBObject();
 		projection = new BasicDBObject("name", 1);
 		projection.put("description", 1);
@@ -108,10 +114,12 @@ public class ImportData {
 			String description = (String) cur.get("description");
 			TextSearch.addPublic(Type.VISUALIZATION, visualizationId, name + ": " + description);
 		}
+		System.out.println("done.");
 
 		// disconnect
 		Connection.close();
 		TextSearch.close();
+		System.out.println("Finished.");
 	}
 
 }
