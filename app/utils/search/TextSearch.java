@@ -77,7 +77,7 @@ public class TextSearch {
 	/**
 	 * Create a user's index.
 	 */
-	public static void createIndex(ObjectId userId) throws ElasticSearchException, IOException {
+	private static void createIndex(ObjectId userId) throws ElasticSearchException, IOException {
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
 			client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
 		}
@@ -86,7 +86,7 @@ public class TextSearch {
 	/**
 	 * Delete a user's index.
 	 */
-	public static void deleteIndex(ObjectId userId) {
+	private static void deleteIndex(ObjectId userId) {
 		if (client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
 			client.admin().indices().prepareDelete(userId.toString()).execute().actionGet();
 			client.admin().indices().prepareClearCache(userId.toString()).execute().actionGet();

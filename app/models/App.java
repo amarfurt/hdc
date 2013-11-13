@@ -32,23 +32,23 @@ public class App extends Model implements Comparable<App> {
 		return name;
 	}
 
-	public static App find(ObjectId visualizationId) throws IllegalArgumentException, IllegalAccessException,
+	public static App find(ObjectId appId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBObject query = new BasicDBObject("_id", visualizationId);
+		DBObject query = new BasicDBObject("_id", appId);
 		DBObject result = Connection.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(App.class, result.toMap());
 	}
 
 	public static List<App> findInstalledBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		Set<ObjectId> visualizationIds = new HashSet<ObjectId>();
+		Set<ObjectId> appIds = new HashSet<ObjectId>();
 		// TODO: User.findAppsInstalledBy(userId);
-		List<App> visualizations = new ArrayList<App>();
-		for (ObjectId visualizationId : visualizationIds) {
-			visualizations.add(find(visualizationId));
+		List<App> apps = new ArrayList<App>();
+		for (ObjectId appId : appIds) {
+			apps.add(find(appId));
 		}
-		Collections.sort(visualizations);
-		return visualizations;
+		Collections.sort(apps);
+		return apps;
 	}
 
 }
