@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.bson.BSONObject;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
@@ -15,7 +16,6 @@ import utils.Connection;
 import utils.ModelConversion;
 import utils.search.TextSearch;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
@@ -28,25 +28,13 @@ public class Record extends Model implements Comparable<Record> {
 	public ObjectId creator; // any user
 	public ObjectId owner; // any user of type person
 	public String created; // date + time created
-	public String data;
-	public BasicDBList keywords;
+	public BSONObject data; // arbitrary data
+	public String description; // this will be indexed in the search cluster
 
 	@Override
 	public int compareTo(Record o) {
 		// newest first
 		return -this.created.compareTo(o.created);
-	}
-
-	@Override
-	public String toString() {
-		// Return the first few words of the data up to a maximum of 40 characters.
-		int maxChars = 40;
-		if (data.length() < maxChars) {
-			return data;
-		} else {
-			int lastIndex = data.lastIndexOf(" ", maxChars);
-			return data.substring(0, lastIndex + 1) + "...";
-		}
 	}
 
 	public static String getCollection() {
@@ -165,8 +153,8 @@ public class Record extends Model implements Comparable<Record> {
 	 * Adds a record and returns the error message (null in absence of errors). Also adds the generated id to the record
 	 * object.
 	 */
-	public static String add(Record newRecord) throws IllegalArgumentException,
-			IllegalAccessException, ElasticSearchException, IOException {
+	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
 		WriteResult result = Connection.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
@@ -176,7 +164,7 @@ public class Record extends Model implements Comparable<Record> {
 		}
 
 		// also index the data for the text search
-		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.data);
+		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.description);
 		return null;
 	}
 
