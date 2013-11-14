@@ -24,7 +24,7 @@ public class CreateDBObjects {
 
 	public static ObjectId[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		long originalCount = users.count();
 		ObjectId[] userIds = new ObjectId[numUsers];
 		for (int i = 0; i < numUsers; i++) {
@@ -32,6 +32,9 @@ public class CreateDBObjects {
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
 			user.password = PasswordHash.createHash("secret");
+			user.visible = new BasicDBList();
+			user.apps = new BasicDBList();
+			user.visualizations = new BasicDBList();
 			DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
 			users.insert(userObject);
 			userIds[i] = (ObjectId) userObject.get("_id");
@@ -42,7 +45,7 @@ public class CreateDBObjects {
 
 	public static ObjectId[] insertRecords(ObjectId creator, ObjectId owner, int numRecords)
 			throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		long originalCount = records.count();
 		ObjectId[] recordIds = new ObjectId[numRecords];
 		for (int i = 0; i < numRecords; i++) {
@@ -51,7 +54,7 @@ public class CreateDBObjects {
 			record.owner = owner;
 			record.created = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
 			record.data = "Random data.";
-			record.tags = new BasicDBList();
+			record.keywords = new BasicDBList();
 			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 			records.insert(recordObject);
 			recordIds[i] = (ObjectId) recordObject.get("_id");
@@ -62,15 +65,11 @@ public class CreateDBObjects {
 
 	public static ObjectId createDeveloperAccount() throws NoSuchAlgorithmException, InvalidKeySpecException,
 			IllegalArgumentException, IllegalAccessException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		User user = new User();
 		user.email = "developers@healthbank.ch";
 		user.name = "Healthbank Developers";
 		user.password = PasswordHash.createHash("secret");
-		user.tags = new BasicDBList();
-		user.tags.add("healthbank");
-		user.tags.add("developers");
-		user.tags.add(user.email);
 		DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
 		users.insert(userObject);
 		return (ObjectId) userObject.get("_id");
@@ -78,15 +77,12 @@ public class CreateDBObjects {
 
 	public static void createDefaultVisualization(ObjectId developerId) throws IllegalArgumentException,
 			IllegalAccessException {
-		DBCollection visualizations = TestConnection.getCollection("visualizations");
+		DBCollection visualizations = Connection.getCollection("visualizations");
 		Visualization visualization = new Visualization();
 		visualization.creator = developerId;
-		visualization.name = Visualization.DEFAULT_VISUALIZATION;
+		visualization.name = Visualization.getDefaultVisualization();
 		visualization.description = "Default record list implementation.";
 		visualization.url = routes.RecordList.load().url();
-		visualization.tags = new BasicDBList();
-		visualization.tags.add("record");
-		visualization.tags.add("list");
 		visualizations.insert(new BasicDBObject(ModelConversion.modelToMap(visualization)));
 	}
 

@@ -40,7 +40,7 @@ public class Record extends Model implements Comparable<Record> {
 	@Override
 	public String toString() {
 		// Return the first few words of the data up to a maximum of 40 characters.
-		int maxChars = 150;
+		int maxChars = 40;
 		if (data.length() < maxChars) {
 			return data;
 		} else {

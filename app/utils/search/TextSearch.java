@@ -53,13 +53,20 @@ public class TextSearch {
 	}
 
 	public static void close() {
-		node.close();
+		if (node != null) {
+			node.close();
+		}
 	}
 
 	/**
 	 * Create global indices.
 	 */
 	public static void initialize() {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		// check whether the public index exists and create it otherwise
 		if (!client.admin().indices().prepareExists(PUBLIC).execute().actionGet().isExists()) {
 			client.admin().indices().prepareCreate(PUBLIC).execute().actionGet();
@@ -70,6 +77,11 @@ public class TextSearch {
 	 * Delete all indices.
 	 */
 	public static void destroy() {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		client.admin().indices().prepareDelete().execute().actionGet();
 		client.admin().indices().prepareClearCache().execute().actionGet();
 	}
@@ -108,15 +120,27 @@ public class TextSearch {
 
 	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws ElasticSearchException,
 			IOException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		client.prepareIndex(userId.toString(), type, modelId.toString())
 				.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
 				.actionGet();
 	}
 
 	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws IOException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
+		// return if no data is passed
 		if (data.size() == 0) {
 			return;
 		}
+
 		BulkRequestBuilder bulkRequest = client.prepareBulk();
 		for (ObjectId modelId : data.keySet()) {
 			bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
@@ -133,6 +157,11 @@ public class TextSearch {
 
 	public static void addPublic(Type type, ObjectId documentId, String data) throws ElasticSearchException,
 			IOException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		switch (type) {
 		case USER:
 			// add the user to the global user index and create an own index for the user
@@ -157,10 +186,20 @@ public class TextSearch {
 	}
 
 	public static void delete(ObjectId userId, String type, ObjectId modelId) {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		client.prepareDelete(userId.toString(), type, modelId.toString()).execute().actionGet();
 	}
 
 	public static void deleteMultiple(ObjectId userId, String type, Set<ObjectId> modelIds) {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		if (modelIds.size() == 0) {
 			return;
 		}
@@ -173,6 +212,11 @@ public class TextSearch {
 	}
 
 	public static void deletePublic(Type type, ObjectId documentId) {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		switch (type) {
 		case USER:
 			// remove the user from the global user index and delete the user's index
@@ -192,12 +236,12 @@ public class TextSearch {
 		}
 	}
 
-	public static List<SearchResult> prefixSearch() {
-		// TODO
-		return null;
-	}
-
 	public static List<SearchResult> searchPublic(Type type, String query) {
+		// return if not connected
+		if (client == null) {
+			return null;
+		}
+
 		SearchResponse response = client.prepareSearch(PUBLIC).setTypes(getType(type))
 				.setQuery(QueryBuilders.matchQuery(FIELD, query)).execute().actionGet();
 		Map<String, List<SearchResult>> searchResults = getSearchResults(response);
@@ -209,6 +253,11 @@ public class TextSearch {
 
 	public static List<SearchResult> searchRecords(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
 			String query) {
+		// return if not connected
+		if (client == null) {
+			return null;
+		}
+
 		// search in user's records
 		ListenableActionFuture<SearchResponse> privateRecordsQuery = searchPrivateIndex(userId, query, "record")
 				.execute();
@@ -237,6 +286,11 @@ public class TextSearch {
 	 */
 	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
 			String query) {
+		// return if not connected
+		if (client == null) {
+			return null;
+		}
+
 		// search in user's index
 		ListenableActionFuture<SearchResponse> privateIndexQuery = searchPrivateIndex(userId, query).execute();
 
@@ -283,19 +337,21 @@ public class TextSearch {
 	 * @param visibleRecords Key: User id, Value: Set of record ids of records that are visible
 	 */
 	private static SearchRequestBuilder searchVisibleRecords(Map<ObjectId, Set<ObjectId>> visibleRecords, String query) {
-		String[] queriedIndices = new String[visibleRecords.size()];
+		List<String> queriedIndices = new ArrayList<String>();
 		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
-		int i = 0;
 		for (ObjectId curUserId : visibleRecords.keySet()) {
-			queriedIndices[i++] = curUserId.toString();
-			visibleRecordIds.addAll(visibleRecords.get(curUserId));
+			if (visibleRecords.get(curUserId).size() > 0) {
+				queriedIndices.add(curUserId.toString());
+				visibleRecordIds.addAll(visibleRecords.get(curUserId));
+			}
 		}
 		String[] recordIds = new String[visibleRecordIds.size()];
 		int j = 0;
 		for (ObjectId recordId : visibleRecordIds) {
 			recordIds[j++] = recordId.toString();
 		}
-		SearchRequestBuilder builder = client.prepareSearch(queriedIndices)
+		String[] indicesArray = new String[queriedIndices.size()];
+		SearchRequestBuilder builder = client.prepareSearch(queriedIndices.toArray(indicesArray))
 				.setQuery(QueryBuilders.matchQuery(FIELD, query))
 				.setFilter(FilterBuilders.idsFilter("record").ids(recordIds));
 		return addHighlighting(builder);

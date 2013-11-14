@@ -114,20 +114,27 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Tries to rename the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String rename(ObjectId spaceId, String newName) {
+	public static String rename(ObjectId spaceId, String newName) throws ElasticSearchException, IOException {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject foundSpace = Connection.getCollection(collection).findOne(query);
 		if (foundSpace == null) {
 			return "This space doesn't exist.";
 		}
 		ObjectId ownerId = (ObjectId) foundSpace.get("owner");
-		if (!spaceWithSameNameExists(newName, ownerId)) {
-			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
-		} else {
+		if (spaceWithSameNameExists(newName, ownerId)) {
 			return "A space with this name already exists.";
 		}
+		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// update search index
+		TextSearch.delete(ownerId, "space", spaceId);
+		TextSearch.add(ownerId, "space", spaceId, newName);
+		return null;
 	}
 
 	/**
@@ -151,7 +158,14 @@ public class Space extends Model implements Comparable<Space> {
 		}
 
 		// decrement all order fields greater than the removed space
-		return OrderOperations.decrement(collection, ownerId, order, 0);
+		errorMessage = OrderOperations.decrement(collection, ownerId, order, 0);
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// remove from search index
+		TextSearch.delete(ownerId, "space", spaceId);
+		return null;
 	}
 
 	/**

@@ -8,19 +8,21 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.Connection;
 import utils.CreateDBObjects;
 import utils.LoadData;
 import utils.ModelConversion;
 import utils.PasswordHash;
-import utils.TestConnection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -31,43 +33,41 @@ public class UserTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
-		TestConnection.dropDatabase();
+		Connection.connectToTest();
+		Connection.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
-		Person person = new Person();
-		person.email = "test1@example.com";
-		person.name = "Test User";
-		person.password = PasswordHash.createHash("secret");
-		person.birthday = "2000-01-01";
-		DBObject personObject = new BasicDBObject(ModelConversion.modelToMap(person));
-		users.insert(personObject);
+		User user = new User();
+		user.email = "test1@example.com";
+		user.name = "Test User";
+		user.password = PasswordHash.createHash("secret");
+		DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
+		users.insert(userObject);
 		assertEquals(1, users.count());
-		User foundUser = User.find((ObjectId) personObject.get("_id"));
+		User foundUser = User.find((ObjectId) userObject.get("_id"));
 		assertEquals("Test User", foundUser.name);
 	}
 
 	@Test
 	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
-		Person person = new Person();
-		person.email = "test1@example.com";
-		person.name = "Test User";
-		person.password = PasswordHash.createHash("secret");
-		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
+		User user = new User();
+		user.email = "test1@example.com";
+		user.name = "Test User";
+		user.password = PasswordHash.createHash("secret");
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
 		assertEquals(1, users.count());
 		boolean exceptionCaught = false;
 		try {
@@ -80,10 +80,10 @@ public class UserTest {
 
 	@Test
 	public void add() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException {
-		DBCollection users = TestConnection.getCollection("users");
+			InvalidKeySpecException, InstantiationException, ElasticSearchException, IOException {
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
-		LoadData.loadMinimalSetup();
+		LoadData.createDefaultVisualization();
 		assertEquals(1, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
@@ -97,8 +97,8 @@ public class UserTest {
 
 	@Test
 	public void addSameEmail() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException {
-		DBCollection users = TestConnection.getCollection("users");
+			InvalidKeySpecException, InstantiationException, ElasticSearchException, IOException {
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
 		CreateDBObjects.insertUsers(1);
 		assertEquals(1, users.count());
@@ -113,7 +113,7 @@ public class UserTest {
 	@Test
 	public void remove() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
 		assertEquals(1, users.count());
@@ -124,7 +124,7 @@ public class UserTest {
 	@Test
 	public void removeNotExisting() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
 		assertFalse("new@example.com".equals(userIds[0]));
@@ -132,9 +132,34 @@ public class UserTest {
 		assertEquals("No user with this id exists.", User.remove(new ObjectId()));
 		assertEquals(1, users.count());
 	}
-	
+
 	@Test
 	public void makeRecordsVisible() {
+		// TODO
+	}
+
+	@Test
+	public void getVisibleRecords() {
+		// TODO
+	}
+
+	@Test
+	public void addVisualization() {
+		// TODO
+	}
+
+	@Test
+	public void removeVisualization() {
+		// TODO
+	}
+
+	@Test
+	public void hasVisualization() {
+		// TODO
+	}
+
+	@Test
+	public void findVisualizations() {
 		// TODO
 	}
 

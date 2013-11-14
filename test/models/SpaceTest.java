@@ -9,6 +9,7 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -16,13 +17,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
+import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.Connection;
 import utils.CreateDBObjects;
 import utils.ModelConversion;
-import utils.TestConnection;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -34,18 +36,18 @@ public class SpaceTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
-		TestConnection.dropDatabase();
+		Connection.connectToTest();
+		Connection.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -61,7 +63,7 @@ public class SpaceTest {
 
 	@Test
 	public void ownerFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -76,8 +78,8 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void addSpace() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+	public void addSpace() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException, IOException {
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -91,8 +93,9 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void addSpaceWithExistingName() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+	public void addSpaceWithExistingName() throws IllegalArgumentException, IllegalAccessException,
+			ElasticSearchException, IOException {
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -111,8 +114,9 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void renameSuccess() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+	public void renameSuccess() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
+			IOException {
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -129,8 +133,9 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void renameWrongId() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+	public void renameWrongId() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
+			IOException {
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -146,8 +151,9 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void renameExistingName() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+	public void renameExistingName() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
+			IOException {
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -165,7 +171,7 @@ public class SpaceTest {
 
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -182,7 +188,7 @@ public class SpaceTest {
 
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -202,7 +208,7 @@ public class SpaceTest {
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -224,7 +230,7 @@ public class SpaceTest {
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -246,7 +252,7 @@ public class SpaceTest {
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -270,7 +276,7 @@ public class SpaceTest {
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -293,7 +299,7 @@ public class SpaceTest {
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -316,7 +322,7 @@ public class SpaceTest {
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space";
@@ -339,7 +345,7 @@ public class SpaceTest {
 			InvalidKeySpecException, InstantiationException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space 1";
@@ -371,7 +377,7 @@ public class SpaceTest {
 			InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
 		space.name = "Test space 1";

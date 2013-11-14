@@ -1,11 +1,14 @@
 package search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -14,17 +17,19 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.search.TextSearch;
-import utils.search.TextSearch.SearchResult;
 import utils.TextSearchTestHelper;
+import utils.search.SearchResult;
+import utils.search.TextSearch;
+import utils.search.TextSearch.Type;
 
 public class TextSearchTest {
 
 	@Before
 	public void setUp() throws Exception {
 		TextSearch.connectToTest();
-		TextSearch.clearIndex();
-		TextSearch.createIndex();
+		Thread.sleep(1000);
+		TextSearch.destroy();
+		TextSearch.initialize();
 		TextSearchTestHelper.refreshIndex();
 	}
 
@@ -34,84 +39,113 @@ public class TextSearchTest {
 	}
 
 	@Test
-	public void index() throws ElasticSearchException, IOException {
-		assertEquals(0, TextSearchTestHelper.count());
-		ObjectId recordId = new ObjectId();
-		String data = "Test data";
-		TextSearch.add(recordId, data);
+	public void indexUser() throws ElasticSearchException, IOException {
+		assertEquals(0, TextSearchTestHelper.count(null, "user"));
+		ObjectId userId = addUser();
 		TextSearchTestHelper.refreshIndex();
-		assertEquals(1, TextSearchTestHelper.count());
-		assertEquals(data, TextSearchTestHelper.getData(recordId));
+		assertEquals(1, TextSearchTestHelper.count(null, "user"));
+		assertNotNull(TextSearchTestHelper.getData(null, "user", userId));
+	}
+
+	private ObjectId addUser() throws ElasticSearchException, IOException {
+		ObjectId userId = new ObjectId();
+		String data = "test@example.com Test User";
+		TextSearch.addPublic(Type.USER, userId, data);
+		return userId;
 	}
 
 	@Test
-	public void searchEmptyIndex() {
-		int numVisibleRecords = 10;
-		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>(numVisibleRecords);
-		for (int i = 0; i < numVisibleRecords; i++) {
-			visibleRecordIds.add(new ObjectId());
-		}
-		String search = "test";
-		List<SearchResult> result = TextSearch.search(search, visibleRecordIds);
+	public void indexRecord() throws ElasticSearchException, IOException {
+		ObjectId userId = addUser();
+		assertEquals(0, TextSearchTestHelper.count(userId, "record"));
+		ObjectId recordId = new ObjectId();
+		String data = "Test data";
+		TextSearch.add(userId, "record", recordId, data);
+		TextSearchTestHelper.refreshIndex();
+		assertEquals(1, TextSearchTestHelper.count(userId, "record"));
+		assertEquals(data, TextSearchTestHelper.getData(userId, "record", recordId));
+	}
+
+	@Test
+	public void searchEmptyIndex() throws ElasticSearchException, IOException {
+		ObjectId userId1 = addUser();
+		ObjectId userId2 = addUser();
+		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		visibleRecords.put(userId2, new HashSet<ObjectId>());
+		String query = "data";
+		TextSearchTestHelper.refreshIndex();
+		Map<String, List<SearchResult>> result = TextSearch.search(userId1, visibleRecords, query);
 		assertEquals(0, result.size());
 	}
 
 	@Test
-	public void indexAndSearch() throws ElasticSearchException, IOException {
+	public void indexAndSearchOwnIndex() throws ElasticSearchException, IOException {
+		ObjectId userId = addUser();
 		ObjectId recordId = new ObjectId();
 		String data = "Test data";
-		TextSearch.add(recordId, data);
-		int numVisibleRecords = 10;
-		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>(numVisibleRecords + 1);
-		for (int i = 0; i < numVisibleRecords; i++) {
-			visibleRecordIds.add(new ObjectId());
-		}
-		visibleRecordIds.add(recordId);
+		TextSearch.add(userId, "record", recordId, data);
 		TextSearchTestHelper.refreshIndex();
-		assertEquals(1, TextSearchTestHelper.count());
-		String search = "test";
-		List<SearchResult> result = TextSearch.search(search, visibleRecordIds);
+		assertEquals(1, TextSearchTestHelper.count(userId, "record"));
+		String query = "data";
+		HashMap<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		Map<String, List<SearchResult>> result = TextSearch.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
-		assertEquals(recordId.toString(), result.get(0).id);
-		assertTrue(result.get(0).score > 0);
-		assertEquals(data, result.get(0).data);
+		assertTrue(result.containsKey("record"));
+		assertEquals(1, result.get("record").size());
+		assertEquals(recordId.toString(), result.get("record").get(0).id);
+		assertTrue(result.get("record").get(0).score > 0);
+		assertEquals(data, result.get("record").get(0).data);
+	}
+
+	@Test
+	public void indexAndSearchOtherIndex() throws ElasticSearchException, IOException {
+		ObjectId userId1 = addUser();
+		ObjectId userId2 = addUser();
+		ObjectId recordId = new ObjectId();
+		String data = "Test data";
+		TextSearch.add(userId1, "record", recordId, data);
+		TextSearchTestHelper.refreshIndex();
+		assertEquals(1, TextSearchTestHelper.count(userId1, "record"));
+		String query = "data";
+		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
+		visibleRecordIds.add(recordId);
+		visibleRecords.put(userId1, visibleRecordIds);
+		Map<String, List<SearchResult>> result = TextSearch.search(userId2, visibleRecords, query);
+		assertEquals(1, result.size());
+		assertTrue(result.containsKey("record"));
+		assertEquals(1, result.get("record").size());
+		assertEquals(recordId.toString(), result.get("record").get(0).id);
+		assertTrue(result.get("record").get(0).score > 0);
+		assertEquals(data, result.get("record").get(0).data);
 	}
 
 	@Test
 	public void ranking() throws ElasticSearchException, IOException {
-		int numVisibleRecords = 10;
-		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>(numVisibleRecords + 1);
-		for (int i = 0; i < numVisibleRecords; i++) {
-			visibleRecordIds.add(new ObjectId());
-		}
-
-		ObjectId firstId = new ObjectId();
-		String firstData = "Test data";
-		TextSearch.add(firstId, firstData);
-		visibleRecordIds.add(firstId);
-
-		ObjectId secondId = new ObjectId();
-		String secondData = "Test data 2";
-		TextSearch.add(secondId, secondData);
-		visibleRecordIds.add(secondId);
-
-		ObjectId thirdId = new ObjectId();
-		String thirdData = "Unrelated";
-		TextSearch.add(thirdId, thirdData);
-		visibleRecordIds.add(thirdId);
-
+		ObjectId userId = addUser();
+		ObjectId recordId1 = new ObjectId();
+		String data1 = "Test data 1";
+		TextSearch.add(userId, "record", recordId1, data1);
+		ObjectId recordId2 = new ObjectId();
+		String data2 = "Test data 2";
+		TextSearch.add(userId, "record", recordId2, data2);
+		ObjectId recordId3 = new ObjectId();
+		String data3 = "Unrelated";
+		TextSearch.add(userId, "record", recordId3, data3);
 		TextSearchTestHelper.refreshIndex();
-		assertEquals(3, TextSearchTestHelper.count());
-
-		String search = "data 2";
-		List<SearchResult> result = TextSearch.search(search, visibleRecordIds);
-		assertEquals(2, result.size());
-		SearchResult firstResult = result.get(0);
-		SearchResult secondResult = result.get(1);
+		assertEquals(3, TextSearchTestHelper.count(userId, "record"));
+		String query = "data 2";
+		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		Map<String, List<SearchResult>> result = TextSearch.search(userId, visibleRecords, query);
+		assertEquals(1, result.size());
+		assertTrue(result.containsKey("record"));
+		assertEquals(2, result.get("record").size());
+		SearchResult firstResult = result.get("record").get(0);
+		SearchResult secondResult = result.get("record").get(1);
 		assertTrue(firstResult.score >= secondResult.score);
-		assertEquals(secondId, firstResult.id);
-		assertEquals(secondData, firstResult.data);
-		assertEquals(firstId, secondResult.id);
+		assertEquals(recordId2, firstResult.id);
+		assertEquals(data2, firstResult.data);
+		assertEquals(recordId1, secondResult.id);
 	}
 
 }

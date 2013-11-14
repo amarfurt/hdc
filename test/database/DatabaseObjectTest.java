@@ -7,7 +7,6 @@ import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 import models.Circle;
 import models.Message;
-import models.Person;
 import models.User;
 
 import org.bson.types.ObjectId;
@@ -15,9 +14,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.Connection;
 import utils.DateTimeUtils;
 import utils.ModelConversion;
-import utils.TestConnection;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -29,18 +28,18 @@ public class DatabaseObjectTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
-		TestConnection.dropDatabase();
+		Connection.connectToTest();
+		Connection.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void createAndSaveObject() {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
 		users.insert(new BasicDBObject("name", "Test User"));
 		assertEquals(1, users.count());
@@ -51,7 +50,7 @@ public class DatabaseObjectTest {
 
 	@Test
 	public void createAndSaveUser() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
@@ -65,42 +64,24 @@ public class DatabaseObjectTest {
 	}
 
 	@Test
-	public void createAndSavePerson() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = TestConnection.getCollection("users");
+	public void createAndRetrieveUser() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+		DBCollection users = Connection.getCollection("users");
 		assertEquals(0, users.count());
-		Person person = new Person();
-		person.email = "test1@example.com";
-		person.name = "Test User";
-		person.password = "secret";
-		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
+		User user = new User();
+		user.email = "test1@example.com";
+		user.name = "Test User";
+		user.password = "secret";
+		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
-		assertTrue(foundObject.containsField("name"));
-		assertEquals("Test User", foundObject.get("name"));
-	}
-
-	@Test
-	public void createAndRetrievePerson() throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		DBCollection users = TestConnection.getCollection("users");
-		assertEquals(0, users.count());
-		Person person = new Person();
-		person.email = "test1@example.com";
-		person.name = "Test User";
-		person.password = "secret";
-		person.birthday = "2000-01-01";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(person)));
-		assertEquals(1, users.count());
-		DBObject foundObject = users.findOne();
-		Person retrievedPerson = ModelConversion.mapToModel(Person.class, foundObject.toMap());
-		assertEquals("Test User", retrievedPerson.name);
+		User retrievedUser = ModelConversion.mapToModel(User.class, foundObject.toMap());
+		assertEquals("Test User", retrievedUser.name);
 	}
 
 	@Test
 	public void createAndRetrieveMessage() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBCollection messages = TestConnection.getCollection("messages");
+		DBCollection messages = Connection.getCollection("messages");
 		assertEquals(0, messages.count());
 		Message message = new Message();
 		message.sender = new ObjectId();
@@ -118,7 +99,7 @@ public class DatabaseObjectTest {
 	@Test
 	public void createAndRetrieveCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Family";

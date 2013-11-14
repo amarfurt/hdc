@@ -21,13 +21,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import utils.Connection;
 import utils.CreateDBObjects;
 import utils.DateTimeUtils;
 import utils.ListOperations;
 import utils.ModelConversion;
-import utils.TestConnection;
 import utils.TextSearchTestHelper;
 import utils.search.TextSearch;
+import utils.search.TextSearch.Type;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -39,18 +40,18 @@ public class RecordTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
-		TestConnection.dropDatabase();
+		Connection.connectToTest();
+		Connection.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void creatorSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -66,7 +67,7 @@ public class RecordTest {
 
 	@Test
 	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -82,7 +83,7 @@ public class RecordTest {
 
 	@Test
 	public void creatorOrOwnerFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -99,13 +100,7 @@ public class RecordTest {
 	@Test
 	public void addRecord() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		// set up text search
-		TextSearch.connectToTest();
-		TextSearch.clearIndex();
-		TextSearch.createIndex();
-		TextSearchTestHelper.refreshIndex();
-
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		ObjectId creator = new ObjectId();
 		ObjectId owner = new ObjectId();
 		assertEquals(0, records.count());
@@ -124,7 +119,7 @@ public class RecordTest {
 
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		ObjectId creator = new ObjectId();
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -142,7 +137,7 @@ public class RecordTest {
 
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -159,7 +154,7 @@ public class RecordTest {
 	@Test
 	public void findOwned() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
@@ -182,11 +177,11 @@ public class RecordTest {
 	@Test
 	public void findNotInSpace() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection spaces = TestConnection.getCollection("spaces");
+		DBCollection spaces = Connection.getCollection("spaces");
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
@@ -207,12 +202,12 @@ public class RecordTest {
 	@Test
 	public void findVisible() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
 		circle.owner = userIds[0];
@@ -234,12 +229,12 @@ public class RecordTest {
 	@Test
 	public void findVisibleInOwnCircle() throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
-		DBCollection records = TestConnection.getCollection("records");
+		DBCollection records = Connection.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
 		circle.owner = userIds[0];

@@ -22,18 +22,18 @@ public class OrderOperationsTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
-		TestConnection.dropDatabase();
+		Connection.connectToTest();
+		Connection.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void maxOfUser() {
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		Map<String, Object> values = new HashMap<String, Object>();
 		ObjectId user1 = new ObjectId();
 		ObjectId user2 = new ObjectId();
@@ -59,7 +59,7 @@ public class OrderOperationsTest {
 
 	@Test
 	public void maxNoEntriesForUser() {
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		Map<String, Object> values = new HashMap<String, Object>();
 		ObjectId user1 = new ObjectId();
 		ObjectId user2 = new ObjectId();
@@ -76,7 +76,7 @@ public class OrderOperationsTest {
 	@Test
 	public void incrementGreaterThan() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.increment("order", userIds[0], 4, 0));
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(6, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -88,7 +88,7 @@ public class OrderOperationsTest {
 	@Test
 	public void incrementBetween() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.increment("order", userIds[0], 3, 4));
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -100,7 +100,7 @@ public class OrderOperationsTest {
 	@Test
 	public void incrementFromGreaterTo() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.increment("order", userIds[0], 4, 1));
 		assertEquals(2, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -112,7 +112,7 @@ public class OrderOperationsTest {
 	@Test
 	public void decrementGreaterThan() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.decrement("order", userIds[0], 0, 5));
 		assertEquals(0, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -124,7 +124,7 @@ public class OrderOperationsTest {
 	@Test
 	public void decrementBetween() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.decrement("order", userIds[0], 2, 5));
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -136,7 +136,7 @@ public class OrderOperationsTest {
 	@Test
 	public void decrementFromGreaterTo() {
 		ObjectId[] userIds = insertTestValues();
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		assertNull(OrderOperations.decrement("order", userIds[0], 5, 3));
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
@@ -146,7 +146,7 @@ public class OrderOperationsTest {
 	}
 
 	private ObjectId[] insertTestValues() {
-		DBCollection collection = TestConnection.getCollection("order");
+		DBCollection collection = Connection.getCollection("order");
 		Map<String, Object> values = new HashMap<String, Object>();
 		ObjectId[] userIds = new ObjectId[] { new ObjectId(), new ObjectId(), new ObjectId() };
 		values.put("_id", 1);

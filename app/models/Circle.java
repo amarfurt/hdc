@@ -193,21 +193,20 @@ public class Circle extends Model implements Comparable<Circle> {
 			return "No circle with this id exists.";
 		}
 		ObjectId ownerId = (ObjectId) foundCircle.get("owner");
-		if (!circleWithSameNameExists(newName, ownerId)) {
-			DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-
-			// update search index
-			TextSearch.delete(ownerId, "circle", circleId);
-			TextSearch.add(ownerId, "circle", circleId, newName);
-			return null;
-		} else {
+		if (circleWithSameNameExists(newName, ownerId)) {
 			return "A circle with this name already exists.";
 		}
+		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
+		WriteResult result = Connection.getCollection(collection).update(query, update);
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// update search index
+		TextSearch.delete(ownerId, "circle", circleId);
+		TextSearch.add(ownerId, "circle", circleId, newName);
+		return null;
 	}
 
 	/**
@@ -220,7 +219,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		if (circle == null) {
 			return "No circle with this id exists.";
 		}
-		ObjectId owner = (ObjectId) circle.get("owner");
+		ObjectId ownerId = (ObjectId) circle.get("owner");
 		int order = (Integer) circle.get("order");
 
 		// remove circle
@@ -231,7 +230,14 @@ public class Circle extends Model implements Comparable<Circle> {
 		}
 
 		// decrement all order fields greater than the removed circle
-		return OrderOperations.decrement(collection, owner, order, 0);
+		errorMessage = OrderOperations.decrement(collection, ownerId, order, 0);
+		if (errorMessage != null) {
+			return errorMessage;
+		}
+
+		// remove from search index
+		TextSearch.delete(ownerId, "circle", circleId);
+		return null;
 	}
 
 	/**

@@ -19,9 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import play.mvc.Result;
+import utils.Connection;
 import utils.LoadData;
 import utils.ModelConversion;
-import utils.TestConnection;
 
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBList;
@@ -34,13 +34,13 @@ public class CirclesTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
+		Connection.connectToTest();
 		LoadData.load();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
@@ -51,8 +51,7 @@ public class CirclesTest {
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test circle")));
 		assertEquals(303, status(result));
-		DBObject foundCircle = TestConnection.getCollection("circles")
-				.findOne(new BasicDBObject("name", "Test circle"));
+		DBObject foundCircle = Connection.getCollection("circles").findOne(new BasicDBObject("name", "Test circle"));
 		Circle circle = ModelConversion.mapToModel(Circle.class, foundCircle.toMap());
 		assertNotNull(circle);
 		assertEquals("Test circle", circle.name);
@@ -62,7 +61,7 @@ public class CirclesTest {
 
 	@Test
 	public void renameCircleSuccess() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed circle"));
 		DBObject circle = circles.findOne(query);
 		ObjectId circleId = (ObjectId) circle.get("_id");
@@ -77,7 +76,7 @@ public class CirclesTest {
 
 	@Test
 	public void renameCircleForbidden() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		DBObject query = new BasicDBObject();
 		query.put("owner", new BasicDBObject("$ne", "test2@example.com"));
 		query.put("name", new BasicDBObject("$ne", "Test circle 2"));
@@ -97,7 +96,7 @@ public class CirclesTest {
 
 	@Test
 	public void deleteCircleSuccess() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		DBObject circle = circles.findOne();
 		ObjectId id = (ObjectId) circle.get("_id");
 		ObjectId userId = (ObjectId) circle.get("owner");
@@ -110,7 +109,7 @@ public class CirclesTest {
 
 	@Test
 	public void deleteCircleForbidden() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
 		query.put("owner", new BasicDBObject("$ne", userId));
@@ -126,7 +125,7 @@ public class CirclesTest {
 	// forbidden requests are blocked by this controller, no longer testing this
 	@Test
 	public void addUserSuccess() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		ObjectId userId = User.getId("test3@example.com");
 		DBObject query = new BasicDBObject();
 		query.put("members", new BasicDBObject("$nin", new ObjectId[] { userId }));
@@ -146,7 +145,7 @@ public class CirclesTest {
 
 	@Test
 	public void addUserInvalidUser() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		DBObject circle = circles.findOne();
 		ObjectId id = (ObjectId) circle.get("_id");
 		ObjectId userId = (ObjectId) circle.get("owner");
@@ -168,7 +167,7 @@ public class CirclesTest {
 
 	@Test
 	public void removeMemberSuccess() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
 		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
@@ -186,7 +185,7 @@ public class CirclesTest {
 
 	@Test
 	public void removeMemberNotInCircle() {
-		DBCollection circles = TestConnection.getCollection("circles");
+		DBCollection circles = Connection.getCollection("circles");
 		ObjectId userId = User.getId("test3@example.com");
 		DBObject query = new BasicDBObject();
 		query.put("members", new BasicDBObject("$nin", new ObjectId[] { userId }));

@@ -8,8 +8,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import models.Installed;
-
 import org.bson.types.ObjectId;
 
 import play.libs.Json;
@@ -28,7 +26,7 @@ public class LoadData {
 	 */
 	public static void load() {
 		try {
-			TestConnection.dropDatabase();
+			Connection.destroy();
 
 			// read JSON file
 			StringBuilder sb = new StringBuilder();
@@ -44,7 +42,7 @@ public class LoadData {
 			Iterator<Entry<String, JsonNode>> collections = node.fields();
 			while (collections.hasNext()) {
 				Entry<String, JsonNode> curColl = collections.next();
-				DBCollection collection = TestConnection.getCollection(curColl.getKey());
+				DBCollection collection = Connection.getCollection(curColl.getKey());
 				for (JsonNode curDoc : curColl.getValue()) {
 					collection.insert((DBObject) JSON.parse(curDoc.toString()));
 				}
@@ -54,13 +52,10 @@ public class LoadData {
 		}
 	}
 
-	public static void loadMinimalSetup() {
+	public static void createDefaultVisualization() {
 		try {
 			ObjectId developerId = CreateDBObjects.createDeveloperAccount();
 			CreateDBObjects.createDefaultVisualization(developerId);
-			
-			// optional: create installed entry for developer account
-			Installed.addUser(developerId);
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (InvalidKeySpecException e) {

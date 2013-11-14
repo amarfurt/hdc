@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import play.mvc.Result;
 import utils.LoadData;
-import utils.TestConnection;
+import utils.Connection;
 
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBObject;
@@ -31,19 +31,19 @@ public class RegistrationTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		TestConnection.connectToTest();
+		Connection.connectToTest();
 		LoadData.load();
 	}
 
 	@After
 	public void tearDown() {
-		TestConnection.close();
+		Connection.close();
 	}
 
 	@Test
 	public void register() {
 		String newEmail = "new@example.com";
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		DBObject query = new BasicDBObject("email", newEmail);
 		assertNull(users.findOne(query));
 		long oldSize = users.count();
@@ -59,7 +59,7 @@ public class RegistrationTest {
 
 	@Test
 	public void registerSameEmail() {
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		long oldSize = users.count();
 		assertTrue(oldSize > 0);
 		String existingEmail = (String) users.findOne().get("email");
@@ -75,7 +75,7 @@ public class RegistrationTest {
 	@Test
 	public void registerIncompleteForm() {
 		String newEmail = "new@example.com";
-		DBCollection users = TestConnection.getCollection("users");
+		DBCollection users = Connection.getCollection("users");
 		DBObject query = new BasicDBObject("email", newEmail);
 		assertNull(users.findOne(query));
 		long oldSize = users.count();

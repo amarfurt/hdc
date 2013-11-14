@@ -107,11 +107,17 @@ public class Spaces extends Controller {
 		ObjectId id = new ObjectId(spaceId);
 		if (Secured.isOwnerOfSpace(id)) {
 			String newName = Form.form().bindFromRequest().get("name");
-			String errorMessage = Space.rename(id, newName);
-			if (errorMessage == null) {
-				return ok(newName);
-			} else {
-				return badRequest(errorMessage);
+			try {
+				String errorMessage = Space.rename(id, newName);
+				if (errorMessage == null) {
+					return ok(newName);
+				} else {
+					return badRequest(errorMessage);
+				}
+			} catch (ElasticSearchException e) {
+				return internalServerError(e.getMessage());
+			} catch (IOException e) {
+				return internalServerError(e.getMessage());
 			}
 		} else {
 			return forbidden();

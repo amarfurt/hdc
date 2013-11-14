@@ -18,36 +18,40 @@ public class TextSearchTestHelper extends TextSearch {
 	 */
 	public static void refreshIndex() {
 		Client client = (Client) makeAccessible("client");
-		String INDEX = (String) makeAccessible("INDEX");
 
 		// costly operation: only used in tests
-		client.admin().indices().refresh(new RefreshRequest(INDEX)).actionGet();
+		client.admin().indices().refresh(new RefreshRequest()).actionGet();
 	}
 
-	public static String getData(ObjectId recordId) {
+	public static String getData(ObjectId userId, String type, ObjectId documentId) {
+		// decide which index to use
+		String index = "public";
+		if (userId != null) {
+			index = userId.toString();
+		}
+
 		// get values of TextSearch class
 		Client client = (Client) makeAccessible("client");
-		String INDEX = (String) makeAccessible("INDEX");
-		String TYPE = (String) makeAccessible("TYPE");
 		String FIELD = (String) makeAccessible("FIELD");
-
-		// get the data field
-		GetResponse actionGet = client.prepareGet(INDEX, TYPE, recordId.toString()).execute().actionGet();
-		if (actionGet.isExists()) {
-			return (String) actionGet.getSource().get(FIELD);
-		} else {
+		GetResponse response = client.prepareGet(index, type, documentId.toString()).execute().actionGet();
+		if (!response.isExists()) {
 			return null;
 		}
+		return (String) response.getSource().get(FIELD);
 	}
 
-	public static long count() {
+	public static long count(ObjectId userId, String type) {
+		// decide which index to use
+		String index = "public";
+		if (userId != null) {
+			index = userId.toString();
+		}
+
 		// get values of TextSearch class
 		Client client = (Client) makeAccessible("client");
-		String INDEX = (String) makeAccessible("INDEX");
-		String TYPE = (String) makeAccessible("TYPE");
 
 		// get the count of indexed items
-		CountResponse countResponse = client.prepareCount(INDEX).setTypes(TYPE).setQuery(QueryBuilders.matchAllQuery())
+		CountResponse countResponse = client.prepareCount(index).setTypes(type).setQuery(QueryBuilders.matchAllQuery())
 				.execute().actionGet();
 		return countResponse.getCount();
 	}
