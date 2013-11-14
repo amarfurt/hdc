@@ -13,12 +13,12 @@ import utils.Connection;
 import utils.search.TextSearch;
 
 /**
- * Minimal setup that is necessary to start a fresh Healthbank platform.
+ * Minimal setup that is necessary to start a fresh Health Data Cooperative platform.
  */
 public class MinimalSetup {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println("Starting to create minimal setup for Healthbank platform.");
+		System.out.println("Starting to create minimal setup for Health Data Cooperative platform.");
 
 		// connecting
 		System.out.print("Connecting to MongoDB...");
@@ -60,11 +60,11 @@ public class MinimalSetup {
 		// create developer account
 		// developer account currently has record list visualization installed
 		// TODO developer account is different from user account (cannot have spaces, records and circles)
-		System.out.print("Creating Healthbank developer account...");
+		System.out.print("Creating Health Data Cooperative developer account...");
 		User developer = new User();
 		developer._id = developerId;
-		developer.email = "developers@healthbank.ch";
-		developer.name = "Healthbank Developers";
+		developer.email = "developers@hdc.ch";
+		developer.name = "Health Data Cooperative Developers";
 		developer.password = RandomStringUtils.randomAlphanumeric(20);
 		errorMessage = User.add(developer);
 		if (errorMessage != null) {

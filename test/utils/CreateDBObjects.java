@@ -67,8 +67,8 @@ public class CreateDBObjects {
 			IllegalArgumentException, IllegalAccessException {
 		DBCollection users = Connection.getCollection("users");
 		User user = new User();
-		user.email = "developers@healthbank.ch";
-		user.name = "Healthbank Developers";
+		user.email = "developers@hdc.ch";
+		user.name = "Health Data Cooperative Developers";
 		user.password = PasswordHash.createHash("secret");
 		DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
 		users.insert(userObject);

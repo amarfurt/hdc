@@ -34,7 +34,7 @@ public class TextSearch {
 		USER, APP, VISUALIZATION
 	}
 
-	private static final String CLUSTER_NAME = "healthbank";
+	private static final String CLUSTER_NAME = "healthdata";
 	private static final String PUBLIC = "public"; // public index visible to all users
 	private static final String FIELD = "data";
 

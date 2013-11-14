@@ -28,7 +28,7 @@ public class Connection {
 	}
 
 	/**
-	 * Connects to the production database 'healthbank'.
+	 * Connects to the production database 'healthdata'.
 	 */
 	public static void connect() {
 		openConnection();
