@@ -9,14 +9,10 @@ import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.fakeRequest;
 import static play.test.Helpers.start;
 import static play.test.Helpers.status;
-
-import java.io.IOException;
-
 import models.Space;
 import models.User;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -196,20 +192,6 @@ public class SpacesTest {
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
 		assertEquals(order, foundSpace.get("order"));
 		assertEquals(oldSize, ((BasicDBList) foundSpace.get("records")).size());
-	}
-
-	@Test
-	public void manuallyCreateRecord() throws ElasticSearchException, IOException {
-		DBCollection records = Connection.getCollection("records");
-		long oldSize = records.count();
-		DBCollection users = Connection.getCollection("users");
-		ObjectId userId = (ObjectId) users.findOne().get("_id");
-		Result result = callAction(
-				controllers.routes.ref.Spaces.manuallyCreateRecord(),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("data", "Test data", "keywords", "test")));
-		assertEquals(303, status(result));
-		assertEquals(oldSize + 1, records.count());
 	}
 
 }

@@ -21,7 +21,6 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.DateTimeUtils;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
 import views.html.spaces;
@@ -176,34 +175,6 @@ public class Spaces extends Controller {
 		}
 	}
 
-	public static Result manuallyCreateRecord() {
-		Record newRecord = new Record();
-		newRecord.creator = new ObjectId(request().username());
-		newRecord.owner = newRecord.creator;
-		newRecord.created = DateTimeUtils.getNow();
-		newRecord.data = Form.form().bindFromRequest().get("data");
-		newRecord.keywords = new BasicDBList();
-		for (String keyword : Form.form().bindFromRequest().get("keywords").toLowerCase().split("[ ,\\+]+")) {
-			newRecord.keywords.add(keyword);
-		}
-		try {
-			String errorMessage = Record.add(newRecord);
-			if (errorMessage == null) {
-				return redirect(routes.Application.spaces());
-			} else {
-				return badRequest(errorMessage);
-			}
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (ElasticSearchException e) {
-			return internalServerError(e.getMessage());
-		} catch (IOException e) {
-			return internalServerError(e.getMessage());
-		}
-	}
-
 	/**
 	 * Return a list of records whose data contains the current search term and is not in the space already.
 	 */
@@ -252,7 +223,8 @@ public class Spaces extends Controller {
 				jsonRecord.put("creator", record.creator.toString());
 				jsonRecord.put("owner", record.owner.toString());
 				jsonRecord.put("created", record.created);
-				jsonRecord.put("data", record.toString());
+				jsonRecord.put("data", record.data);
+				jsonRecord.put("description", record.description);
 				jsonRecords.add(jsonRecord);
 			}
 			return ok(Json.toJson(jsonRecords));

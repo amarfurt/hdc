@@ -93,7 +93,7 @@ public class ImportData {
 			List<Record> records = Record.findOwnedBy(userId);
 			data.clear();
 			for (Record record : records) {
-				data.put(record._id, record.data);
+				data.put(record._id, record.description);
 			}
 			TextSearch.addMultiple(userId, "record", data);
 			System.out.println("done.");

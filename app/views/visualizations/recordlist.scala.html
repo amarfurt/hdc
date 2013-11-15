@@ -8,7 +8,7 @@
 			@records.map { record =>
 				<a href="javascript:;" record-id="@record._id" class="list-group-item record">
 					<span class="label label-info">@User.getName(record.creator)</span>
-					@record.toString()
+					@record.description
 					<div class="pull-right">
 						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">
 							<span class="glyphicon glyphicon-picture"></span> Show

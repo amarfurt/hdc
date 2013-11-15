@@ -12,31 +12,6 @@
 		</div>
 	}
 	
-	<!-- Manually add a new record here -->
-	<button type="button" data-toggle="modal" data-target="#newRecordForm" class="btn btn-primary pull-right">
-		<span class="glyphicon glyphicon-plus"></span> Manually add a new record
-	</button>
-	@helper.form(routes.Spaces.manuallyCreateRecord) {
-		<div class="modal fade" id="newRecordForm" role="dialog" aria-labelledby="newRecordFormLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title" id="newRecordFormLabel">Create a new space</h4>
-					</div>
-					<div class="modal-body">
-						<textarea class="form-control" rows="3" placeholder="Record data" name="data" autofocus></textarea>
-						<input type="text" class="form-control" placeholder="Keywords (by which you can find this record when searching)" name="keywords">
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-						<button type="submit" class="btn btn-primary">Create</button>
-					</div>
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
-	}
-	
 	<!-- Space tabs -->
 	<ul id="spaceTabs" class="nav nav-tabs">
 		<li class="@if(activeSpace == null){active}">

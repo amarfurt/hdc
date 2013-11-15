@@ -26,9 +26,6 @@ import utils.CreateDBObjects;
 import utils.DateTimeUtils;
 import utils.ListOperations;
 import utils.ModelConversion;
-import utils.TextSearchTestHelper;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -57,7 +54,7 @@ public class RecordTest {
 		record.creator = new ObjectId();
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
@@ -73,7 +70,7 @@ public class RecordTest {
 		record.creator = new ObjectId();
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
@@ -89,7 +86,7 @@ public class RecordTest {
 		record.creator = new ObjectId();
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
@@ -108,12 +105,12 @@ public class RecordTest {
 		record.creator = creator;
 		record.owner = owner;
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		assertNull(Record.add(record));
 		assertEquals(1, records.count());
 		assertEquals(creator, records.findOne().get("creator"));
 		assertEquals(owner, records.findOne().get("owner"));
-		assertEquals("Test data.", records.findOne().get("data"));
+		assertEquals(record.data, records.findOne().get("data"));
 		assertNotNull(record._id);
 	}
 
@@ -126,7 +123,7 @@ public class RecordTest {
 		record.creator = creator;
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
@@ -143,7 +140,7 @@ public class RecordTest {
 		record.creator = new ObjectId();
 		record.owner = new ObjectId();
 		record.created = DateTimeUtils.getNow();
-		record.data = "Test data.";
+		record.data = "{\"data\": \"Test data.\"}";
 		DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 		records.insert(recordObject);
 		assertEquals(1, records.count());
@@ -257,29 +254,6 @@ public class RecordTest {
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));
-	}
-
-	@Test
-	public void recordToString() {
-		String shortString = "Some medical data.";
-		String longString = "Doctor Frankenstein detected a fracture of the bone in the patient's lower left leg.";
-		String noSpacesString = "DoctorFrankensteindetectedafractureoftheboneinthepatient'slowerleftleg.";
-		String splitAt39 = "10letters 10letters 10letters 10letters no longer shown";
-		String splitAt40 = "10letters 10letters 10letters 10letters1 no longer shown";
-		String splitAt41 = "10letters 10letters 10letters 10letters11 no longer shown";
-		Record record = new Record();
-		record.data = shortString;
-		assertEquals(shortString, record.toString());
-		record.data = longString;
-		assertEquals("Doctor Frankenstein detected a fracture ...", record.toString());
-		record.data = noSpacesString;
-		assertEquals("...", record.toString());
-		record.data = splitAt39;
-		assertEquals("10letters 10letters 10letters 10letters ...", record.toString());
-		record.data = splitAt40;
-		assertEquals("10letters 10letters 10letters 10letters1 ...", record.toString());
-		record.data = splitAt41;
-		assertEquals("10letters 10letters 10letters ...", record.toString());
 	}
 
 }

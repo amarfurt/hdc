@@ -53,8 +53,8 @@ public class CreateDBObjects {
 			record.creator = creator;
 			record.owner = owner;
 			record.created = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
-			record.data = "Random data.";
-			record.keywords = new BasicDBList();
+			record.data = "{\"data\": \"Test data.\"}";
+			record.description = "Test data.";
 			DBObject recordObject = new BasicDBObject(ModelConversion.modelToMap(record));
 			records.insert(recordObject);
 			recordIds[i] = (ObjectId) recordObject.get("_id");

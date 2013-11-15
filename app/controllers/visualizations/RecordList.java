@@ -21,7 +21,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.visualizations.list;
+import views.html.visualizations.recordlist;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -69,7 +69,7 @@ public class RecordList extends Controller {
 
 		// sort the records and create the response
 		Collections.sort(records);
-		Result response = ok(list.render(spaceId, records, new ObjectId(request().username())));
+		Result response = ok(recordlist.render(spaceId, records, new ObjectId(request().username())));
 
 		// cache the response and return the url to retrieve it (will be loaded in iframe)
 		ObjectId requestId = new ObjectId();
@@ -165,7 +165,8 @@ public class RecordList extends Controller {
 		if (errorMessage != null) {
 			return badRequest(errorMessage);
 		}
-		// TODO don't remove from users that are part of another circle of the owner that this record is also shared with
+		// TODO don't remove from users that are part of another circle of the owner that this record is also shared
+		// with
 		// TODO solve with pushing records so that there are duplicates in visible field? retrieve and add to set to
 		// avoid duplicates in the application
 		HashSet<ObjectId> userIdsStopped = new HashSet<ObjectId>();

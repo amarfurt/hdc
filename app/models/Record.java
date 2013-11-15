@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.bson.BSONObject;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
@@ -28,7 +27,7 @@ public class Record extends Model implements Comparable<Record> {
 	public ObjectId creator; // any user
 	public ObjectId owner; // any user of type person
 	public String created; // date + time created
-	public BSONObject data; // arbitrary data
+	public String data; // arbitrary data (base64 encoded json string)
 	public String description; // this will be indexed in the search cluster
 
 	@Override

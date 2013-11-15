@@ -54,7 +54,7 @@ public class Search extends Controller {
 	 * Suggests completions for the given query. Used by the auto-completion feature.
 	 */
 	public static Result complete(String query) {
-		// TODO for now, simply complete with record titles to test the UI feature
+		// TODO for now, simply complete with record descriptions to test the UI feature
 		List<Record> records;
 		try {
 			records = Record.findVisible(new ObjectId(request().username()));
@@ -67,12 +67,11 @@ public class Search extends Controller {
 		}
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
 		for (Record record : records) {
-			// add the record to the result if the title contains the query
-			String title = (String) record.data.get("title");
-			if (title.contains(query)) {
+			// add the record to the result if the description contains the query
+			if (record.description.contains(query)) {
 				ObjectNode datum = Json.newObject();
-				datum.put("value", title);
-				datum.put("tokens", Json.toJson(title.split("[ ,]+")));
+				datum.put("value", record.description.substring(0, Math.min(record.description.length(), 40)));
+				datum.put("tokens", Json.toJson(record.description.split("[ ,]+")));
 				jsonRecords.add(datum);
 			}
 		}
