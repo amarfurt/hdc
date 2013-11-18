@@ -14,9 +14,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.DateTimeUtils;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -28,18 +28,18 @@ public class DatabaseTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
 	public void createAndSaveObject() {
-		DBCollection users = Connection.getCollection("users");
+		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		users.insert(new BasicDBObject("name", "Test User"));
 		assertEquals(1, users.count());
@@ -50,7 +50,7 @@ public class DatabaseTest {
 
 	@Test
 	public void createAndSaveUser() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection users = Connection.getCollection("users");
+		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
@@ -65,7 +65,7 @@ public class DatabaseTest {
 
 	@Test
 	public void createAndRetrieveUser() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection users = Connection.getCollection("users");
+		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
@@ -81,7 +81,7 @@ public class DatabaseTest {
 	@Test
 	public void createAndRetrieveMessage() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBCollection messages = Connection.getCollection("messages");
+		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		Message message = new Message();
 		message.sender = new ObjectId();
@@ -99,7 +99,7 @@ public class DatabaseTest {
 	@Test
 	public void createAndRetrieveCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Family";

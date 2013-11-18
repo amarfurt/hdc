@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.bson.types.ObjectId;
 
-import utils.Connection;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -36,7 +36,7 @@ public class Message extends Model implements Comparable<Message> {
 	public static Message find(ObjectId messageId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", messageId);
-		DBObject result = Connection.getCollection(collection).findOne(query);
+		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Message.class, result.toMap());
 	}
 
@@ -44,7 +44,7 @@ public class Message extends Model implements Comparable<Message> {
 			InstantiationException {
 		List<Message> messages = new ArrayList<Message>();
 		DBObject query = new BasicDBObject("receiver", userId);
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			messages.add(ModelConversion.mapToModel(Message.class, cur.toMap()));

@@ -12,9 +12,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.DateTimeUtils;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -24,18 +24,18 @@ public class MessageTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
 	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection messages = Connection.getCollection("messages");
+		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		User user = new User();
 		user._id = new ObjectId();
@@ -54,7 +54,7 @@ public class MessageTest {
 
 	@Test
 	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection messages = Connection.getCollection("messages");
+		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		User user = new User();
 		user._id = new ObjectId();

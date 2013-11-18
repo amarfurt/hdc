@@ -8,7 +8,6 @@ import models.Record;
 import models.Space;
 import models.User;
 import models.Visualization;
-import utils.Connection;
 import utils.ModelConversion;
 
 import com.mongodb.BasicDBObject;
@@ -42,19 +41,19 @@ public abstract class DatabaseObject {
 	public DBCollection getCollection() {
 		switch (type) {
 		case USER:
-			return Connection.getCollection("users");
+			return Database.getCollection("users");
 		case RECORD:
-			return Connection.getCollection("records");
+			return Database.getCollection("records");
 		case MESSAGE:
-			return Connection.getCollection("messages");
+			return Database.getCollection("messages");
 		case SPACE:
-			return Connection.getCollection("spaces");
+			return Database.getCollection("spaces");
 		case CIRCLE:
-			return Connection.getCollection("circles");
+			return Database.getCollection("circles");
 		case APP:
-			return Connection.getCollection("apps");
+			return Database.getCollection("apps");
 		case VISUALIZATION:
-			return Connection.getCollection("visualizations");
+			return Database.getCollection("visualizations");
 		default:
 			return null;
 		}

@@ -11,8 +11,8 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
-import utils.Connection;
 import utils.ModelConversion;
+import utils.db.Database;
 import utils.search.TextSearch;
 
 import com.mongodb.BasicDBObject;
@@ -43,7 +43,7 @@ public class Record extends Model implements Comparable<Record> {
 	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", recordId);
-		DBObject result = Connection.getCollection(collection).findOne(query);
+		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Record.class, result.toMap());
 	}
 
@@ -51,7 +51,7 @@ public class Record extends Model implements Comparable<Record> {
 			InstantiationException {
 		Set<Record> records = new HashSet<Record>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", recordIds));
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
@@ -66,7 +66,7 @@ public class Record extends Model implements Comparable<Record> {
 			InstantiationException {
 		List<Record> records = new ArrayList<Record>();
 		DBObject query = new BasicDBObject("owner", userId);
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
@@ -120,7 +120,7 @@ public class Record extends Model implements Comparable<Record> {
 		Set<ObjectId> ownedRecordIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBObject projection = new BasicDBObject("_id", 1);
-		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			ownedRecordIds.add((ObjectId) result.next().get("_id"));
 		}
@@ -145,7 +145,7 @@ public class Record extends Model implements Comparable<Record> {
 		DBObject creator = new BasicDBObject("creator", userId);
 		DBObject owner = new BasicDBObject("owner", userId);
 		query.put("$or", new DBObject[] { creator, owner });
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
@@ -155,7 +155,7 @@ public class Record extends Model implements Comparable<Record> {
 	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException,
 			ElasticSearchException, IOException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
-		WriteResult result = Connection.getCollection(collection).insert(insert);
+		WriteResult result = Database.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
@@ -173,7 +173,7 @@ public class Record extends Model implements Comparable<Record> {
 	public static String delete(ObjectId recordId) {
 		// TODO remove from spaces and circles
 		DBObject query = new BasicDBObject("_id", recordId);
-		WriteResult result = Connection.getCollection(collection).remove(query);
+		WriteResult result = Database.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
 	}
 

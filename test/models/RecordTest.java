@@ -21,11 +21,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.CreateDBObjects;
 import utils.DateTimeUtils;
 import utils.ListOperations;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -37,18 +37,18 @@ public class RecordTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
 	public void creatorSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -64,7 +64,7 @@ public class RecordTest {
 
 	@Test
 	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -80,7 +80,7 @@ public class RecordTest {
 
 	@Test
 	public void creatorOrOwnerFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -97,7 +97,7 @@ public class RecordTest {
 	@Test
 	public void addRecord() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		ObjectId creator = new ObjectId();
 		ObjectId owner = new ObjectId();
 		assertEquals(0, records.count());
@@ -116,7 +116,7 @@ public class RecordTest {
 
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		ObjectId creator = new ObjectId();
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -134,7 +134,7 @@ public class RecordTest {
 
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
 		record.creator = new ObjectId();
@@ -151,7 +151,7 @@ public class RecordTest {
 	@Test
 	public void findOwned() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
@@ -174,11 +174,11 @@ public class RecordTest {
 	@Test
 	public void findNotInSpace() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		Space space = new Space();
 		space.name = "Test space";
 		space.owner = userIds[0];
@@ -199,12 +199,12 @@ public class RecordTest {
 	@Test
 	public void findVisible() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
 		circle.owner = userIds[0];
@@ -226,12 +226,12 @@ public class RecordTest {
 	@Test
 	public void findVisibleInOwnCircle() throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordId = CreateDBObjects.insertRecords(userIds[1], userIds[1], 1);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 3);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		Circle circle = new Circle();
 		circle.name = "Test circle";
 		circle.owner = userIds[0];

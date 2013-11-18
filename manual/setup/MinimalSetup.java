@@ -9,7 +9,7 @@ import models.Visualization;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.ObjectId;
 
-import utils.Connection;
+import utils.db.Database;
 import utils.search.TextSearch;
 
 /**
@@ -23,7 +23,7 @@ public class MinimalSetup {
 		// connecting
 		System.out.print("Connecting to MongoDB...");
 		start(fakeApplication(fakeGlobal()));
-		Connection.connect();
+		Database.connect();
 		System.out.println("done.");
 		System.out.print("Connecting to ElasticSearch...");
 		TextSearch.connect();
@@ -31,7 +31,7 @@ public class MinimalSetup {
 
 		// initializing
 		System.out.print("Setting up MongoDB...");
-		Connection.initialize();
+		Database.initialize();
 		System.out.println("done.");
 		System.out.print("Setting up ElasticSearch...");
 		TextSearch.initialize();
@@ -74,7 +74,7 @@ public class MinimalSetup {
 		System.out.println("done.");
 
 		System.out.println("Shutting down...");
-		Connection.close();
+		Database.close();
 		TextSearch.close();
 		System.out.println("Minimal setup complete.");
 	}

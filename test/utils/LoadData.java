@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.bson.types.ObjectId;
 
 import play.libs.Json;
+import utils.db.Database;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.DBCollection;
@@ -26,7 +27,7 @@ public class LoadData {
 	 */
 	public static void load() {
 		try {
-			Connection.destroy();
+			Database.destroy();
 
 			// read JSON file
 			StringBuilder sb = new StringBuilder();
@@ -42,7 +43,7 @@ public class LoadData {
 			Iterator<Entry<String, JsonNode>> collections = node.fields();
 			while (collections.hasNext()) {
 				Entry<String, JsonNode> curColl = collections.next();
-				DBCollection collection = Connection.getCollection(curColl.getKey());
+				DBCollection collection = Database.getCollection(curColl.getKey());
 				for (JsonNode curDoc : curColl.getValue()) {
 					collection.insert((DBObject) JSON.parse(curDoc.toString()));
 				}

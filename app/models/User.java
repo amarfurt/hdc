@@ -14,9 +14,9 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
-import utils.Connection;
 import utils.ModelConversion;
 import utils.PasswordHash;
+import utils.db.Database;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
@@ -54,19 +54,19 @@ public class User extends Model implements Comparable<User> {
 	public static ObjectId getId(String email) {
 		DBObject query = new BasicDBObject("email", email);
 		DBObject projection = new BasicDBObject("_id", 1);
-		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("_id");
+		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("_id");
 	}
 
 	public static String getName(ObjectId userId) {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("name", 1);
-		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
+		return (String) Database.getCollection(collection).findOne(query, projection).get("name");
 	}
 
 	public static User find(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", userId);
-		DBObject result = Connection.getCollection(collection).findOne(query);
+		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(User.class, result.toMap());
 	}
 
@@ -74,7 +74,7 @@ public class User extends Model implements Comparable<User> {
 			InstantiationException {
 		List<User> users = new ArrayList<User>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			users.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}
@@ -86,7 +86,7 @@ public class User extends Model implements Comparable<User> {
 			InstantiationException {
 		List<User> userList = new ArrayList<User>();
 		DBObject query = new BasicDBObject();
-		DBCursor result = Connection.getCollection(collection).find(query).limit(limit);
+		DBCursor result = Database.getCollection(collection).find(query).limit(limit);
 		while (result.hasNext()) {
 			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
 		}
@@ -116,7 +116,7 @@ public class User extends Model implements Comparable<User> {
 		ObjectId defaultVisualizationId = Visualization.getId(Visualization.getDefaultVisualization());
 		newUser.visualizations.add(defaultVisualizationId);
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newUser));
-		WriteResult result = Connection.getCollection(collection).insert(insert);
+		WriteResult result = Database.getCollection(collection).insert(insert);
 		newUser._id = (ObjectId) insert.get("_id");
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
@@ -139,24 +139,24 @@ public class User extends Model implements Comparable<User> {
 		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
 		// the marketplace), ...
 		DBObject query = new BasicDBObject("_id", userId);
-		WriteResult result = Connection.getCollection(collection).remove(query);
+		WriteResult result = Database.getCollection(collection).remove(query);
 		return result.getLastError().getErrorMessage();
 	}
 
 	private static boolean userExists(ObjectId userId) {
 		DBObject query = new BasicDBObject("_id", userId);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	public static boolean userExists(String email) {
 		DBObject query = new BasicDBObject("email", email);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	private static String getPassword(String email) {
 		DBObject query = new BasicDBObject("email", email);
 		DBObject projection = new BasicDBObject("password", 1);
-		return (String) Connection.getCollection(collection).findOne(query, projection).get("password");
+		return (String) Database.getCollection(collection).findOne(query, projection).get("password");
 	}
 
 	// Record visibility methods
@@ -171,7 +171,7 @@ public class User extends Model implements Comparable<User> {
 		DBObject visibleEntry = new BasicDBObject("owner", ownerId);
 		visibleEntry.put("records", new BasicDBList());
 		DBObject update = new BasicDBObject("$push", new BasicDBObject("visible", visibleEntry));
-		String errorMessage = Connection.getCollection(collection).updateMulti(query, update).getLastError()
+		String errorMessage = Database.getCollection(collection).updateMulti(query, update).getLastError()
 				.getErrorMessage();
 		if (errorMessage != null) {
 			return errorMessage;
@@ -182,7 +182,7 @@ public class User extends Model implements Comparable<User> {
 		query.put("visible.owner", ownerId);
 		update = new BasicDBObject("$addToSet", new BasicDBObject("visible.$.records", new BasicDBObject("$each",
 				recordIds.toArray())));
-		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class User extends Model implements Comparable<User> {
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		query.put("visible.owner", ownerId);
 		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("visible.$.records", recordIds.toArray()));
-		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
 	/**
@@ -202,7 +202,7 @@ public class User extends Model implements Comparable<User> {
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("visible", 1);
-		BasicDBList visible = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
+		BasicDBList visible = (BasicDBList) Database.getCollection(collection).findOne(query, projection)
 				.get("visible");
 		for (Object visibleEntry : visible) {
 			DBObject curEntry = (DBObject) visibleEntry;
@@ -222,14 +222,14 @@ public class User extends Model implements Comparable<User> {
 		DBObject query = new BasicDBObject("_id", userId);
 		query.put("visualizations", visualizationId);
 		DBObject projection = new BasicDBObject("_id", 1);
-		return Connection.getCollection(collection).findOne(query, projection) != null;
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	public static Set<ObjectId> getVisualizations(ObjectId userId) {
 		Set<ObjectId> installedVisualizationIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject projection = new BasicDBObject("visualizations", 1);
-		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		DBObject result = Database.getCollection(collection).findOne(query, projection);
 		if (result != null) {
 			BasicDBList visualizationIds = (BasicDBList) result.get("visualizations");
 			for (Object visualizationId : visualizationIds) {
@@ -252,14 +252,14 @@ public class User extends Model implements Comparable<User> {
 	public static String addVisualization(ObjectId userId, ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("visualizations", visualizationId));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
+		WriteResult result = Database.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
 	}
 
 	public static String removeVisualization(ObjectId userId, ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("visualizations", visualizationId));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
+		WriteResult result = Database.getCollection(collection).update(query, update);
 		return result.getLastError().getErrorMessage();
 	}
 

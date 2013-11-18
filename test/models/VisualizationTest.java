@@ -15,8 +15,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -29,18 +29,18 @@ public class VisualizationTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
 	public void add() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException, IOException {
-		DBCollection visualizations = Connection.getCollection(collection);
+		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
 		visualization.name = "Test visualization";
@@ -54,7 +54,7 @@ public class VisualizationTest {
 	@Test
 	public void addWithExistingName() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection visualizations = Connection.getCollection(collection);
+		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
 		visualization.name = "Test visualization";
@@ -70,7 +70,7 @@ public class VisualizationTest {
 
 	@Test
 	public void delete() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection visualizations = Connection.getCollection(collection);
+		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
 		visualization.name = "Test visualization";
@@ -84,7 +84,7 @@ public class VisualizationTest {
 
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection visualizations = Connection.getCollection(collection);
+		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
 		visualization.name = "Test visualization";

@@ -18,10 +18,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import play.mvc.Result;
-import utils.Connection;
 import utils.LoadData;
 import utils.ModelConversion;
 import utils.OrderOperations;
+import utils.db.Database;
 
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBList;
@@ -35,13 +35,13 @@ public class SpacesTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
+		Database.connectToTest();
 		LoadData.load();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class SpacesTest {
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test space", "visualization", visualizationId.toString())));
 		assertEquals(303, status(result));
-		DBObject foundSpace = Connection.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
+		DBObject foundSpace = Database.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
 		Space space = ModelConversion.mapToModel(Space.class, foundSpace.toMap());
 		assertNotNull(space);
 		assertEquals("Test space", space.name);
@@ -65,7 +65,7 @@ public class SpacesTest {
 
 	@Test
 	public void renameSpaceSuccess() {
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed test space"));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
@@ -83,7 +83,7 @@ public class SpacesTest {
 
 	@Test
 	public void renameSpaceForbidden() {
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
 		query.put("owner", new BasicDBObject("$ne", userId));
@@ -105,7 +105,7 @@ public class SpacesTest {
 
 	@Test
 	public void deleteSpaceSuccess() {
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		long originalCount = spaces.count();
 		DBObject space = spaces.findOne();
 		ObjectId id = (ObjectId) space.get("_id");
@@ -120,7 +120,7 @@ public class SpacesTest {
 
 	@Test
 	public void deleteSpaceForbidden() {
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		long originalCount = spaces.count();
 		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
@@ -137,9 +137,9 @@ public class SpacesTest {
 
 	@Test
 	public void addRecordSuccess() {
-		DBObject record = Connection.getCollection("records").findOne();
+		DBObject record = Database.getCollection("records").findOne();
 		ObjectId recordId = (ObjectId) record.get("_id");
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		DBObject query = new BasicDBObject();
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
@@ -162,11 +162,11 @@ public class SpacesTest {
 	@Test
 	public void addRecordAlreadyInSpace() {
 		// get a record
-		DBObject record = Connection.getCollection("records").findOne();
+		DBObject record = Database.getCollection("records").findOne();
 		ObjectId recordId = (ObjectId) record.get("_id");
 
 		// get a space without that record
-		DBCollection spaces = Connection.getCollection("spaces");
+		DBCollection spaces = Database.getCollection("spaces");
 		DBObject query = new BasicDBObject();
 		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
 		DBObject space = spaces.findOne(query);
@@ -177,7 +177,7 @@ public class SpacesTest {
 		// insert that record into that space
 		DBObject updateQuery = new BasicDBObject("_id", id);
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-		WriteResult writeResult = Connection.getCollection("spaces").update(updateQuery, update);
+		WriteResult writeResult = Database.getCollection("spaces").update(updateQuery, update);
 		assertNull(writeResult.getLastError().getErrorMessage());
 
 		// try to insert the same record again

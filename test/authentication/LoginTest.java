@@ -18,8 +18,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import play.mvc.Result;
-import utils.Connection;
 import utils.LoadData;
+import utils.db.Database;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -28,13 +28,13 @@ public class LoginTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
+		Database.connectToTest();
 		LoadData.load();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test

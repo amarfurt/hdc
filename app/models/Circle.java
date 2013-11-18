@@ -10,9 +10,9 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
-import utils.Connection;
 import utils.ModelConversion;
 import utils.OrderOperations;
+import utils.db.Database;
 import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
@@ -45,7 +45,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
 		query.put("owner", userId);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
 		DBObject query = new BasicDBObject("owner", userId);
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
@@ -72,7 +72,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			InstantiationException {
 		List<Circle> circles = new ArrayList<Circle>();
 		DBObject query = new BasicDBObject("members", userId);
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
@@ -87,7 +87,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		Set<ObjectId> recordIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("members", userId);
 		DBObject projection = new BasicDBObject("shared", 1);
-		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			BasicDBList shared = (BasicDBList) result.next().get("shared");
 			for (Object id : shared) {
@@ -105,7 +105,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		Set<ObjectId> contacts = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBObject projection = new BasicDBObject("members", 1);
-		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			BasicDBList members = (BasicDBList) result.next().get("members");
 			for (Object member : members) {
@@ -128,7 +128,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject query = new BasicDBObject("owner", userId);
 		query.put("shared", recordId);
 		DBObject projection = new BasicDBObject("_id", 1);
-		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			circles.add((ObjectId) result.next().get("_id"));
 		}
@@ -141,7 +141,7 @@ public class Circle extends Model implements Comparable<Circle> {
 	public static ObjectId getOwner(ObjectId circleId) {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject projection = new BasicDBObject("owner", 1);
-		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("owner");
+		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("owner");
 	}
 
 	/**
@@ -150,7 +150,7 @@ public class Circle extends Model implements Comparable<Circle> {
 	public static Set<ObjectId> getMembers(ObjectId circleId) {
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject projection = new BasicDBObject("members", 1);
-		DBObject result = Connection.getCollection(collection).findOne(query, projection);
+		DBObject result = Database.getCollection(collection).findOne(query, projection);
 		BasicDBList members = (BasicDBList) result.get("members");
 		Set<ObjectId> userIds = new HashSet<ObjectId>();
 		for (Object userId : members) {
@@ -168,7 +168,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
 			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
-			WriteResult result = Connection.getCollection(collection).insert(insert);
+			WriteResult result = Database.getCollection(collection).insert(insert);
 			newCircle._id = (ObjectId) insert.get("_id");
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
@@ -188,7 +188,7 @@ public class Circle extends Model implements Comparable<Circle> {
 	 */
 	public static String rename(ObjectId circleId, String newName) throws ElasticSearchException, IOException {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject foundCircle = Connection.getCollection(collection).findOne(query);
+		DBObject foundCircle = Database.getCollection(collection).findOne(query);
 		if (foundCircle == null) {
 			return "No circle with this id exists.";
 		}
@@ -197,7 +197,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			return "A circle with this name already exists.";
 		}
 		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
+		WriteResult result = Database.getCollection(collection).update(query, update);
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
 			return errorMessage;
@@ -215,7 +215,7 @@ public class Circle extends Model implements Comparable<Circle> {
 	public static String delete(ObjectId circleId) {
 		// find owner and order first
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject circle = Connection.getCollection(collection).findOne(query);
+		DBObject circle = Database.getCollection(collection).findOne(query);
 		if (circle == null) {
 			return "No circle with this id exists.";
 		}
@@ -223,7 +223,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		int order = (Integer) circle.get("order");
 
 		// remove circle
-		WriteResult result = Connection.getCollection(collection).remove(query);
+		WriteResult result = Database.getCollection(collection).remove(query);
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
 			return errorMessage;
@@ -254,7 +254,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
+			WriteResult result = Database.getCollection(collection).update(query, update);
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
 				return errorMessage;
@@ -281,7 +281,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		} else {
 			DBObject query = new BasicDBObject("_id", circleId);
 			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", userId));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
+			WriteResult result = Database.getCollection(collection).update(query, update);
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
 				return errorMessage;
@@ -305,7 +305,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		Set<ObjectId> sharedRecordIds = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("_id", circleId);
 		DBObject projection = new BasicDBObject("shared", 1);
-		BasicDBList shared = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
+		BasicDBList shared = (BasicDBList) Database.getCollection(collection).findOne(query, projection)
 				.get("shared");
 		for (Object sharedRecord : shared) {
 			sharedRecordIds.add((ObjectId) sharedRecord);
@@ -321,7 +321,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			DBObject query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
-			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
+			WriteResult result = Database.getCollection(collection).updateMulti(query, update);
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
 				return errorMessage;
@@ -329,7 +329,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$nin", circleIds.toArray()));
 			update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
-			result = Connection.getCollection(collection).updateMulti(query, update);
+			result = Database.getCollection(collection).updateMulti(query, update);
 			return result.getLastError().getErrorMessage();
 		}
 	}
@@ -338,14 +338,14 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject query = new BasicDBObject("owner", userId);
 		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
-		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
 	public static String stopSharingWith(ObjectId userId, ObjectId recordId, Set<ObjectId> circleIds) {
 		DBObject query = new BasicDBObject("owner", userId);
 		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
-		return Connection.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
 	}
 
 	/**
@@ -355,7 +355,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
 		query.put("owner", userId);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
@@ -365,7 +365,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject query = new BasicDBObject();
 		query.put("_id", circleId);
 		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 }

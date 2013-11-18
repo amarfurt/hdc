@@ -10,9 +10,9 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
-import utils.Connection;
 import utils.ModelConversion;
 import utils.OrderOperations;
+import utils.db.Database;
 import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
@@ -45,14 +45,14 @@ public class Space extends Model implements Comparable<Space> {
 		DBObject query = new BasicDBObject();
 		query.put("_id", spaceId);
 		query.put("owner", userId);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	public static ObjectId getVisualizationId(ObjectId spaceId, ObjectId userId) {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		query.put("owner", userId);
 		DBObject projection = new BasicDBObject("visualization", 1);
-		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("visualization");
+		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("visualization");
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class Space extends Model implements Comparable<Space> {
 			InstantiationException {
 		List<Space> spaces = new ArrayList<Space>();
 		DBObject query = new BasicDBObject("owner", userId);
-		DBCursor result = Connection.getCollection(collection).find(query);
+		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			spaces.add(ModelConversion.mapToModel(Space.class, cur.toMap()));
@@ -80,7 +80,7 @@ public class Space extends Model implements Comparable<Space> {
 		DBObject query = new BasicDBObject("owner", userId);
 		query.put("records", recordId);
 		DBObject projection = new BasicDBObject("_id", 1);
-		DBCursor result = Connection.getCollection(collection).find(query, projection);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			spaces.add((ObjectId) result.next().get("_id"));
 		}
@@ -96,7 +96,7 @@ public class Space extends Model implements Comparable<Space> {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
 			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
-			WriteResult result = Connection.getCollection(collection).insert(insert);
+			WriteResult result = Database.getCollection(collection).insert(insert);
 			newSpace._id = (ObjectId) insert.get("_id");
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
@@ -116,7 +116,7 @@ public class Space extends Model implements Comparable<Space> {
 	 */
 	public static String rename(ObjectId spaceId, String newName) throws ElasticSearchException, IOException {
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject foundSpace = Connection.getCollection(collection).findOne(query);
+		DBObject foundSpace = Database.getCollection(collection).findOne(query);
 		if (foundSpace == null) {
 			return "This space doesn't exist.";
 		}
@@ -125,7 +125,7 @@ public class Space extends Model implements Comparable<Space> {
 			return "A space with this name already exists.";
 		}
 		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
-		WriteResult result = Connection.getCollection(collection).update(query, update);
+		WriteResult result = Database.getCollection(collection).update(query, update);
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
 			return errorMessage;
@@ -143,7 +143,7 @@ public class Space extends Model implements Comparable<Space> {
 	public static String delete(ObjectId spaceId) {
 		// find owner and order first
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject space = Connection.getCollection(collection).findOne(query);
+		DBObject space = Database.getCollection(collection).findOne(query);
 		if (space == null) {
 			return "No space with this id exists.";
 		}
@@ -151,7 +151,7 @@ public class Space extends Model implements Comparable<Space> {
 		int order = (Integer) space.get("order");
 
 		// remove space
-		WriteResult result = Connection.getCollection(collection).remove(query);
+		WriteResult result = Database.getCollection(collection).remove(query);
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
 			return errorMessage;
@@ -180,7 +180,7 @@ public class Space extends Model implements Comparable<Space> {
 		} else {
 			DBObject query = new BasicDBObject("_id", spaceId);
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
+			WriteResult result = Database.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
 	}
@@ -197,7 +197,7 @@ public class Space extends Model implements Comparable<Space> {
 		} else {
 			DBObject query = new BasicDBObject("_id", spaceId);
 			DBObject update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
-			WriteResult result = Connection.getCollection(collection).update(query, update);
+			WriteResult result = Database.getCollection(collection).update(query, update);
 			return result.getLastError().getErrorMessage();
 		}
 	}
@@ -214,7 +214,7 @@ public class Space extends Model implements Comparable<Space> {
 			DBObject query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$in", spaceIds.toArray()));
 			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-			WriteResult result = Connection.getCollection(collection).updateMulti(query, update);
+			WriteResult result = Database.getCollection(collection).updateMulti(query, update);
 			String errorMessage = result.getLastError().getErrorMessage();
 			if (errorMessage != null) {
 				return errorMessage;
@@ -222,7 +222,7 @@ public class Space extends Model implements Comparable<Space> {
 			query = new BasicDBObject("owner", userId);
 			query.put("_id", new BasicDBObject("$nin", spaceIds.toArray()));
 			update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
-			result = Connection.getCollection(collection).updateMulti(query, update);
+			result = Database.getCollection(collection).updateMulti(query, update);
 			return result.getLastError().getErrorMessage();
 		}
 	}
@@ -230,7 +230,7 @@ public class Space extends Model implements Comparable<Space> {
 	public static Set<ObjectId> getRecords(ObjectId spaceId) {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject projection = new BasicDBObject("records", 1);
-		BasicDBList records = (BasicDBList) Connection.getCollection(collection).findOne(query, projection)
+		BasicDBList records = (BasicDBList) Database.getCollection(collection).findOne(query, projection)
 				.get("records");
 		Set<ObjectId> recordIds = new HashSet<ObjectId>();
 		for (Object recordId : records) {
@@ -246,7 +246,7 @@ public class Space extends Model implements Comparable<Space> {
 		DBObject query = new BasicDBObject();
 		query.put("name", name);
 		query.put("owner", userId);
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	/**
@@ -256,7 +256,7 @@ public class Space extends Model implements Comparable<Space> {
 		DBObject query = new BasicDBObject();
 		query.put("_id", spaceId);
 		query.put("records", new BasicDBObject("$in", new ObjectId[] { recordId }));
-		return (Connection.getCollection(collection).findOne(query) != null);
+		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 }

@@ -18,8 +18,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.db.DatabaseObject.Type;
+import utils.db.Database;
 import utils.db.DatabaseQuery;
 
 import com.mongodb.BasicDBObject;
@@ -33,13 +33,13 @@ public class DatabaseQueryTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	private ObjectId insertTestObject() {

@@ -22,9 +22,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.Connection;
 import utils.CreateDBObjects;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -36,18 +36,18 @@ public class CircleTest {
 	@Before
 	public void setUp() {
 		start(fakeApplication(fakeGlobal()));
-		Connection.connectToTest();
-		Connection.destroy();
+		Database.connectToTest();
+		Database.destroy();
 	}
 
 	@After
 	public void tearDown() {
-		Connection.close();
+		Database.close();
 	}
 
 	@Test
 	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -63,7 +63,7 @@ public class CircleTest {
 
 	@Test
 	public void ownerFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -81,7 +81,7 @@ public class CircleTest {
 	@Test
 	public void addCircle() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -97,7 +97,7 @@ public class CircleTest {
 	@Test
 	public void addCircleWithExistingName() throws IllegalArgumentException, IllegalAccessException,
 			ElasticSearchException, IOException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -118,7 +118,7 @@ public class CircleTest {
 	@Test
 	public void renameSuccess() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -137,7 +137,7 @@ public class CircleTest {
 	@Test
 	public void renameWrongId() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -155,7 +155,7 @@ public class CircleTest {
 	@Test
 	public void renameExistingName() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
 			IOException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -173,7 +173,7 @@ public class CircleTest {
 
 	@Test
 	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -190,7 +190,7 @@ public class CircleTest {
 
 	@Test
 	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -209,7 +209,7 @@ public class CircleTest {
 	public void addMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -229,7 +229,7 @@ public class CircleTest {
 	public void addMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -255,7 +255,7 @@ public class CircleTest {
 	public void addMemberOwner() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -276,7 +276,7 @@ public class CircleTest {
 	public void addMemberAlreadyInCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -298,7 +298,7 @@ public class CircleTest {
 	public void removeMemberSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -319,7 +319,7 @@ public class CircleTest {
 	public void removeMemberWrongId() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -340,7 +340,7 @@ public class CircleTest {
 	public void removeMemberNotInCircle() throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle";
@@ -360,7 +360,7 @@ public class CircleTest {
 	public void getShared() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
@@ -384,7 +384,7 @@ public class CircleTest {
 	public void findMemberOf() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";
@@ -411,7 +411,7 @@ public class CircleTest {
 	public void findContacts() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
 			InvalidKeySpecException, InstantiationException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(3);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";
@@ -441,7 +441,7 @@ public class CircleTest {
 			InvalidKeySpecException, InstantiationException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection circles = Connection.getCollection("circles");
+		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
 		circle.name = "Test circle 1";

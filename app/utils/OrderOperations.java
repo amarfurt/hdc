@@ -2,6 +2,8 @@ package utils;
 
 import org.bson.types.ObjectId;
 
+import utils.db.Database;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -14,7 +16,7 @@ public class OrderOperations {
 	 * Returns the maximum of the order fields in the given collection.
 	 */
 	public static int getMax(String collection, ObjectId userId) {
-		DBCollection coll = Connection.getCollection(collection);
+		DBCollection coll = Database.getCollection(collection);
 		DBObject query = new BasicDBObject("owner", userId);
 		DBObject projection = new BasicDBObject("order", 1);
 		DBCursor maxOrder = coll.find(query, projection).sort(new BasicDBObject("order", -1)).limit(1);
@@ -65,7 +67,7 @@ public class OrderOperations {
 			query.put("$and", and);
 		}
 		DBObject update = new BasicDBObject("$inc", new BasicDBObject("order", increment));
-		DBCollection coll = Connection.getCollection(collection);
+		DBCollection coll = Database.getCollection(collection);
 		WriteResult result = coll.updateMulti(query, update);
 		return result.getLastError().getErrorMessage();
 	}

@@ -15,7 +15,7 @@ import models.Space;
 
 import org.bson.types.ObjectId;
 
-import utils.Connection;
+import utils.db.Database;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
@@ -32,7 +32,7 @@ public class ImportData {
 		System.out.print("Connecting...");
 		// connect to MongoDB
 		start(fakeApplication(fakeGlobal()));
-		Connection.connect();
+		Database.connect();
 
 		// connect to ElasticSearch
 		TextSearch.connect();
@@ -48,7 +48,7 @@ public class ImportData {
 		DBObject query = new BasicDBObject();
 		DBObject projection = new BasicDBObject("email", 1);
 		projection.put("name", 1);
-		DBCursor result = Connection.getCollection("users").find(query, projection);
+		DBCursor result = Database.getCollection("users").find(query, projection);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			ObjectId userId = (ObjectId) cur.get("_id");
@@ -106,7 +106,7 @@ public class ImportData {
 		query = new BasicDBObject();
 		projection = new BasicDBObject("name", 1);
 		projection.put("description", 1);
-		result = Connection.getCollection("visualizations").find(query, projection);
+		result = Database.getCollection("visualizations").find(query, projection);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			ObjectId visualizationId = (ObjectId) cur.get("_id");
@@ -117,7 +117,7 @@ public class ImportData {
 		System.out.println("done.");
 
 		// disconnect
-		Connection.close();
+		Database.close();
 		TextSearch.close();
 		System.out.println("Finished.");
 	}

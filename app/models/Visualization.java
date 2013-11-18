@@ -7,8 +7,8 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
-import utils.Connection;
 import utils.ModelConversion;
+import utils.db.Database;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
@@ -44,25 +44,25 @@ public class Visualization extends Model implements Comparable<Visualization> {
 	public static String getName(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("name", 1);
-		return (String) Connection.getCollection(collection).findOne(query, projection).get("name");
+		return (String) Database.getCollection(collection).findOne(query, projection).get("name");
 	}
 
 	public static ObjectId getId(String visualizationName) {
 		DBObject query = new BasicDBObject("name", visualizationName);
 		DBObject projection = new BasicDBObject("_id", 1);
-		return (ObjectId) Connection.getCollection(collection).findOne(query, projection).get("_id");
+		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("_id");
 	}
 
 	public static String getURL(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("url", 1);
-		return (String) Connection.getCollection(collection).findOne(query, projection).get("url");
+		return (String) Database.getCollection(collection).findOne(query, projection).get("url");
 	}
 
 	public static Visualization find(ObjectId visualizationId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", visualizationId);
-		DBObject result = Connection.getCollection(collection).findOne(query);
+		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Visualization.class, result.toMap());
 	}
 
@@ -71,7 +71,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		List<Visualization> visualizations = new ArrayList<Visualization>();
 		// TODO return only spotlighted visualizations
 		// for now: return all visualizations
-		DBCursor result = Connection.getCollection(collection).find();
+		DBCursor result = Database.getCollection(collection).find();
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			visualizations.add(ModelConversion.mapToModel(Visualization.class, cur.toMap()));
@@ -86,7 +86,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 			return "A visualization with this name already exists.";
 		}
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
-		WriteResult result = Connection.getCollection(collection).insert(insert);
+		WriteResult result = Database.getCollection(collection).insert(insert);
 		newVisualization._id = (ObjectId) insert.get("_id");
 		String errorMessage = result.getLastError().getErrorMessage();
 		if (errorMessage != null) {
@@ -111,18 +111,18 @@ public class Visualization extends Model implements Comparable<Visualization> {
 
 		// remove from visualizations
 		DBObject remove = new BasicDBObject("_id", visualizationId);
-		WriteResult result = Connection.getCollection(collection).remove(remove);
+		WriteResult result = Database.getCollection(collection).remove(remove);
 		return result.getLastError().getErrorMessage();
 	}
 
 	private static boolean visualizationExists(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
-		return Connection.getCollection(collection).findOne(query) != null;
+		return Database.getCollection(collection).findOne(query) != null;
 	}
 
 	public static boolean visualizationWithSameNameExists(String name) {
 		DBObject query = new BasicDBObject("name", name);
-		return Connection.getCollection(collection).findOne(query) != null;
+		return Database.getCollection(collection).findOne(query) != null;
 	}
 
 }

@@ -1,4 +1,4 @@
-package utils;
+package utils.db;
 
 import java.net.UnknownHostException;
 
@@ -8,7 +8,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 
-public class Connection {
+public class Database {
 
 	private static MongoClient mongoClient; // mongo client is already a connection pool
 	private static String database; // database currently in use

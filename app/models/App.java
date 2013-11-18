@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 
-import utils.Connection;
 import utils.ModelConversion;
+import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -35,7 +35,7 @@ public class App extends Model implements Comparable<App> {
 	public static App find(ObjectId appId) throws IllegalArgumentException, IllegalAccessException,
 			InstantiationException {
 		DBObject query = new BasicDBObject("_id", appId);
-		DBObject result = Connection.getCollection(collection).findOne(query);
+		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(App.class, result.toMap());
 	}
 

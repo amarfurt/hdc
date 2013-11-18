@@ -13,6 +13,8 @@ import models.Visualization;
 
 import org.bson.types.ObjectId;
 
+import utils.db.Database;
+
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -24,7 +26,7 @@ public class CreateDBObjects {
 
 	public static ObjectId[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection users = Connection.getCollection("users");
+		DBCollection users = Database.getCollection("users");
 		long originalCount = users.count();
 		ObjectId[] userIds = new ObjectId[numUsers];
 		for (int i = 0; i < numUsers; i++) {
@@ -45,7 +47,7 @@ public class CreateDBObjects {
 
 	public static ObjectId[] insertRecords(ObjectId creator, ObjectId owner, int numRecords)
 			throws IllegalArgumentException, IllegalAccessException {
-		DBCollection records = Connection.getCollection("records");
+		DBCollection records = Database.getCollection("records");
 		long originalCount = records.count();
 		ObjectId[] recordIds = new ObjectId[numRecords];
 		for (int i = 0; i < numRecords; i++) {
@@ -65,7 +67,7 @@ public class CreateDBObjects {
 
 	public static ObjectId createDeveloperAccount() throws NoSuchAlgorithmException, InvalidKeySpecException,
 			IllegalArgumentException, IllegalAccessException {
-		DBCollection users = Connection.getCollection("users");
+		DBCollection users = Database.getCollection("users");
 		User user = new User();
 		user.email = "developers@hdc.ch";
 		user.name = "Health Data Cooperative Developers";
@@ -77,7 +79,7 @@ public class CreateDBObjects {
 
 	public static void createDefaultVisualization(ObjectId developerId) throws IllegalArgumentException,
 			IllegalAccessException {
-		DBCollection visualizations = Connection.getCollection("visualizations");
+		DBCollection visualizations = Database.getCollection("visualizations");
 		Visualization visualization = new Visualization();
 		visualization.creator = developerId;
 		visualization.name = Visualization.getDefaultVisualization();
