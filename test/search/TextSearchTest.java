@@ -5,6 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +20,6 @@ import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 import utils.TextSearchTestHelper;
 import utils.search.SearchResult;
@@ -23,6 +27,30 @@ import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
 public class TextSearchTest {
+
+	@Target(ElementType.METHOD)
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface ManualTest {
+	}
+
+	/**
+	 * Manual testing because of timeout error for subsequent tests that call the TextSearch module (even if its not
+	 * connected).
+	 */
+	public static void main(String[] args) throws Exception {
+		System.out.println("Starting TextSearch tests.");
+		TextSearchTest tester = new TextSearchTest();
+		for (Method method : TextSearchTest.class.getMethods()) {
+			if (method.isAnnotationPresent(ManualTest.class)) {
+				tester.setUp();
+				System.out.print("Testing " + method.getName() + "...");
+				method.invoke(tester, new Object[] {});
+				System.out.println("successful.");
+				tester.tearDown();
+			}
+		}
+		System.out.println("All tests successful!");
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -38,11 +66,10 @@ public class TextSearchTest {
 		TextSearch.close();
 	}
 
-	@Test
+	@ManualTest
 	public void indexUser() throws ElasticSearchException, IOException {
 		assertEquals(0, TextSearchTestHelper.count(null, "user"));
 		ObjectId userId = addUser();
-		TextSearchTestHelper.refreshIndex();
 		assertEquals(1, TextSearchTestHelper.count(null, "user"));
 		assertNotNull(TextSearchTestHelper.getData(null, "user", userId));
 	}
@@ -51,10 +78,11 @@ public class TextSearchTest {
 		ObjectId userId = new ObjectId();
 		String data = "test@example.com Test User";
 		TextSearch.addPublic(Type.USER, userId, data);
+		TextSearchTestHelper.refreshIndex();
 		return userId;
 	}
 
-	@Test
+	@ManualTest
 	public void indexRecord() throws ElasticSearchException, IOException {
 		ObjectId userId = addUser();
 		assertEquals(0, TextSearchTestHelper.count(userId, "record"));
@@ -66,19 +94,18 @@ public class TextSearchTest {
 		assertEquals(data, TextSearchTestHelper.getData(userId, "record", recordId));
 	}
 
-	@Test
+	@ManualTest
 	public void searchEmptyIndex() throws ElasticSearchException, IOException {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		visibleRecords.put(userId2, new HashSet<ObjectId>());
 		String query = "data";
-		TextSearchTestHelper.refreshIndex();
 		Map<String, List<SearchResult>> result = TextSearch.search(userId1, visibleRecords, query);
 		assertEquals(0, result.size());
 	}
 
-	@Test
+	@ManualTest
 	public void indexAndSearchOwnIndex() throws ElasticSearchException, IOException {
 		ObjectId userId = addUser();
 		ObjectId recordId = new ObjectId();
@@ -97,7 +124,7 @@ public class TextSearchTest {
 		assertEquals(data, result.get("record").get(0).data);
 	}
 
-	@Test
+	@ManualTest
 	public void indexAndSearchOtherIndex() throws ElasticSearchException, IOException {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
@@ -120,7 +147,7 @@ public class TextSearchTest {
 		assertEquals(data, result.get("record").get(0).data);
 	}
 
-	@Test
+	@ManualTest
 	public void ranking() throws ElasticSearchException, IOException {
 		ObjectId userId = addUser();
 		ObjectId recordId1 = new ObjectId();
