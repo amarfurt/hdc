@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.bson.types.ObjectId;
 
 import play.libs.Json;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,9 +62,7 @@ public class LoadData {
 			e.printStackTrace();
 		} catch (InvalidKeySpecException e) {
 			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
+		} catch (ConversionException e) {
 			e.printStackTrace();
 		}
 	}

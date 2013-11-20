@@ -72,7 +72,7 @@ public class Database {
 	}
 
 	/**
-	 * Retrieve a collection.
+	 * Gets the specified collection.
 	 */
 	public static DBCollection getCollection(String collection) {
 		return getDB().getCollection(collection);

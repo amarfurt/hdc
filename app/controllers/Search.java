@@ -3,6 +3,7 @@ package controllers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,7 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.ModelConversion.ConversionException;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
 import views.html.search;
@@ -57,14 +59,11 @@ public class Search extends Controller {
 		// TODO for now, simply complete with record descriptions to test the UI feature
 		List<Record> records;
 		try {
-			records = Record.findVisible(new ObjectId(request().username()));
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+			records = new ArrayList<Record>(Record.findVisible(new ObjectId(request().username())));
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
+		Collections.sort(records);
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
 		for (Record record : records) {
 			// add the record to the result if the description contains the query
@@ -109,11 +108,7 @@ public class Search extends Controller {
 		Record recordToShow;
 		try {
 			recordToShow = Record.find(recordId);
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(record.render(recordToShow, new ObjectId(request().username())));
@@ -123,11 +118,7 @@ public class Search extends Controller {
 		Message messageToShow;
 		try {
 			messageToShow = Message.find(messageId);
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(message.render(messageToShow, new ObjectId(request().username())));
@@ -141,11 +132,7 @@ public class Search extends Controller {
 		User userToShow;
 		try {
 			userToShow = User.find(userId);
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(user.render(userToShow, new ObjectId(request().username())));
@@ -159,11 +146,7 @@ public class Search extends Controller {
 		App appToShow;
 		try {
 			appToShow = App.find(appId);
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(app.render(appToShow, new ObjectId(request().username())));
@@ -173,11 +156,7 @@ public class Search extends Controller {
 		Visualization visualizationToShow;
 		try {
 			visualizationToShow = Visualization.find(visualizationId);
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(visualization.render(visualizationToShow, new ObjectId(request().username())));

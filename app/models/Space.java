@@ -1,18 +1,16 @@
 package models;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
+import utils.search.SearchException;
 import utils.search.TextSearch;
 
 import com.mongodb.BasicDBList;
@@ -58,17 +56,14 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static List<Space> findOwnedBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<Space> spaces = new ArrayList<Space>();
+	public static Set<Space> findOwnedBy(ObjectId userId) throws ConversionException {
+		Set<Space> spaces = new HashSet<Space>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			spaces.add(ModelConversion.mapToModel(Space.class, cur.toMap()));
 		}
-		// sort by order field
-		Collections.sort(spaces);
 		return spaces;
 	}
 
@@ -91,8 +86,7 @@ public class Space extends Model implements Comparable<Space> {
 	 * Adds a space and returns the error message (null in absence of errors). Also adds the generated id to the space
 	 * object.
 	 */
-	public static String add(Space newSpace) throws IllegalArgumentException, IllegalAccessException,
-			ElasticSearchException, IOException {
+	public static String add(Space newSpace) throws ConversionException, SearchException {
 		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
 			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
 			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
@@ -114,7 +108,7 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Tries to rename the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String rename(ObjectId spaceId, String newName) throws ElasticSearchException, IOException {
+	public static String rename(ObjectId spaceId, String newName) throws ElasticSearchException, SearchException {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject foundSpace = Database.getCollection(collection).findOne(query);
 		if (foundSpace == null) {
@@ -171,8 +165,7 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Adds a new record to the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String addRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+	public static String addRecord(ObjectId spaceId, ObjectId recordId) throws ConversionException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else if (Space.recordIsInSpace(spaceId, recordId)) {
@@ -188,8 +181,7 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Removes a record from the space with the given id and returns the error message (null in absence of errors).
 	 */
-	public static String removeRecord(ObjectId spaceId, ObjectId recordId) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+	public static String removeRecord(ObjectId spaceId, ObjectId recordId) throws ConversionException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else if (!Space.recordIsInSpace(spaceId, recordId)) {
@@ -206,8 +198,8 @@ public class Space extends Model implements Comparable<Space> {
 	 * Adds the record to the given spaces of the user (if not already present), and removes it from the user's other
 	 * spaces.
 	 */
-	public static String updateRecords(List<ObjectId> spaceIds, ObjectId recordId, ObjectId userId)
-			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public static String updateRecords(Set<ObjectId> spaceIds, ObjectId recordId, ObjectId userId)
+			throws ConversionException {
 		if (Record.find(recordId) == null) {
 			return "Record doesn't exist.";
 		} else {

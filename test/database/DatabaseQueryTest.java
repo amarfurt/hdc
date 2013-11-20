@@ -8,9 +8,9 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.util.List;
 import java.util.Map;
 
-import models.Model;
 import models.User;
 
 import org.bson.types.ObjectId;
@@ -18,7 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import utils.db.DatabaseObject.Type;
+import utils.ModelConversion;
 import utils.db.Database;
 import utils.db.DatabaseQuery;
 
@@ -28,7 +28,7 @@ import com.mongodb.WriteResult;
 
 public class DatabaseQueryTest {
 
-	private static final Type type = Type.USER;
+	private static final String collection = "users";
 
 	@Before
 	public void setUp() {
@@ -48,15 +48,15 @@ public class DatabaseQueryTest {
 		obj.put("email", "test@example.com");
 		obj.put("name", "Test User");
 		obj.put("password", "Test password");
-		WriteResult wr = new DatabaseQuery(type).getCollection().insert(obj);
+		WriteResult wr = Database.getCollection(collection).insert(obj);
 		assertNull(wr.getLastError().getErrorMessage());
 		return userId;
 	}
 
 	@Test
 	public void exists() {
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("email", "test@example.com");
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("email", "test@example.com");
 		assertFalse(dbQuery.exists());
 		insertTestObject();
 		assertTrue(dbQuery.exists());
@@ -64,8 +64,8 @@ public class DatabaseQueryTest {
 
 	@Test
 	public void findOneNotExisting() throws Exception {
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("_id", new ObjectId());
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("_id", new ObjectId());
 		assertTrue(dbQuery.findOne().isEmpty());
 	}
 
@@ -74,12 +74,10 @@ public class DatabaseQueryTest {
 		insertTestObject();
 		ObjectId userId = insertTestObject();
 		insertTestObject();
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("_id", userId);
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("_id", userId);
 		Map<String, Object> result = dbQuery.findOne();
-		Model model = (Model) result.get("model");
-		assertTrue(model instanceof User);
-		User user = (User) model;
+		User user = ModelConversion.mapToModel(User.class, result);
 		assertEquals(userId, user._id);
 	}
 
@@ -88,8 +86,8 @@ public class DatabaseQueryTest {
 		insertTestObject();
 		ObjectId userId = insertTestObject();
 		insertTestObject();
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("_id", userId);
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("_id", userId);
 		dbQuery.show("name");
 		Map<String, Object> result = dbQuery.findOne();
 		assertEquals(2, result.size());
@@ -101,8 +99,8 @@ public class DatabaseQueryTest {
 		insertTestObject();
 		ObjectId userId = insertTestObject();
 		insertTestObject();
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("_id", userId);
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("_id", userId);
 		dbQuery.show("email");
 		dbQuery.show("password");
 		Map<String, Object> result = dbQuery.findOne();
@@ -115,14 +113,13 @@ public class DatabaseQueryTest {
 		insertTestObject();
 		insertTestObject();
 		insertTestObject();
-		DatabaseQuery dbQuery = new DatabaseQuery(type);
-		dbQuery.query("name", "Test User");
+		DatabaseQuery dbQuery = new DatabaseQuery(collection);
+		dbQuery.equals("name", "Test User");
 		dbQuery.show("_id");
-		Map<ObjectId, Map<String, Object>> result = dbQuery.find();
+		List<Map<String, Object>> result = dbQuery.find();
 		assertEquals(3, result.size());
-		ObjectId firstId = result.keySet().iterator().next();
-		assertEquals(1, result.get(firstId).size());
-		assertTrue(result.get(firstId).containsKey("_id"));
+		assertEquals(1, result.get(0).size());
+		assertTrue(result.get(0).containsKey("_id"));
 	}
 
 }

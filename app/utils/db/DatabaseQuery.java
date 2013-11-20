@@ -1,9 +1,9 @@
 package utils.db;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import org.bson.types.ObjectId;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -13,8 +13,8 @@ public class DatabaseQuery extends DatabaseObject {
 
 	private DBObject projection;
 
-	public DatabaseQuery(Type type) {
-		super(type);
+	public DatabaseQuery(String collection) {
+		super(collection);
 		projection = new BasicDBObject();
 	}
 
@@ -27,15 +27,14 @@ public class DatabaseQuery extends DatabaseObject {
 
 	public boolean exists() {
 		projection.put("_id", 1);
-		return getCollection().findOne(query, projection) != null;
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	/**
 	 * Retrieves a unique item from the database.
 	 */
-	public Map<String, Object> findOne() throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		DBObject dbObject = getCollection().findOne(query, projection);
+	public Map<String, Object> findOne() {
+		DBObject dbObject = Database.getCollection(collection).findOne(query, projection);
 		if (dbObject == null) {
 			return new HashMap<String, Object>();
 		} else {
@@ -43,15 +42,10 @@ public class DatabaseQuery extends DatabaseObject {
 		}
 	}
 
-	private Map<String, Object> extractObject(DBObject dbObject) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+	private Map<String, Object> extractObject(DBObject dbObject) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		if (projection.keySet().isEmpty()) {
-			result.put("model", toModel(dbObject));
-		} else {
-			for (String key : dbObject.keySet()) {
-				result.put(key, dbObject.get(key));
-			}
+		for (String key : dbObject.keySet()) {
+			result.put(key, dbObject.get(key));
 		}
 		return result;
 	}
@@ -59,13 +53,11 @@ public class DatabaseQuery extends DatabaseObject {
 	/**
 	 * Retrieves non-unique items from the database.
 	 */
-	public Map<ObjectId, Map<String, Object>> find() throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		Map<ObjectId, Map<String, Object>> result = new HashMap<ObjectId, Map<String, Object>>();
-		DBCursor cursor = getCollection().find(query, projection);
+	public List<Map<String, Object>> find() {
+		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		DBCursor cursor = Database.getCollection(collection).find(query, projection);
 		while (cursor.hasNext()) {
-			DBObject cur = cursor.next();
-			result.put((ObjectId) cur.get("_id"), extractObject(cur));
+			result.add(extractObject(cursor.next()));
 		}
 		return result;
 	}

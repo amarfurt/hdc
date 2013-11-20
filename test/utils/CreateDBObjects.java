@@ -13,6 +13,7 @@ import models.Visualization;
 
 import org.bson.types.ObjectId;
 
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 
 import com.mongodb.BasicDBList;
@@ -24,8 +25,8 @@ import controllers.visualizations.routes;
 
 public class CreateDBObjects {
 
-	public static ObjectId[] insertUsers(int numUsers) throws IllegalArgumentException, IllegalAccessException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
+	public static ObjectId[] insertUsers(int numUsers) throws ConversionException, NoSuchAlgorithmException,
+			InvalidKeySpecException {
 		DBCollection users = Database.getCollection("users");
 		long originalCount = users.count();
 		ObjectId[] userIds = new ObjectId[numUsers];
@@ -45,8 +46,7 @@ public class CreateDBObjects {
 		return userIds;
 	}
 
-	public static ObjectId[] insertRecords(ObjectId creator, ObjectId owner, int numRecords)
-			throws IllegalArgumentException, IllegalAccessException {
+	public static ObjectId[] insertRecords(ObjectId creator, ObjectId owner, int numRecords) throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		long originalCount = records.count();
 		ObjectId[] recordIds = new ObjectId[numRecords];
@@ -66,7 +66,7 @@ public class CreateDBObjects {
 	}
 
 	public static ObjectId createDeveloperAccount() throws NoSuchAlgorithmException, InvalidKeySpecException,
-			IllegalArgumentException, IllegalAccessException {
+			ConversionException {
 		DBCollection users = Database.getCollection("users");
 		User user = new User();
 		user.email = "developers@hdc.ch";
@@ -77,8 +77,7 @@ public class CreateDBObjects {
 		return (ObjectId) userObject.get("_id");
 	}
 
-	public static void createDefaultVisualization(ObjectId developerId) throws IllegalArgumentException,
-			IllegalAccessException {
+	public static void createDefaultVisualization(ObjectId developerId) throws ConversionException {
 		DBCollection visualizations = Database.getCollection("visualizations");
 		Visualization visualization = new Visualization();
 		visualization.creator = developerId;

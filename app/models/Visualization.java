@@ -1,14 +1,14 @@
 package models;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
+import utils.search.SearchException;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
@@ -59,16 +59,14 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return (String) Database.getCollection(collection).findOne(query, projection).get("url");
 	}
 
-	public static Visualization find(ObjectId visualizationId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static Visualization find(ObjectId visualizationId) throws ConversionException {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Visualization.class, result.toMap());
 	}
 
-	public static List<Visualization> findSpotlighted() throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<Visualization> visualizations = new ArrayList<Visualization>();
+	public static Set<Visualization> findSpotlighted() throws ConversionException {
+		Set<Visualization> visualizations = new HashSet<Visualization>();
 		// TODO return only spotlighted visualizations
 		// for now: return all visualizations
 		DBCursor result = Database.getCollection(collection).find();
@@ -80,8 +78,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return visualizations;
 	}
 
-	public static String add(Visualization newVisualization) throws IllegalArgumentException, IllegalAccessException,
-			ElasticSearchException, IOException {
+	public static String add(Visualization newVisualization) throws ConversionException, SearchException {
 		if (visualizationWithSameNameExists(newVisualization.name)) {
 			return "A visualization with this name already exists.";
 		}

@@ -9,23 +9,23 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
 import utils.DateTimeUtils;
-import utils.ListOperations;
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -47,7 +47,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void creatorSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void creatorSuccess() throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -63,7 +63,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void ownerSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void ownerSuccess() throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -79,7 +79,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void creatorOrOwnerFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void creatorOrOwnerFailure() throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -95,8 +95,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void addRecord() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
-			IOException {
+	public void addRecord() throws ConversionException, SearchException {
 		DBCollection records = Database.getCollection("records");
 		ObjectId creator = new ObjectId();
 		ObjectId owner = new ObjectId();
@@ -115,7 +114,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void deleteSuccess() throws IllegalArgumentException, IllegalAccessException {
+	public void deleteSuccess() throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		ObjectId creator = new ObjectId();
 		assertEquals(0, records.count());
@@ -133,7 +132,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
+	public void deleteFailure() throws ConversionException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		Record record = new Record();
@@ -149,19 +148,18 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findOwned() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findOwned() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
 		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[1], userIds[0], 2);
-		List<Record> foundRecords = Record.findOwnedBy(userIds[0]);
+		Set<Record> foundRecords = Record.findOwnedBy(userIds[0]);
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[1], foundRecords));
 	}
 
-	private boolean containsId(ObjectId id, List<Record> recordList) {
+	private boolean containsId(ObjectId id, Collection<Record> recordList) {
 		boolean found = false;
 		for (Record record : recordList) {
 			if (id.equals(record._id)) {
@@ -172,8 +170,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findNotInSpace() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException {
+	public void findNotInSpace() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
@@ -188,17 +185,21 @@ public class RecordTest {
 		space.records.add(recordIds[1]);
 		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
 		spaces.insert(spaceObject);
-		List<Record> foundRecords = Record.findVisible(userIds[0]);
+		Set<Record> foundRecords = Record.findVisible(userIds[0]);
 		Set<ObjectId> recordsInSpace = Space.getRecords((ObjectId) spaceObject.get("_id"));
-		foundRecords = ListOperations.removeFromList(foundRecords, recordsInSpace);
+		Iterator<Record> iterator = foundRecords.iterator();
+		while (iterator.hasNext()) {
+			if (recordsInSpace.contains(iterator.next()._id)) {
+				iterator.remove();
+			}
+		}
 		assertEquals(2, foundRecords.size());
 		assertTrue(containsId(recordIds[0], foundRecords));
 		assertTrue(containsId(recordIds[2], foundRecords));
 	}
 
 	@Test
-	public void findVisible() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException {
+	public void findVisible() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
@@ -216,7 +217,7 @@ public class RecordTest {
 		circle.shared.add(recordIds[2]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(1, circles.count());
-		List<Record> foundRecords = Record.findVisible(userIds[1]);
+		Set<Record> foundRecords = Record.findVisible(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));
@@ -224,8 +225,7 @@ public class RecordTest {
 	}
 
 	@Test
-	public void findVisibleInOwnCircle() throws IllegalArgumentException, IllegalAccessException,
-			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException {
+	public void findVisibleInOwnCircle() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection records = Database.getCollection("records");
 		assertEquals(0, records.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
@@ -249,7 +249,7 @@ public class RecordTest {
 		circle.shared.add(recordId[0]);
 		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
 		assertEquals(2, circles.count());
-		List<Record> foundRecords = Record.findVisible(userIds[1]);
+		Set<Record> foundRecords = Record.findVisible(userIds[1]);
 		assertEquals(3, foundRecords.size());
 		assertTrue(containsId(recordId[0], foundRecords));
 		assertTrue(containsId(recordIds[0], foundRecords));

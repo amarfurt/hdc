@@ -5,7 +5,7 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.util.List;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import utils.DateTimeUtils;
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
@@ -34,7 +35,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findSuccess() throws ConversionException {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		User user = new User();
@@ -47,13 +48,13 @@ public class MessageTest {
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(user._id);
+		Set<Message> foundMessages = Message.findSentTo(user._id);
 		assertEquals(1, foundMessages.size());
-		assertEquals("Title", foundMessages.get(0).title);
+		assertEquals("Title", foundMessages.iterator().next().title);
 	}
 
 	@Test
-	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void findFailure() throws ConversionException {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		User user = new User();
@@ -66,7 +67,7 @@ public class MessageTest {
 		message.content = "Content content.";
 		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
 		assertEquals(1, messages.count());
-		List<Message> foundMessages = Message.findSentTo(user._id);
+		Set<Message> foundMessages = Message.findSentTo(user._id);
 		assertEquals(0, foundMessages.size());
 	}
 }

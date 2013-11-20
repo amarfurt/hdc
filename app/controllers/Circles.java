@@ -1,6 +1,5 @@
 package controllers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -12,12 +11,13 @@ import models.Circle;
 import models.User;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.ModelConversion.ConversionException;
+import utils.search.SearchException;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
@@ -32,20 +32,19 @@ public class Circles extends Controller {
 	public static Result show(String activeCircleId) {
 		try {
 			ObjectId user = new ObjectId(request().username());
-			List<Circle> circleList = Circle.findOwnedBy(user);
+			List<Circle> circleList = new ArrayList<Circle>(Circle.findOwnedBy(user));
+			Collections.sort(circleList);
 			ObjectId activeCircle = null;
 			if (activeCircleId != null) {
 				activeCircle = new ObjectId(activeCircleId);
 			} else if (circleList.size() > 0) {
 				activeCircle = circleList.get(0)._id;
 			}
+			List<User> contacts = new ArrayList<User>(Circle.findContacts(user));
+			Collections.sort(contacts);
 			List<User> users = new ArrayList<User>();
-			return ok(circles.render(Circle.findContacts(user), users, circleList, activeCircle, user));
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+			return ok(circles.render(contacts, users, circleList, activeCircle, user));
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -63,13 +62,9 @@ public class Circles extends Controller {
 			} else {
 				return badRequest(errorMessage);
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (ElasticSearchException e) {
-			return internalServerError(e.getMessage());
-		} catch (IOException e) {
+		} catch (SearchException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -86,9 +81,7 @@ public class Circles extends Controller {
 				} else {
 					return badRequest(errorMessage);
 				}
-			} catch (ElasticSearchException e) {
-				return internalServerError(e.getMessage());
-			} catch (IOException e) {
+			} catch (SearchException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -133,11 +126,7 @@ public class Circles extends Controller {
 					}
 				}
 				return redirect(routes.Circles.show(circleId));
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -156,11 +145,7 @@ public class Circles extends Controller {
 				} else {
 					return badRequest(errorMessage);
 				}
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -188,11 +173,7 @@ public class Circles extends Controller {
 			userIds.removeAll(members);
 			try {
 				users.addAll(User.find(userIds));
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
 

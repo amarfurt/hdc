@@ -8,12 +8,10 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +19,10 @@ import org.junit.Test;
 import utils.CreateDBObjects;
 import utils.LoadData;
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.PasswordHash;
 import utils.db.Database;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -43,8 +43,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void findSuccess() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findSuccess() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
@@ -59,8 +58,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void findFailure() throws IllegalArgumentException, IllegalAccessException, InstantiationException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findFailure() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
@@ -79,8 +77,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void add() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException, ElasticSearchException, IOException {
+	public void add() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException, SearchException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		LoadData.createDefaultVisualization();
@@ -96,8 +93,8 @@ public class UserTest {
 	}
 
 	@Test
-	public void addSameEmail() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException, InstantiationException, ElasticSearchException, IOException {
+	public void addSameEmail() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException,
+			SearchException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		CreateDBObjects.insertUsers(1);
@@ -111,8 +108,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void remove() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+	public void remove() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
@@ -122,8 +118,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void removeNotExisting() throws IllegalArgumentException, IllegalAccessException, NoSuchAlgorithmException,
-			InvalidKeySpecException {
+	public void removeNotExisting() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);

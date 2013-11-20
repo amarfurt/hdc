@@ -21,6 +21,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.ModelConversion.ConversionException;
 import views.html.visualizations.recordlist;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -105,7 +106,7 @@ public class RecordList extends Controller {
 	 * Updates the spaces the given record is in.
 	 */
 	public static Result updateSpaces(String recordId, List<String> spaces) {
-		List<ObjectId> spaceIds = new ArrayList<ObjectId>();
+		Set<ObjectId> spaceIds = new HashSet<ObjectId>();
 		for (String id : spaces) {
 			spaceIds.add(new ObjectId(id));
 		}
@@ -117,11 +118,7 @@ public class RecordList extends Controller {
 			} else {
 				return badRequest(errorMessage);
 			}
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 	}

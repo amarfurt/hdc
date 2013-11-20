@@ -1,20 +1,23 @@
 package controllers;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import models.Message;
 import models.User;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import play.Routes;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.ModelConversion.ConversionException;
+import utils.search.SearchException;
 import views.html.index;
 import views.html.welcome;
 import controllers.forms.Login;
@@ -26,12 +29,10 @@ public class Application extends Controller {
 	public static Result index() {
 		try {
 			ObjectId user = new ObjectId(request().username());
-			return ok(index.render(Message.findSentTo(user), user));
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+			List<Message> messages = new ArrayList<Message>(Message.findSentTo(user));
+			Collections.sort(messages);
+			return ok(index.render(messages, user));
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 	}
@@ -79,19 +80,13 @@ public class Application extends Controller {
 				session().clear();
 				session("id", newUser._id.toString());
 				return redirect(routes.Application.index());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (NoSuchAlgorithmException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			} catch (InvalidKeySpecException e) {
 				return internalServerError(e.getMessage());
-			} catch (IllegalArgumentException e) {
+			} catch (NoSuchAlgorithmException e) {
 				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
-				return internalServerError(e.getMessage());
-			} catch (ElasticSearchException e) {
-				return internalServerError(e.getMessage());
-			} catch (IOException e) {
+			} catch (SearchException e) {
 				return internalServerError(e.getMessage());
 			}
 		}
@@ -105,14 +100,10 @@ public class Application extends Controller {
 
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
-		return ok(Routes.javascriptRouter("jsRoutes",
-				controllers.routes.javascript.Circles.rename(),
-				controllers.routes.javascript.Circles.delete(),
-				controllers.routes.javascript.Circles.removeMember(),
-				controllers.routes.javascript.Circles.searchUsers(),
-				controllers.routes.javascript.Spaces.rename(),
-				controllers.routes.javascript.Spaces.delete(),
-				controllers.routes.javascript.Spaces.searchRecords(),
+		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Circles.rename(),
+				controllers.routes.javascript.Circles.delete(), controllers.routes.javascript.Circles.removeMember(),
+				controllers.routes.javascript.Circles.searchUsers(), controllers.routes.javascript.Spaces.rename(),
+				controllers.routes.javascript.Spaces.delete(), controllers.routes.javascript.Spaces.searchRecords(),
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Spaces.getVisualizationURL(),

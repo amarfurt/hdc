@@ -10,8 +10,8 @@ public class DatabaseUpdate extends DatabaseObject {
 	private DBObject update;
 	private boolean updateMulti;
 
-	public DatabaseUpdate(Type type) {
-		super(type);
+	public DatabaseUpdate(String collection) {
+		super(collection);
 	}
 
 	/**
@@ -67,9 +67,10 @@ public class DatabaseUpdate extends DatabaseObject {
 	public void execute() throws DatabaseException {
 		String errorMessage = null;
 		if (!updateMulti) {
-			errorMessage = getCollection().update(query, update).getLastError().getErrorMessage();
+			errorMessage = Database.getCollection(collection).update(query, update).getLastError().getErrorMessage();
 		} else {
-			errorMessage = getCollection().updateMulti(query, update).getLastError().getErrorMessage();
+			errorMessage = Database.getCollection(collection).updateMulti(query, update).getLastError()
+					.getErrorMessage();
 		}
 		if (errorMessage != null) {
 			throw new DatabaseException(errorMessage);

@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
 import models.User;
+import utils.ModelConversion.ConversionException;
 
 public class Login {
 
@@ -19,11 +20,7 @@ public class Login {
 			} else {
 				return null;
 			}
-		} catch (IllegalArgumentException e) {
-			return "Server error: " + e.getMessage();
-		} catch (IllegalAccessException e) {
-			return "Server error: " + e.getMessage();
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return "Server error: " + e.getMessage();
 		} catch (NoSuchAlgorithmException e) {
 			return "Server error: " + e.getMessage();

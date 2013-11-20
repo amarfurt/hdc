@@ -1,87 +1,46 @@
 package utils.db;
 
-import models.App;
-import models.Circle;
-import models.Message;
-import models.Model;
-import models.Record;
-import models.Space;
-import models.User;
-import models.Visualization;
-import utils.ModelConversion;
+import java.util.Set;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 public abstract class DatabaseObject {
 
-	public static enum Type {
-		USER, RECORD, MESSAGE, SPACE, CIRCLE, APP, VISUALIZATION
-	}
-
-	protected Type type;
+	protected String collection;
 	protected DBObject query;
 
-	public DatabaseObject(Type type) {
-		this.type = type;
+	public DatabaseObject(String collection) {
+		this.collection = collection;
 		query = new BasicDBObject();
 	}
 
 	/**
 	 * Add an equality selection to the query.
 	 */
-	public void query(String key, Object value) {
+	public void equals(String key, Object value) {
 		query.put(key, value);
 	}
 
 	/**
-	 * Get the name of the type's collection.
+	 * Selects documents where the array 'key' contains the value.
 	 */
-	public DBCollection getCollection() {
-		switch (type) {
-		case USER:
-			return Database.getCollection("users");
-		case RECORD:
-			return Database.getCollection("records");
-		case MESSAGE:
-			return Database.getCollection("messages");
-		case SPACE:
-			return Database.getCollection("spaces");
-		case CIRCLE:
-			return Database.getCollection("circles");
-		case APP:
-			return Database.getCollection("apps");
-		case VISUALIZATION:
-			return Database.getCollection("visualizations");
-		default:
-			return null;
-		}
+	public void contains(String key, Object value) {
+		query.put(key, value);
 	}
 
 	/**
-	 * Convert the db object to its corresponding class.
+	 * Selects documents where the value of 'key' is in the given set 'values'.
 	 */
-	public Model toModel(DBObject dbObject) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		switch (type) {
-		case USER:
-			return ModelConversion.mapToModel(User.class, dbObject.toMap());
-		case RECORD:
-			return ModelConversion.mapToModel(Record.class, dbObject.toMap());
-		case MESSAGE:
-			return ModelConversion.mapToModel(Message.class, dbObject.toMap());
-		case SPACE:
-			return ModelConversion.mapToModel(Space.class, dbObject.toMap());
-		case CIRCLE:
-			return ModelConversion.mapToModel(Circle.class, dbObject.toMap());
-		case APP:
-			return ModelConversion.mapToModel(App.class, dbObject.toMap());
-		case VISUALIZATION:
-			return ModelConversion.mapToModel(Visualization.class, dbObject.toMap());
-		default:
-			return null;
-		}
+	public void in(String key, Set<Object> values) {
+		query.put(key, new BasicDBObject("$in", values.toArray()));
+	}
+
+	/**
+	 * Selects documents where the value of 'key' is not in the given set 'values'.
+	 */
+	public void notIn(String key, Set<Object> values) {
+		query.put(key, new BasicDBObject("$nin", values.toArray()));
 	}
 
 }

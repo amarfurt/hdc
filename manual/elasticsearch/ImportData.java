@@ -5,8 +5,8 @@ import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import models.Circle;
 import models.Message;
@@ -66,7 +66,7 @@ public class ImportData {
 		for (ObjectId userId : users.keySet()) {
 			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
 			// messages
-			List<Message> messages = Message.findSentTo(userId);
+			Set<Message> messages = Message.findSentTo(userId);
 			Map<ObjectId, String> data = new HashMap<ObjectId, String>();
 			for (Message message : messages) {
 				data.put(message._id, message.title + ": " + message.content);
@@ -74,7 +74,7 @@ public class ImportData {
 			TextSearch.addMultiple(userId, "message", data);
 
 			// spaces
-			List<Space> spaces = Space.findOwnedBy(userId);
+			Set<Space> spaces = Space.findOwnedBy(userId);
 			data.clear();
 			for (Space space : spaces) {
 				data.put(space._id, space.name);
@@ -82,7 +82,7 @@ public class ImportData {
 			TextSearch.addMultiple(userId, "space", data);
 
 			// circles
-			List<Circle> circles = Circle.findOwnedBy(userId);
+			Set<Circle> circles = Circle.findOwnedBy(userId);
 			data.clear();
 			for (Circle circle : circles) {
 				data.put(circle._id, circle.name);
@@ -90,7 +90,7 @@ public class ImportData {
 			TextSearch.addMultiple(userId, "circle", data);
 
 			// records
-			List<Record> records = Record.findOwnedBy(userId);
+			Set<Record> records = Record.findOwnedBy(userId);
 			data.clear();
 			for (Record record : records) {
 				data.put(record._id, record.description);

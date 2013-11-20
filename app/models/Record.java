@@ -1,18 +1,14 @@
 package models;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
+import utils.search.SearchException;
 import utils.search.TextSearch;
 
 import com.mongodb.BasicDBObject;
@@ -40,15 +36,13 @@ public class Record extends Model implements Comparable<Record> {
 		return collection;
 	}
 
-	public static Record find(ObjectId recordId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static Record find(ObjectId recordId) throws ConversionException {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Record.class, result.toMap());
 	}
 
-	public static Set<Record> findAll(ObjectId... recordIds) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static Set<Record> findAll(ObjectId... recordIds) throws ConversionException {
 		Set<Record> records = new HashSet<Record>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", recordIds));
 		DBCursor result = Database.getCollection(collection).find(query);
@@ -62,29 +56,26 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static List<Record> findOwnedBy(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<Record> records = new ArrayList<Record>();
+	public static Set<Record> findOwnedBy(ObjectId userId) throws ConversionException {
+		Set<Record> records = new HashSet<Record>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
 			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
 		}
-		Collections.sort(records);
 		return records;
 	}
 
 	/**
 	 * Find all records visible to the given user.
 	 */
-	public static List<Record> findVisible(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static Set<Record> findVisible(ObjectId userId) throws ConversionException {
 		// get records of this user
-		List<Record> records = findOwnedBy(userId);
+		Set<Record> records = findOwnedBy(userId);
 
 		// get shared records of all circles this user is a member of
-		List<Circle> memberCircles = Circle.findMemberOf(userId);
+		Set<Circle> memberCircles = Circle.findMemberOf(userId);
 		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
 		for (Circle circle : memberCircles) {
 			for (Object recordId : circle.shared) {
@@ -96,24 +87,7 @@ public class Record extends Model implements Comparable<Record> {
 		for (ObjectId recordId : sharedRecords) {
 			records.add(find(recordId));
 		}
-
-		Collections.sort(records);
 		return records;
-	}
-
-	/**
-	 * Find the records specified by the given list of ids in the given list.
-	 */
-	public static List<Record> findInList(List<Object> recordIds, List<Record> records) {
-		List<Record> foundRecords = new ArrayList<Record>(records);
-		Set<Object> ids = new HashSet<Object>(recordIds);
-		Iterator<Record> iterator = foundRecords.iterator();
-		while (iterator.hasNext()) {
-			if (!ids.contains(iterator.next()._id)) {
-				iterator.remove();
-			}
-		}
-		return foundRecords;
 	}
 
 	public static Set<ObjectId> getOwnedBy(ObjectId userId) {
@@ -152,8 +126,7 @@ public class Record extends Model implements Comparable<Record> {
 	 * Adds a record and returns the error message (null in absence of errors). Also adds the generated id to the record
 	 * object.
 	 */
-	public static String add(Record newRecord) throws IllegalArgumentException, IllegalAccessException,
-			ElasticSearchException, IOException {
+	public static String add(Record newRecord) throws ConversionException, SearchException {
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");

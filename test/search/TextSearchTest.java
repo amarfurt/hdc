@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -17,11 +16,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 
 import utils.TextSearchTestHelper;
+import utils.search.SearchException;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
@@ -67,14 +66,14 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void indexUser() throws ElasticSearchException, IOException {
+	public void indexUser() throws SearchException {
 		assertEquals(0, TextSearchTestHelper.count(null, "user"));
 		ObjectId userId = addUser();
 		assertEquals(1, TextSearchTestHelper.count(null, "user"));
 		assertNotNull(TextSearchTestHelper.getData(null, "user", userId));
 	}
 
-	private ObjectId addUser() throws ElasticSearchException, IOException {
+	private ObjectId addUser() throws SearchException {
 		ObjectId userId = new ObjectId();
 		String data = "test@example.com Test User";
 		TextSearch.addPublic(Type.USER, userId, data);
@@ -83,7 +82,7 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void indexRecord() throws ElasticSearchException, IOException {
+	public void indexRecord() throws SearchException {
 		ObjectId userId = addUser();
 		assertEquals(0, TextSearchTestHelper.count(userId, "record"));
 		ObjectId recordId = new ObjectId();
@@ -95,7 +94,7 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void searchEmptyIndex() throws ElasticSearchException, IOException {
+	public void searchEmptyIndex() throws SearchException {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
@@ -106,7 +105,7 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void indexAndSearchOwnIndex() throws ElasticSearchException, IOException {
+	public void indexAndSearchOwnIndex() throws SearchException {
 		ObjectId userId = addUser();
 		ObjectId recordId = new ObjectId();
 		String data = "Test data";
@@ -125,7 +124,7 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void indexAndSearchOtherIndex() throws ElasticSearchException, IOException {
+	public void indexAndSearchOtherIndex() throws SearchException {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
 		ObjectId recordId = new ObjectId();
@@ -148,7 +147,7 @@ public class TextSearchTest {
 	}
 
 	@ManualTest
-	public void ranking() throws ElasticSearchException, IOException {
+	public void ranking() throws SearchException {
 		ObjectId userId = addUser();
 		ObjectId recordId1 = new ObjectId();
 		String data1 = "Test data 1";

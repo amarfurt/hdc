@@ -1,6 +1,5 @@
 package controllers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,16 +13,16 @@ import models.User;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.ModelConversion.ConversionException;
+import utils.search.SearchException;
 import utils.search.SearchResult;
 import utils.search.TextSearch;
-import views.html.spaces;
 import views.html.elements.recordsearchresults;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,21 +34,22 @@ import controllers.forms.SpaceForm;
 public class Spaces extends Controller {
 
 	public static Result show(String activeSpaceId) {
+		ObjectId user = new ObjectId(request().username());
+		List<Record> records;
+		List<Space> spaces;
 		try {
-			ObjectId user = new ObjectId(request().username());
-			ObjectId activeSpace = null;
-			if (activeSpaceId != null) {
-				activeSpace = new ObjectId(activeSpaceId);
-			}
-			return ok(spaces.render(Form.form(SpaceForm.class), Record.findVisible(user), Space.findOwnedBy(user),
-					activeSpace, user));
-		} catch (IllegalArgumentException e) {
-			return internalServerError(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return internalServerError(e.getMessage());
-		} catch (InstantiationException e) {
+			records = new ArrayList<Record>(Record.findVisible(user));
+			spaces = new ArrayList<Space>(Space.findOwnedBy(user));
+		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
+		Collections.sort(records);
+		Collections.sort(spaces);
+		ObjectId activeSpace = null;
+		if (activeSpaceId != null) {
+			activeSpace = new ObjectId(activeSpaceId);
+		}
+		return ok(views.html.spaces.render(Form.form(SpaceForm.class), records, spaces, activeSpace, user));
 	}
 
 	/**
@@ -69,13 +69,9 @@ public class Spaces extends Controller {
 				// pass id of space back in case of success
 				return "ObjectId:" + newSpace._id.toString();
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (ConversionException e) {
 			return e.getMessage();
-		} catch (IllegalAccessException e) {
-			return e.getMessage();
-		} catch (ElasticSearchException e) {
-			return e.getMessage();
-		} catch (IOException e) {
+		} catch (SearchException e) {
 			return e.getMessage();
 		}
 	}
@@ -83,17 +79,18 @@ public class Spaces extends Controller {
 	public static Result add() {
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
+			ObjectId user = new ObjectId(request().username());
+			List<Record> records;
+			List<Space> spaces;
 			try {
-				ObjectId user = new ObjectId(request().username());
-				return badRequest(spaces.render(spaceForm, Record.findVisible(user), Space.findOwnedBy(user), null,
-						user));
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+				records = new ArrayList<Record>(Record.findVisible(user));
+				spaces = new ArrayList<Space>(Space.findOwnedBy(user));
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
+			Collections.sort(records);
+			Collections.sort(spaces);
+			return badRequest(views.html.spaces.render(spaceForm, records, spaces, null, user));
 		} else {
 			// TODO (?) js ajax insertion, open newly added space
 			// return ok(space.render(newSpace));
@@ -113,9 +110,7 @@ public class Spaces extends Controller {
 				} else {
 					return badRequest(errorMessage);
 				}
-			} catch (ElasticSearchException e) {
-				return internalServerError(e.getMessage());
-			} catch (IOException e) {
+			} catch (SearchException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -163,11 +158,7 @@ public class Spaces extends Controller {
 				}
 				// TODO return ok();
 				return redirect(routes.Spaces.show(spaceId));
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
 		} else {
@@ -196,11 +187,7 @@ public class Spaces extends Controller {
 			try {
 				ObjectId[] targetArray = new ObjectId[recordIds.size()];
 				records.addAll(Record.findAll(recordIds.toArray(targetArray)));
-			} catch (IllegalArgumentException e) {
-				return internalServerError(e.getMessage());
-			} catch (IllegalAccessException e) {
-				return internalServerError(e.getMessage());
-			} catch (InstantiationException e) {
+			} catch (ConversionException e) {
 				return internalServerError(e.getMessage());
 			}
 
@@ -213,7 +200,8 @@ public class Spaces extends Controller {
 
 	public static Result loadAllRecords() {
 		try {
-			List<Record> records = Record.findVisible(new ObjectId(request().username()));
+			List<Record> records = new ArrayList<Record>(Record.findVisible(new ObjectId(request().username())));
+			Collections.sort(records);
 
 			// format records
 			List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
@@ -228,11 +216,7 @@ public class Spaces extends Controller {
 				jsonRecords.add(jsonRecord);
 			}
 			return ok(Json.toJson(jsonRecords));
-		} catch (IllegalArgumentException e) {
-			return badRequest(e.getMessage());
-		} catch (IllegalAccessException e) {
-			return badRequest(e.getMessage());
-		} catch (InstantiationException e) {
+		} catch (ConversionException e) {
 			return badRequest(e.getMessage());
 		}
 	}

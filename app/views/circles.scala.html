@@ -77,7 +77,7 @@
 												<div class="contacts">
 													<!-- TODO: in JS -->
 													@defining(Circle.getMembers(circle._id)) { memberIds =>
-														@defining(utils.ListOperations.removeFromList(contacts, memberIds)) { users =>
+														@defining(contacts.filter(contact => !memberIds.contains(contact._id))) { users =>
 															@if(users.size() > 0) {
 																@users.map { user =>
 																	@views.html.elements.checkbox(user._id.toString()){@user.name}
@@ -95,7 +95,9 @@
 													<input type="text" class="userSearch form-control" name="userSearch" placeholder="Search for a user">
 													<!-- TODO: in JS -->
 													@defining(Circle.getMembers(circle._id)) { memberIds =>
-														@views.html.elements.usersearchresults(utils.ListOperations.removeFromList(users, memberIds))
+														@defining(users.filter(user => !memberIds.contains(user._id))) { usersForResult =>
+															@views.html.elements.usersearchresults(usersForResult)
+														}
 													}
 												</div>
 											</div>

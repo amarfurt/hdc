@@ -1,22 +1,19 @@
 package models;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.PasswordHash;
 import utils.db.Database;
+import utils.search.SearchException;
 import utils.search.TextSearch;
 import utils.search.TextSearch.Type;
 
@@ -63,16 +60,14 @@ public class User extends Model implements Comparable<User> {
 		return (String) Database.getCollection(collection).findOne(query, projection).get("name");
 	}
 
-	public static User find(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static User find(ObjectId userId) throws ConversionException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(User.class, result.toMap());
 	}
 
-	public static List<User> find(Set<ObjectId> userIds) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<User> users = new ArrayList<User>();
+	public static Set<User> find(Set<ObjectId> userIds) throws ConversionException {
+		Set<User> users = new HashSet<User>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
@@ -81,21 +76,8 @@ public class User extends Model implements Comparable<User> {
 		return users;
 	}
 
-	@Deprecated
-	public static List<User> findAll(int limit) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<User> userList = new ArrayList<User>();
-		DBObject query = new BasicDBObject();
-		DBCursor result = Database.getCollection(collection).find(query).limit(limit);
-		while (result.hasNext()) {
-			userList.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
-		}
-		Collections.sort(userList);
-		return userList;
-	}
-
-	public static boolean authenticationValid(String email, String password) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public static boolean authenticationValid(String email, String password) throws ConversionException,
+			NoSuchAlgorithmException, InvalidKeySpecException {
 		if (!userExists(email)) {
 			return false;
 		}
@@ -103,9 +85,8 @@ public class User extends Model implements Comparable<User> {
 		return PasswordHash.validatePassword(password, storedPassword);
 	}
 
-	public static String add(User newUser) throws IllegalArgumentException, IllegalAccessException,
-			NoSuchAlgorithmException, InvalidKeySpecException, InstantiationException, ElasticSearchException,
-			IOException {
+	public static String add(User newUser) throws ConversionException, InvalidKeySpecException,
+			NoSuchAlgorithmException, SearchException {
 		if (userExists(newUser.email)) {
 			return "A user with this email address already exists.";
 		}
@@ -239,10 +220,9 @@ public class User extends Model implements Comparable<User> {
 		return installedVisualizationIds;
 	}
 
-	public static List<Visualization> findVisualizations(ObjectId userId) throws IllegalArgumentException,
-			IllegalAccessException, InstantiationException {
+	public static Set<Visualization> findVisualizations(ObjectId userId) throws ConversionException {
 		Set<ObjectId> installedVisualizationIds = getVisualizations(userId);
-		List<Visualization> installedVisualizations = new ArrayList<Visualization>();
+		Set<Visualization> installedVisualizations = new HashSet<Visualization>();
 		for (ObjectId visualizationId : installedVisualizationIds) {
 			installedVisualizations.add(Visualization.find(visualizationId));
 		}

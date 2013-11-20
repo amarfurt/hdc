@@ -89,7 +89,7 @@ public class TextSearch {
 	/**
 	 * Create a user's index.
 	 */
-	private static void createIndex(ObjectId userId) throws ElasticSearchException, IOException {
+	private static void createIndex(ObjectId userId) {
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
 			client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
 		}
@@ -118,19 +118,24 @@ public class TextSearch {
 		}
 	}
 
-	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws ElasticSearchException,
-			IOException {
+	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
 		}
 
-		client.prepareIndex(userId.toString(), type, modelId.toString())
-				.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
-				.actionGet();
+		try {
+			client.prepareIndex(userId.toString(), type, modelId.toString())
+					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
+					.actionGet();
+		} catch (ElasticSearchException e) {
+			throw new SearchException(e);
+		} catch (IOException e) {
+			throw new SearchException(e);
+		}
 	}
 
-	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws IOException {
+	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
@@ -143,8 +148,12 @@ public class TextSearch {
 
 		BulkRequestBuilder bulkRequest = client.prepareBulk();
 		for (ObjectId modelId : data.keySet()) {
-			bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
-					XContentFactory.jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
+			try {
+				bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
+						XContentFactory.jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
+			} catch (IOException e) {
+				throw new SearchException(e);
+			}
 		}
 		BulkResponse bulkResponse = bulkRequest.execute().actionGet();
 		if (bulkResponse.hasFailures()) {
@@ -155,8 +164,7 @@ public class TextSearch {
 		}
 	}
 
-	public static void addPublic(Type type, ObjectId documentId, String data) throws ElasticSearchException,
-			IOException {
+	public static void addPublic(Type type, ObjectId documentId, String data) throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
@@ -165,20 +173,38 @@ public class TextSearch {
 		switch (type) {
 		case USER:
 			// add the user to the global user index and create an own index for the user
-			client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
-					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
-					.actionGet();
+			try {
+				client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
+						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.execute().actionGet();
+			} catch (ElasticSearchException e) {
+				throw new SearchException(e);
+			} catch (IOException e) {
+				throw new SearchException(e);
+			}
 			createIndex(documentId);
 			break;
 		case APP:
-			client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
-					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
-					.actionGet();
+			try {
+				client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
+						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.execute().actionGet();
+			} catch (ElasticSearchException e) {
+				throw new SearchException(e);
+			} catch (IOException e) {
+				throw new SearchException(e);
+			}
 			break;
 		case VISUALIZATION:
-			client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
-					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
-					.actionGet();
+			try {
+				client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
+						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.execute().actionGet();
+			} catch (ElasticSearchException e) {
+				throw new SearchException(e);
+			} catch (IOException e) {
+				throw new SearchException(e);
+			}
 			break;
 		default:
 			throw new NoSuchElementException("There is no such type.");
@@ -334,7 +360,9 @@ public class TextSearch {
 
 	/**
 	 * Builds the search request for other users' visible records.
-	 * @param visibleRecords Key: User id, Value: Set of record ids of records that are visible
+	 * 
+	 * @param visibleRecords
+	 *            Key: User id, Value: Set of record ids of records that are visible
 	 */
 	private static SearchRequestBuilder searchVisibleRecords(Map<ObjectId, Set<ObjectId>> visibleRecords, String query) {
 		List<String> queriedIndices = new ArrayList<String>();

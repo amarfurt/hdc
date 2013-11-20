@@ -1,11 +1,12 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
@@ -28,21 +29,14 @@ public class Message extends Model implements Comparable<Message> {
 		return -this.created.compareTo(o.created);
 	}
 
-	@Override
-	public String toString() {
-		return User.getName(sender) + ": " + title;
-	}
-
-	public static Message find(ObjectId messageId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
+	public static Message find(ObjectId messageId) throws ConversionException {
 		DBObject query = new BasicDBObject("_id", messageId);
 		DBObject result = Database.getCollection(collection).findOne(query);
 		return ModelConversion.mapToModel(Message.class, result.toMap());
 	}
 
-	public static List<Message> findSentTo(ObjectId userId) throws IllegalArgumentException, IllegalAccessException,
-			InstantiationException {
-		List<Message> messages = new ArrayList<Message>();
+	public static Set<Message> findSentTo(ObjectId userId) throws ConversionException {
+		Set<Message> messages = new HashSet<Message>();
 		DBObject query = new BasicDBObject("receiver", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {

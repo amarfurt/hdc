@@ -20,6 +20,7 @@ import org.junit.Test;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
 
@@ -45,7 +46,7 @@ public class SpacesTest {
 	}
 
 	@Test
-	public void addSpace() throws IllegalArgumentException, IllegalAccessException, InstantiationException {
+	public void addSpace() throws ConversionException {
 		ObjectId userId = User.getId("test1@example.com");
 		ObjectId visualizationId = new ObjectId();
 		Result result = callAction(

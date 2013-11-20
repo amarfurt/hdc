@@ -7,16 +7,15 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.io.IOException;
-
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.ModelConversion;
+import utils.ModelConversion.ConversionException;
 import utils.db.Database;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -39,7 +38,7 @@ public class VisualizationTest {
 	}
 
 	@Test
-	public void add() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException, IOException {
+	public void add() throws ConversionException, SearchException {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
@@ -52,8 +51,7 @@ public class VisualizationTest {
 	}
 
 	@Test
-	public void addWithExistingName() throws IllegalArgumentException, IllegalAccessException, ElasticSearchException,
-			IOException {
+	public void addWithExistingName() throws ConversionException, SearchException {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
@@ -69,7 +67,7 @@ public class VisualizationTest {
 	}
 
 	@Test
-	public void delete() throws IllegalArgumentException, IllegalAccessException {
+	public void delete() throws ConversionException {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
@@ -83,7 +81,7 @@ public class VisualizationTest {
 	}
 
 	@Test
-	public void deleteFailure() throws IllegalArgumentException, IllegalAccessException {
+	public void deleteFailure() throws ConversionException {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
