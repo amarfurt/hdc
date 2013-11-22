@@ -67,7 +67,7 @@ public class Search extends Controller {
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
 		for (Record record : records) {
 			// add the record to the result if the description contains the query
-			if (record.description.contains(query)) {
+			if (record.description.toLowerCase().contains(query.toLowerCase())) {
 				ObjectNode datum = Json.newObject();
 				datum.put("value", record.description.substring(0, Math.min(record.description.length(), 40)));
 				datum.put("tokens", Json.toJson(record.description.split("[ ,]+")));
