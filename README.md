@@ -1,4 +1,4 @@
-healthbank
+Health Data Cooperative (HDC)
 ==========
 
 Manage, organize, and leverage your health data.
