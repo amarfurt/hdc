@@ -58,3 +58,9 @@ GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
+
+
+# Apps Public API
+OPTIONS /apps/records/create        controllers.Apps.checkPreFlight()
+POST    /apps/records/create        controllers.Apps.createRecord()
+GET     /apps/records/:recordId     controllers.Apps.getRecord(recordId: String)
