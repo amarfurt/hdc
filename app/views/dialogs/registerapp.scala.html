@@ -1,0 +1,45 @@
+@(form: Form[App], user: org.bson.types.ObjectId)
+
+@main(user, "Market") {
+	<div class="page-header">
+		<h1>Register a new app</h1>
+	</div>
+	
+	@if(form.hasGlobalErrors) {
+		<div class="alert alert-danger alert-dismissable">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			@form.globalError.message
+		</div>
+	}
+	
+	@helper.form(routes.Market.registerApp, 'class -> "form-horizontal") {
+		<div class="form-group">
+			<label for="name" class="col-md-2 control-label">Name</label>
+			<div class="col-md-10">
+				<input type="text" id="name" name="name" class="form-control" placeholder="Name" value="@form("name").value" autofocus>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="description" class="col-md-2 control-label">Description</label>
+			<div class="col-md-10">
+				<textarea rows="5" id="description" name="description" class="form-control" placeholder="Description" value="@form("description").value"></textarea>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="create" class="col-md-2 control-label">URL to create records</label>
+			<div class="col-md-10">
+				<input type="text" id="create" name="create" class="form-control" placeholder="URL (relative to project home)" value="@form("create").value" autofocus>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="details" class="col-md-2 control-label">URL to detailed record view</label>
+			<div class="col-md-10">
+				<input type="text" id="details" name="details" class="form-control" placeholder="URL (relative to project home)" value="@form("details").value" autofocus>
+			</div>
+		</div>
+		<div class="pull-right">
+			<button type="submit" class="btn btn-primary">Register</button>
+			<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+		</div>
+	}
+}

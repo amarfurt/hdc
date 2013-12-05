@@ -13,7 +13,7 @@ public class Registration {
 		if (User.userExists(email)) {
 			return "A user with this email address already exists.";
 		} else if (email.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || password.isEmpty()) {
-			return "Please fill out all fields.";
+			return "Please fill in all fields.";
 		} else {
 			return null;
 		}

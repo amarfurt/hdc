@@ -106,12 +106,14 @@ public class Search extends Controller {
 	 */
 	public static Result showRecord(ObjectId recordId) {
 		Record recordToShow;
+		App app;
 		try {
 			recordToShow = Record.find(recordId);
+			app = App.find(recordToShow.app);
 		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
-		return ok(record.render(recordToShow, new ObjectId(request().username())));
+		return ok(record.render(recordToShow, app, new ObjectId(request().username())));
 	}
 
 	public static Result showMessage(ObjectId messageId) {

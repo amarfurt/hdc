@@ -29,9 +29,14 @@ POST    /circles/users/:id/add      controllers.Circles.addUsers(id: String)
 DELETE  /circles/:id/members/:memberId controllers.Circles.removeMember(id: String, memberId: String)
 GET     /circles/users/search       controllers.Circles.searchUsers(id: String, query: String)
 # Market
-GET     /market                     controllers.Market.show()
-POST    /market/visualizations      controllers.Market.registerVisualization(name: String, description: String, url: String)
+GET     /market                     controllers.Market.index()
+GET     /market/apps/register       controllers.Market.registerAppForm()
+POST    /market/apps/register       controllers.Market.registerApp()
 GET     /market/apps/:id            controllers.Market.showApp(id: String)
+PUT     /market/apps/:id            controllers.Market.installApp(id: String)
+DELETE  /market/apps/:id            controllers.Market.uninstallApp(id: String)
+GET     /market/visualizations/register controllers.Market.registerVisualizationForm()
+POST    /market/visualizations/register controllers.Market.registerVisualization()
 GET     /market/visualizations/:id  controllers.Market.showVisualization(id: String)
 PUT     /market/visualizations/:id  controllers.Market.installVisualization(id: String)
 DELETE  /market/visualizations/:id  controllers.Market.uninstallVisualization(id: String)
@@ -43,6 +48,8 @@ GET     /search/complete/:query     controllers.Search.complete(query: String)
 GET     /search/:model/:id          controllers.Search.show(model: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)
+# Records
+GET     /records/create/:appId      controllers.Records.create(appId: String)
 # Default visualizations
 GET     /visualizations/loading     controllers.visualizations.Visualizations.loading()
 GET     /visualizations/:id         controllers.visualizations.Visualizations.show(id: String)
@@ -61,6 +68,6 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
 # Apps Public API
-OPTIONS /apps/records/create        controllers.Apps.checkPreFlight()
+OPTIONS /apps/records/create        controllers.Apps.checkPreflight()
 POST    /apps/records/create        controllers.Apps.createRecord()
 GET     /apps/records/:recordId     controllers.Apps.getRecord(recordId: String)

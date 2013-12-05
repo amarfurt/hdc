@@ -20,10 +20,12 @@ public class Record extends Model implements Comparable<Record> {
 
 	private static final String collection = "records";
 
-	public ObjectId creator; // any user
-	public ObjectId owner; // any user of type person
+	public ObjectId app; // app that created the record
+	public ObjectId creator; // user that imported the record
+	public ObjectId owner; // person the record is about
 	public String created; // date + time created
 	public String data; // arbitrary data (base64 encoded json string)
+	public String name; // used to display a record and for autocompletion
 	public String description; // this will be indexed in the search cluster
 
 	@Override
@@ -111,6 +113,12 @@ public class Record extends Model implements Comparable<Record> {
 		return visibleRecordIds;
 	}
 
+	public static String getData(ObjectId recordId) {
+		DBObject query = new BasicDBObject("_id", recordId);
+		DBObject projection = new BasicDBObject("data", 1);
+		return (String) Database.getCollection(collection).findOne(query, projection).get("data");
+	}
+
 	/**
 	 * Checks whether the user with the given email is the creator or owner of the record with the given id.
 	 */
@@ -136,7 +144,7 @@ public class Record extends Model implements Comparable<Record> {
 		}
 
 		// also index the data for the text search
-		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.description);
+		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.name + ": " + newRecord.description);
 		return null;
 	}
 

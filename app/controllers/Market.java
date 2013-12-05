@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import models.App;
 import models.User;
 import models.Visualization;
 
 import org.bson.types.ObjectId;
 
+import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -16,35 +18,107 @@ import play.mvc.Security;
 import utils.ModelConversion.ConversionException;
 import utils.search.SearchException;
 import views.html.market;
+import views.html.dialogs.registerapp;
+import views.html.dialogs.registervisualization;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class Market extends Controller {
 
-	public static Result show() {
+	public static Result index() {
+		// TODO display correct lists
 		ObjectId userId = new ObjectId(request().username());
+		List<App> spotlightedApps;
 		List<Visualization> spotlightedVisualizations;
 		try {
+			spotlightedApps = new ArrayList<App>(App.findSpotlighted());
 			spotlightedVisualizations = new ArrayList<Visualization>(Visualization.findSpotlighted());
 		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
+		Collections.sort(spotlightedApps);
 		Collections.sort(spotlightedVisualizations);
-		return ok(market.render(spotlightedVisualizations, spotlightedVisualizations, userId));
+		return ok(market.render(spotlightedApps, spotlightedVisualizations, spotlightedVisualizations, userId));
 	}
 
-	public static Result registerVisualization(String name, String description, String url) {
-		if (Visualization.visualizationWithSameNameExists(name)) {
-			return badRequest("A visualization with this name already exists.");
-		} else if (name.isEmpty() || description.isEmpty() || url.isEmpty()) {
-			return badRequest("Please fill out all fields.");
+	// Apps
+	public static Result registerAppForm() {
+		return ok(registerapp.render(Form.form(App.class), new ObjectId(request().username())));
+	}
+
+	public static Result registerApp() {
+		ObjectId userId = new ObjectId(request().username());
+		Form<App> appForm = Form.form(App.class).bindFromRequest();
+		if (appForm.hasGlobalErrors()) {
+			return badRequest(registerapp.render(appForm, userId));
 		}
-		Visualization newVisualization = new Visualization();
-		newVisualization.creator = new ObjectId(request().username());
-		newVisualization.name = name;
-		newVisualization.description = description;
-		newVisualization.url = url;
+
+		// create new app
+		App newApp = appForm.get();
+		newApp.creator = userId;
+		String errorMessage;
+		try {
+			errorMessage = App.add(newApp);
+		} catch (ConversionException e) {
+			return internalServerError(e.getMessage());
+		} catch (SearchException e) {
+			return internalServerError(e.getMessage());
+		}
+		if (errorMessage != null) {
+			appForm.reject(errorMessage);
+			return badRequest(registerapp.render(appForm, userId));
+		}
+		return redirect(routes.Market.index());
+	}
+
+	public static Result showApp(String appIdString) {
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId appId = new ObjectId(appIdString);
+		App app;
+		try {
+			app = App.find(appId);
+		} catch (ConversionException e) {
+			return internalServerError(e.getMessage());
+		}
+		return ok(views.html.details.app.render(app, userId));
+	}
+
+	public static Result installApp(String appIdString) {
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId appId = new ObjectId(appIdString);
+		String errorMessage = User.addApp(userId, appId);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+		return ok();
+	}
+
+	public static Result uninstallApp(String appIdString) {
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId appId = new ObjectId(appIdString);
+		String errorMessage = User.removeApp(userId, appId);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
+		return ok();
+	}
+
+	// Visualizations
+	public static Result registerVisualizationForm() {
+		return ok(registervisualization.render(Form.form(Visualization.class), new ObjectId(request().username())));
+	}
+
+	public static Result registerVisualization() {
+		ObjectId userId = new ObjectId(request().username());
+		Form<Visualization> visualizationForm = Form.form(Visualization.class).bindFromRequest();
+		if (visualizationForm.hasErrors()) {
+			return badRequest(registervisualization.render(visualizationForm, userId));
+		}
+
+		// create new visualization
+		Visualization newVisualization = visualizationForm.get();
+		newVisualization.creator = userId;
 		String errorMessage;
 		try {
 			errorMessage = Visualization.add(newVisualization);
@@ -56,12 +130,7 @@ public class Market extends Controller {
 		if (errorMessage != null) {
 			return badRequest(errorMessage);
 		}
-		return ok(routes.Market.show().url());
-	}
-
-	public static Result showApp(String appIdString) {
-		// TODO
-		return show();
+		return index();
 	}
 
 	public static Result showVisualization(String visualizationIdString) {
@@ -96,6 +165,7 @@ public class Market extends Controller {
 		return ok();
 	}
 
+	@Deprecated
 	public static Result loadVisualizations() {
 		ObjectId userId = new ObjectId(request().username());
 		List<Visualization> visualizations;

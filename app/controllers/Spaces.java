@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import models.App;
 import models.Record;
 import models.Space;
 import models.User;
@@ -33,69 +34,60 @@ import controllers.forms.SpaceForm;
 @Security.Authenticated(Secured.class)
 public class Spaces extends Controller {
 
+	public static Result show() {
+		return show(Form.form(SpaceForm.class), null);
+	}
+
 	public static Result show(String activeSpaceId) {
-		ObjectId user = new ObjectId(request().username());
+		return show(null, new ObjectId(activeSpaceId));
+	}
+
+	public static Result show(Form<SpaceForm> spaceForm, ObjectId activeSpace) {
+		ObjectId userId = new ObjectId(request().username());
 		List<Record> records;
 		List<Space> spaces;
+		List<App> apps;
 		try {
-			records = new ArrayList<Record>(Record.findVisible(user));
-			spaces = new ArrayList<Space>(Space.findOwnedBy(user));
+			records = new ArrayList<Record>(Record.findVisible(userId));
+			spaces = new ArrayList<Space>(Space.findOwnedBy(userId));
+			apps = new ArrayList<App>(User.findApps(userId));
 		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
 		Collections.sort(records);
 		Collections.sort(spaces);
-		ObjectId activeSpace = null;
-		if (activeSpaceId != null) {
-			activeSpace = new ObjectId(activeSpaceId);
-		}
-		return ok(views.html.spaces.render(Form.form(SpaceForm.class), records, spaces, activeSpace, user));
-	}
-
-	/**
-	 * Validation helper for space form (we only have access to current user in controllers).
-	 */
-	public static String validateSpace(String name, String visualization) {
-		Space newSpace = new Space();
-		newSpace.name = name;
-		newSpace.owner = new ObjectId(request().username());
-		newSpace.visualization = new ObjectId(visualization);
-		newSpace.records = new BasicDBList();
-		try {
-			String errorMessage = Space.add(newSpace);
-			if (errorMessage != null) {
-				return errorMessage;
-			} else {
-				// pass id of space back in case of success
-				return "ObjectId:" + newSpace._id.toString();
-			}
-		} catch (ConversionException e) {
-			return e.getMessage();
-		} catch (SearchException e) {
-			return e.getMessage();
-		}
+		Collections.sort(apps);
+		return ok(views.html.spaces.render(spaceForm, records, spaces, activeSpace, apps, userId));
 	}
 
 	public static Result add() {
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
-			ObjectId user = new ObjectId(request().username());
-			List<Record> records;
-			List<Space> spaces;
-			try {
-				records = new ArrayList<Record>(Record.findVisible(user));
-				spaces = new ArrayList<Space>(Space.findOwnedBy(user));
-			} catch (ConversionException e) {
-				return internalServerError(e.getMessage());
-			}
-			Collections.sort(records);
-			Collections.sort(spaces);
-			return badRequest(views.html.spaces.render(spaceForm, records, spaces, null, user));
-		} else {
-			// TODO (?) js ajax insertion, open newly added space
-			// return ok(space.render(newSpace));
-			return redirect(routes.Spaces.show(spaceForm.get().spaceId));
+			return show(spaceForm, null);
 		}
+
+		SpaceForm form = spaceForm.get();
+		Space newSpace = new Space();
+		newSpace.name = form.name;
+		newSpace.owner = new ObjectId(request().username());
+		newSpace.visualization = new ObjectId(form.visualization);
+		newSpace.records = new BasicDBList();
+		String errorMessage;
+		try {
+			errorMessage = Space.add(newSpace);
+		} catch (ConversionException e) {
+			return internalServerError(e.getMessage());
+		} catch (SearchException e) {
+			return internalServerError(e.getMessage());
+		}
+		if (errorMessage != null) {
+			spaceForm.reject(errorMessage);
+			return show(spaceForm, null);
+		}
+
+		// TODO (?) js ajax insertion, open newly added space
+		// return ok(space.render(newSpace));
+		return redirect(routes.Spaces.show(newSpace._id.toString()));
 	}
 
 	public static Result rename(String spaceId) {

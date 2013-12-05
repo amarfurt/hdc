@@ -17,6 +17,8 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteResult;
 
+import controllers.Application;
+
 public class Visualization extends Model implements Comparable<Visualization> {
 
 	private static final String collection = "visualizations";
@@ -37,8 +39,27 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return name;
 	}
 
+	/**
+	 * Validate form input data for registering a new visualization.
+	 */
+	public String validate() {
+		if (name.isEmpty() || description.isEmpty() || url.isEmpty()) {
+			return "Please fill in all fields.";
+		} else if (Visualization.exists(Application.getCurrentUserId(), name)) {
+			return "A visualization with the same name already exists.";
+		}
+		return null;
+	}
+
 	public static String getDefaultVisualization() {
 		return DEFAULT_VISUALIZATION;
+	}
+
+	public static boolean exists(ObjectId creatorId, String name) {
+		DBObject query = new BasicDBObject("creator", creatorId);
+		query.put("name", name);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	public static String getName(ObjectId visualizationId) {
@@ -74,14 +95,10 @@ public class Visualization extends Model implements Comparable<Visualization> {
 			DBObject cur = result.next();
 			visualizations.add(ModelConversion.mapToModel(Visualization.class, cur.toMap()));
 		}
-		// TODO sort
 		return visualizations;
 	}
 
 	public static String add(Visualization newVisualization) throws ConversionException, SearchException {
-		if (visualizationWithSameNameExists(newVisualization.name)) {
-			return "A visualization with this name already exists.";
-		}
 		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newVisualization._id = (ObjectId) insert.get("_id");
@@ -91,13 +108,13 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		}
 
 		// add to search index (concatenate name and description)
-		TextSearch.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + " "
+		TextSearch.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + ": "
 				+ newVisualization.description);
 		return null;
 	}
 
-	public static String delete(ObjectId visualizationId) {
-		if (!visualizationExists(visualizationId)) {
+	public static String delete(ObjectId creatorId, ObjectId visualizationId) {
+		if (!visualizationExists(creatorId, visualizationId)) {
 			return "No visualizations with this id exists.";
 		}
 
@@ -112,14 +129,11 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return result.getLastError().getErrorMessage();
 	}
 
-	private static boolean visualizationExists(ObjectId visualizationId) {
+	private static boolean visualizationExists(ObjectId creatorId, ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
-		return Database.getCollection(collection).findOne(query) != null;
-	}
-
-	public static boolean visualizationWithSameNameExists(String name) {
-		DBObject query = new BasicDBObject("name", name);
-		return Database.getCollection(collection).findOne(query) != null;
+		query.put("creator", creatorId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 }

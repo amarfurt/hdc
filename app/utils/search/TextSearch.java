@@ -36,6 +36,9 @@ public class TextSearch {
 
 	private static final String CLUSTER_NAME = "healthdata";
 	private static final String PUBLIC = "public"; // public index visible to all users
+	private static final String TITLE = "title";
+	private static final String CONTENT = "content";
+	@Deprecated
 	private static final String FIELD = "data";
 
 	private static Node node;
@@ -118,6 +121,7 @@ public class TextSearch {
 		}
 	}
 
+	@Deprecated
 	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws SearchException {
 		// return if not connected
 		if (client == null) {
@@ -135,6 +139,29 @@ public class TextSearch {
 		}
 	}
 
+	/**
+	 * Add document to search index. Title is used for autocompletion, content for full-text search.
+	 */
+	public static void add(ObjectId userId, String type, ObjectId modelId, String title, String content)
+			throws SearchException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
+		try {
+			client.prepareIndex(userId.toString(), type, modelId.toString())
+					.setSource(
+							XContentFactory.jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content)
+									.endObject()).execute().actionGet();
+		} catch (ElasticSearchException e) {
+			throw new SearchException(e);
+		} catch (IOException e) {
+			throw new SearchException(e);
+		}
+	}
+
+	@Deprecated
 	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws SearchException {
 		// return if not connected
 		if (client == null) {
@@ -361,8 +388,7 @@ public class TextSearch {
 	/**
 	 * Builds the search request for other users' visible records.
 	 * 
-	 * @param visibleRecords
-	 *            Key: User id, Value: Set of record ids of records that are visible
+	 * @param visibleRecords Key: User id, Value: Set of record ids of records that are visible
 	 */
 	private static SearchRequestBuilder searchVisibleRecords(Map<ObjectId, Set<ObjectId>> visibleRecords, String query) {
 		List<String> queriedIndices = new ArrayList<String>();

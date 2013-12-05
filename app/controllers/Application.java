@@ -48,7 +48,7 @@ public class Application extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public static Result spaces() {
-		return Spaces.show(null);
+		return Spaces.show();
 	}
 
 	public static Result authenticate() {
@@ -98,6 +98,11 @@ public class Application extends Controller {
 		return redirect(routes.Application.welcome());
 	}
 
+	@Security.Authenticated(Secured.class)
+	public static ObjectId getCurrentUserId() {
+		return new ObjectId(request().username());
+	}
+
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
 		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Circles.rename(),
@@ -107,7 +112,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Spaces.getVisualizationURL(),
-				controllers.routes.javascript.Market.registerVisualization(),
+				controllers.routes.javascript.Market.installApp(),
+				controllers.routes.javascript.Market.uninstallApp(),
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
 				controllers.routes.javascript.Market.loadVisualizations(),

@@ -4,38 +4,27 @@ import models.Record;
 
 import org.bson.types.ObjectId;
 
-import play.cache.Cache;
-import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.DateTimeUtils;
 import utils.ModelConversion.ConversionException;
+import utils.search.SearchException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-// TODO Security
+// Not secured, accessible from app server
 public class Apps extends Controller {
 
 	public static Result getRecord(String recordId) {
-//		Record record;
-//		try {
-//			record = Record.find(new ObjectId(recordId));
-//		} catch (ConversionException e) {
-//			return badRequest(e.getMessage());
-//		}
+		String data = Record.getData(new ObjectId(recordId));
 
-		Record record = new Record();
-		record.data = (String) Cache.get("data");
-		if (record.data == null) {
-			record.data = "No data cached.";
-		}
-		
 		// allow cross origin request from app server
 		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-		return ok(record.data);
+		return ok(data);
 	}
 
-	public static Result checkPreFlight() {
+	public static Result checkPreflight() {
 		// allow cross origin request from app server
 		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 		response().setHeader("Access-Control-Allow-Methods", "POST");
@@ -49,22 +38,44 @@ public class Apps extends Controller {
 		JsonNode json = request().body().asJson();
 		if (json == null) {
 			return badRequest("No json found.");
+		} else if (json.get("user") == null) {
+			return badRequest("No user found.");
 		} else if (json.get("data") == null) {
 			return badRequest("No data found.");
+		} else if (json.get("name") == null) {
+			return badRequest("No name found.");
 		} else if (json.get("description") == null) {
 			return badRequest("No description found.");
 		}
 
-		// check whether the data is in the correct format and not empty
+		// parse the header to retrieve app id
+		String[] split = request().getHeader("Referer").split("/");
+		String appId = split[split.length - 1];
+
+		// save new record with additional metadata
+		String user = json.get("user").asText();
 		String data = json.get("data").toString();
+		String name = json.get("name").asText();
 		String description = json.get("description").asText();
-		if (data == null || data.isEmpty()) {
-			return badRequest("Wrong data format.");
-		} else if (description == null || description.isEmpty()) {
-			return badRequest("Wrong description format.");
+		Record record = new Record();
+		record.app = new ObjectId(appId);
+		record.creator = new ObjectId(user);
+		record.owner = new ObjectId(user);
+		record.created = DateTimeUtils.getNow();
+		record.data = data;
+		record.name = name;
+		record.description = description;
+		String errorMessage;
+		try {
+			errorMessage = Record.add(record);
+		} catch (ConversionException e) {
+			return badRequest(e.getMessage());
+		} catch (SearchException e) {
+			return badRequest(e.getMessage());
 		}
-		
-		Cache.set("data", data);
+		if (errorMessage != null) {
+			return badRequest(errorMessage);
+		}
 
 		// allow cross origin request from app server
 		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");

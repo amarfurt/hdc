@@ -1,4 +1,4 @@
-@(record: Record, user: org.bson.types.ObjectId)
+@(record: Record, app: App, user: org.bson.types.ObjectId)
 
 @main(user, "Record Details") {
 	<div class="page-header">
@@ -6,19 +6,18 @@
 	</div>
 	
 	<div class="row">
-		<p class="col-sm-2">Created by:</p>
-		<p class="col-sm-10">@User.getName(record.creator)</p>
-	</div>
-	<div class="row">
-		<p class="col-sm-2">Created on:</p>
-		<p class="col-sm-10">@utils.DateTimeUtils.getDate(record.created) at @utils.DateTimeUtils.getTime(record.created)</p>
+		<p class="col-sm-2">Name:</p>
+		<p class="col-sm-10">@record.name</p>
 	</div>
 	<div class="row">
 		<p class="col-sm-2">Owned by:</p>
 		<p class="col-sm-10">@User.getName(record.owner)</p>
 	</div>
 	<div class="row">
-		<p class="col-sm-2">Data:</p>
-		<p class="col-sm-10">@record.data</p>
+		<p class="col-sm-2">Created on:</p>
+		<p class="col-sm-10">@utils.DateTimeUtils.getDate(record.created) at @utils.DateTimeUtils.getTime(record.created)</p>
 	</div>
+	@defining(app.details.replaceAll(":recordId", record._id.toString())) { detailsUrl =>
+		<iframe src="http://localhost:3000/@app._id.toString()/@detailsUrl" height="420px" width="100%"></iframe>
+	}
 }

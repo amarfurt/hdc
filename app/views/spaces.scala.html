@@ -1,7 +1,19 @@
-@(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, user: org.bson.types.ObjectId)
+@(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, apps: List[App], user: org.bson.types.ObjectId)
 
 @main(user, "Spaces") {
 	<div class="page-header">
+		<div class="pull-right">
+			<div class="btn-group">
+				<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+					<span class="glyphicon glyphicon-plus"></span> Create or import a new record
+				</button>
+				<ul class="dropdown-menu" role="menu">
+					@apps.map { app =>
+						<li><a href="@routes.Records.create(app._id.toString())">@app.name</a></li>
+					}
+				</ul>
+			</div>
+		</div>
 		<h1>My spaces</h1>
 	</div>
 	

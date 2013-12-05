@@ -39,11 +39,19 @@ public class Space extends Model implements Comparable<Space> {
 		return name;
 	}
 
+	public static boolean exists(ObjectId ownerId, String name) {
+		DBObject query = new BasicDBObject("owner", ownerId);
+		query.put("name", name);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
 	public static boolean isOwner(ObjectId spaceId, ObjectId userId) {
 		DBObject query = new BasicDBObject();
 		query.put("_id", spaceId);
 		query.put("owner", userId);
-		return (Database.getCollection(collection).findOne(query) != null);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	public static ObjectId getVisualizationId(ObjectId spaceId, ObjectId userId) {
@@ -87,22 +95,18 @@ public class Space extends Model implements Comparable<Space> {
 	 * object.
 	 */
 	public static String add(Space newSpace) throws ConversionException, SearchException {
-		if (!spaceWithSameNameExists(newSpace.name, newSpace.owner)) {
-			newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
-			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
-			WriteResult result = Database.getCollection(collection).insert(insert);
-			newSpace._id = (ObjectId) insert.get("_id");
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-
-			// also add this space to the user's search index
-			TextSearch.add(newSpace.owner, "space", newSpace._id, newSpace.name);
-			return null;
-		} else {
-			return "A space with this name already exists.";
+		newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
+		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
+		WriteResult result = Database.getCollection(collection).insert(insert);
+		newSpace._id = (ObjectId) insert.get("_id");
+		String errorMessage = result.getLastError().getErrorMessage();
+		if (errorMessage != null) {
+			return errorMessage;
 		}
+
+		// also add this space to the user's search index
+		TextSearch.add(newSpace.owner, "space", newSpace._id, newSpace.name);
+		return null;
 	}
 
 	/**

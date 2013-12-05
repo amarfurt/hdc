@@ -8,7 +8,7 @@
 	
 	<div id="redirectNotice" class="alert alert-success alert-dismissable hidden">
 		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-		You have successfully installed a new app. Go to your <a href="@routes.Application.spaces()">spaces</a> now to create a rule for adding new records to a space.
+		You have successfully installed a new app. Go to your <a href="@routes.Application.spaces()">spaces</a> now to import records.
 	</div>
 	
 	<p class="lead">@app.name</p>
@@ -21,10 +21,8 @@
 		<p class="col-xs-10">@app.description</p>
 	</div>
 	
-	<!-- @* Commented out for now
 	<button type="button" id="installButton" app-id="@app._id" class="btn btn-primary @if(User.hasApp(user, app._id)){hidden}">Install</button>
 	<button type="button" id="uninstallButton" class="btn btn-default @if(!User.hasApp(user, app._id)){hidden}">Uninstall</button>
-	*@ -->
 	
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>

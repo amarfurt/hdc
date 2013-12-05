@@ -1,63 +1,52 @@
-class VisualizationController extends Backbone.View
+class MarketController extends Backbone.View
 	initialize: ->
-		@id = $("#installButton").attr("visualization-id")
+		@appId = $("#installButton").attr("app-id")
+		@visualizationId = $("#installButton").attr("visualization-id")
 	events:
 		"click #installButton": "install"
 		"click #uninstallButton": "uninstall"
 	install: (e) ->
 		e.preventDefault()
 		$("#installButton").prop("disabled", true)
-		jsRoutes.controllers.Market.installVisualization(@id).ajax
-			success: ->
-				$("#installButton").addClass("hidden")
-				$("#installButton").prop("disabled", false)
-				$("#uninstallButton").removeClass("hidden")
-				$("#redirectNotice").removeClass("hidden")
-			error: (err) ->
-				console.error("Error installing visualization.")
-				console.error(err.responseText)
-				$("#installButton").prop("disabled", false)
+		if (@appId)
+			jsRoutes.controllers.Market.installApp(@appId).ajax
+				success: @installSuccess
+				error: @installError
+		else if (@visualizationId)
+			jsRoutes.controllers.Market.installVisualization(@visualizationId).ajax
+				success: @installSuccess
+				error: @installError
+	installSuccess: (data) ->
+		$("#installButton").addClass("hidden")
+		$("#installButton").prop("disabled", false)
+		$("#uninstallButton").removeClass("hidden")
+		$("#redirectNotice").removeClass("hidden")
+	installError: (err) ->
+		console.error("Error installing.")
+		console.error(err.responseText)
+		$("#installButton").prop("disabled", false)
 	uninstall: (e) ->
 		e.preventDefault()
 		$("#uninstallButton").prop("disabled", true)
-		jsRoutes.controllers.Market.uninstallVisualization(@id).ajax
-			success: ->
-				$("#uninstallButton").addClass("hidden")
-				$("#uninstallButton").prop("disabled", false)
-				$("#installButton").removeClass("hidden")
-			error: (err) ->
-				console.error("Error installing visualization.")
-				console.error(err.responseText)
-				$("#uninstallButton").prop("disabled", false)
-
-class MarketController extends Backbone.View
-	events:
-		"click #registerVisualization": "registerVisualization"
-	registerVisualization: ->
-		name = $("#newVisualizationName").val()
-		description = $("#newVisualizationDescription").val()
-		url = $("#newVisualizationURL").val()
-		jsRoutes.controllers.Market.registerVisualization(name, description, url).ajax
-			context: this
-			success: (redirect) ->
-				window.location.replace(redirect)
-			error: (err) ->
-				$("#errorMessage").html(err.responseText)
-				$("#errorMessageAlert").removeClass("hidden")
+		if (@appId)
+			jsRoutes.controllers.Market.uninstallApp(@appId).ajax
+				success: @uninstallSuccess
+				error: @uninstallError
+		else if (@visualizationId)
+			jsRoutes.controllers.Market.uninstallVisualization(@visualizationId).ajax
+				success: @uninstallSuccess
+				error: @uninstallError
+	uninstallSuccess: ->
+		$("#uninstallButton").addClass("hidden")
+		$("#uninstallButton").prop("disabled", false)
+		$("#installButton").removeClass("hidden")
+	uninstallError: (err) ->
+		console.error("Error installing.")
+		console.error(err.responseText)
+		$("#uninstallButton").prop("disabled", false)
 
 # jQuery
 $ ->
 	# Instantiate views
 	# TODO separate visualization view from market?
-	new VisualizationController el: $ "body"
 	new MarketController el: $ "body"
-
-	# Load apps
-	
-	# Load visualizations
-	jsRoutes.controllers.Market.loadVisualizations().ajax
-		success: (data) ->
-			window.visualizations = data
-		error: (err) ->
-			console.error("Error loading visualizations.")
-			console.error(err.responseText)

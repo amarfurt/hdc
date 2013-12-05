@@ -1,0 +1,38 @@
+@(form: Form[Visualization], user: org.bson.types.ObjectId)
+
+@main(user, "Market") {
+	<div class="page-header">
+		<h1>Register a new visualization</h1>
+	</div>
+	
+	@if(form.hasGlobalErrors) {
+		<div class="alert alert-danger">
+			@form.globalError.message
+		</div>
+	}
+	
+	@helper.form(routes.Market.registerVisualization, 'class -> "form-horizontal") {
+		<div class="form-group">
+			<label for="name" class="col-md-2 control-label">Name</label>
+			<div class="col-md-10">
+				<input type="text" id="name" name="name" class="form-control" placeholder="Name" value="@form("name").value" autofocus>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="description" class="col-md-2 control-label">Description</label>
+			<div class="col-md-10">
+				<textarea rows="5" id="description" name="description" class="form-control" placeholder="Description" value="@form("description").value"></textarea>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="url" class="col-md-2 control-label">URL</label>
+			<div class="col-md-10">
+				<input type="text" id="url" name="url" class="form-control" placeholder="URL" value="@form("url").value">
+			</div>
+		</div>
+		<div class="pull-right">
+			<button type="submit" class="btn btn-primary">Register</button>
+			<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+		</div>
+	}
+}

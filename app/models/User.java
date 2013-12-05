@@ -198,6 +198,51 @@ public class User extends Model implements Comparable<User> {
 		return visibleRecords;
 	}
 
+	// App methods
+	public static boolean hasApp(ObjectId userId, ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		query.put("apps", appId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	public static Set<ObjectId> getApps(ObjectId userId) {
+		Set<ObjectId> installedAppIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject projection = new BasicDBObject("apps", 1);
+		DBObject result = Database.getCollection(collection).findOne(query, projection);
+		if (result != null) {
+			BasicDBList appIds = (BasicDBList) result.get("apps");
+			for (Object appId : appIds) {
+				installedAppIds.add((ObjectId) appId);
+			}
+		}
+		return installedAppIds;
+	}
+
+	public static Set<App> findApps(ObjectId userId) throws ConversionException {
+		Set<ObjectId> installedAppIds = getApps(userId);
+		Set<App> installedApps = new HashSet<App>();
+		for (ObjectId appId : installedAppIds) {
+			installedApps.add(App.find(appId));
+		}
+		return installedApps;
+	}
+
+	public static String addApp(ObjectId userId, ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("apps", appId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
+	}
+
+	public static String removeApp(ObjectId userId, ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("apps", appId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		return result.getLastError().getErrorMessage();
+	}
+
 	// Visualization methods
 	public static boolean hasVisualization(ObjectId userId, ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", userId);
