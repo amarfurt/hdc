@@ -2,7 +2,7 @@
 <div class="searchResults">
 	@if(records.size() > 0) {
 		@records.map { record =>
-			@views.html.elements.checkbox(record._id.toString()){@record.description}
+			@views.html.elements.checkbox(record._id.toString()){@record.name}
 		}
 	} else {
 		<p>No records matched your search.</p>

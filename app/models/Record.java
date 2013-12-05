@@ -144,7 +144,7 @@ public class Record extends Model implements Comparable<Record> {
 		}
 
 		// also index the data for the text search
-		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.name + ": " + newRecord.description);
+		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.name, newRecord.description);
 		return null;
 	}
 

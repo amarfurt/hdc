@@ -11,12 +11,10 @@
 			<ul>
 			@results.get(resultType).map { result =>
 				<li>
+					<a href="@routes.Search.show(resultType, result.id.toString())">@result.title</a>
 					@if(result.highlighted != null) {
-						@Html(result.highlighted)
-					} else {
-						result.data
+						<p>@Html(result.highlighted)</p>
 					}
-					<a href="@routes.Search.show(resultType, result.id.toString())">Details</a>
 				</li>
 			}
 			</ul>

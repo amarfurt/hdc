@@ -4,7 +4,7 @@ public class SearchResult implements Comparable<SearchResult> {
 
 	public String id;
 	public float score;
-	public String data;
+	public String title;
 	public String highlighted;
 
 	@Override

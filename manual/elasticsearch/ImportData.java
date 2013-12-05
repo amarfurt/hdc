@@ -54,7 +54,7 @@ public class ImportData {
 			ObjectId userId = (ObjectId) cur.get("_id");
 			String email = (String) cur.get("email");
 			String name = (String) cur.get("name");
-			TextSearch.addPublic(Type.USER, userId, email + " " + name);
+			TextSearch.addPublic(Type.USER, userId, name, email);
 			users.put(userId, name);
 		}
 
@@ -67,39 +67,44 @@ public class ImportData {
 			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
 			// messages
 			Set<Message> messages = Message.findSentTo(userId);
-			Map<ObjectId, String> data = new HashMap<ObjectId, String>();
 			for (Message message : messages) {
-				data.put(message._id, message.title + ": " + message.content);
+				TextSearch.add(userId, "message", message._id, message.title, message.content);
 			}
-			TextSearch.addMultiple(userId, "message", data);
 
 			// spaces
 			Set<Space> spaces = Space.findOwnedBy(userId);
-			data.clear();
 			for (Space space : spaces) {
-				data.put(space._id, space.name);
+				TextSearch.add(userId, "space", space._id, space.name);
 			}
-			TextSearch.addMultiple(userId, "space", data);
 
 			// circles
 			Set<Circle> circles = Circle.findOwnedBy(userId);
-			data.clear();
 			for (Circle circle : circles) {
-				data.put(circle._id, circle.name);
+				TextSearch.add(userId, "circle", circle._id, circle.name);
 			}
-			TextSearch.addMultiple(userId, "circle", data);
 
 			// records
 			Set<Record> records = Record.findOwnedBy(userId);
-			data.clear();
 			for (Record record : records) {
-				data.put(record._id, record.description);
+				TextSearch.add(userId, "record", record._id, record.name, record.description);
 			}
-			TextSearch.addMultiple(userId, "record", data);
 			System.out.println("done.");
 		}
 
-		// TODO apps
+		// apps
+		System.out.println("Importing apps...");
+		query = new BasicDBObject();
+		projection = new BasicDBObject("name", 1);
+		projection.put("description", 1);
+		result = Database.getCollection("apps").find(query, projection);
+		while (result.hasNext()) {
+			DBObject cur = result.next();
+			ObjectId appId = (ObjectId) cur.get("_id");
+			String name = (String) cur.get("name");
+			String description = (String) cur.get("description");
+			TextSearch.addPublic(Type.APP, appId, name, description);
+		}
+		System.out.println("done.");
 
 		// visualizations
 		System.out.print("Importing visualizations...");
@@ -112,7 +117,7 @@ public class ImportData {
 			ObjectId visualizationId = (ObjectId) cur.get("_id");
 			String name = (String) cur.get("name");
 			String description = (String) cur.get("description");
-			TextSearch.addPublic(Type.VISUALIZATION, visualizationId, name + ": " + description);
+			TextSearch.addPublic(Type.VISUALIZATION, visualizationId, name, description);
 		}
 		System.out.println("done.");
 

@@ -3,7 +3,6 @@ package controllers;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,23 +55,15 @@ public class Search extends Controller {
 	 * Suggests completions for the given query. Used by the auto-completion feature.
 	 */
 	public static Result complete(String query) {
-		// TODO for now, simply complete with record descriptions to test the UI feature
-		List<Record> records;
-		try {
-			records = new ArrayList<Record>(Record.findVisible(new ObjectId(request().username())));
-		} catch (ConversionException e) {
-			return internalServerError(e.getMessage());
-		}
-		Collections.sort(records);
+		System.out.println("Received autocompletion request for: " + query);
+		List<String> completions = TextSearch.complete(new ObjectId(request().username()), query);
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
-		for (Record record : records) {
-			// add the record to the result if the description contains the query
-			if (record.description.toLowerCase().contains(query.toLowerCase())) {
-				ObjectNode datum = Json.newObject();
-				datum.put("value", record.description.substring(0, Math.min(record.description.length(), 40)));
-				datum.put("tokens", Json.toJson(record.description.split("[ ,]+")));
-				jsonRecords.add(datum);
-			}
+		for (String completion : completions) {
+			System.out.println("Found: " + completion);
+			ObjectNode datum = Json.newObject();
+			datum.put("value", completion);
+			datum.put("tokens", Json.toJson(completion.split("[ ,\\.]+")));
+			jsonRecords.add(datum);
 		}
 		return ok(Json.toJson(jsonRecords));
 	}

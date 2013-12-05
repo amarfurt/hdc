@@ -1,5 +1,7 @@
 package utils.search;
 
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,20 +15,19 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.suggest.Suggest.Suggestion;
 
 public class TextSearch {
 
@@ -37,9 +38,8 @@ public class TextSearch {
 	private static final String CLUSTER_NAME = "healthdata";
 	private static final String PUBLIC = "public"; // public index visible to all users
 	private static final String TITLE = "title";
+	private static final String SUGGEST = "suggest"; // used for autocompletion
 	private static final String CONTENT = "content";
-	@Deprecated
-	private static final String FIELD = "data";
 
 	private static Node node;
 	private static Client client;
@@ -122,21 +122,8 @@ public class TextSearch {
 	}
 
 	@Deprecated
-	public static void add(ObjectId userId, String type, ObjectId modelId, String data) throws SearchException {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		try {
-			client.prepareIndex(userId.toString(), type, modelId.toString())
-					.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject()).execute()
-					.actionGet();
-		} catch (ElasticSearchException e) {
-			throw new SearchException(e);
-		} catch (IOException e) {
-			throw new SearchException(e);
-		}
+	public static void add(ObjectId userId, String type, ObjectId modelId, String title) throws SearchException {
+		add(userId, type, modelId, title, null);
 	}
 
 	/**
@@ -149,11 +136,13 @@ public class TextSearch {
 			return;
 		}
 
+		String[] split = title.split("[ ,\\.]+");
 		try {
 			client.prepareIndex(userId.toString(), type, modelId.toString())
 					.setSource(
-							XContentFactory.jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content)
-									.endObject()).execute().actionGet();
+							jsonBuilder().startObject().field(TITLE, title).startObject(SUGGEST).array("input", split)
+									.field("output", title).endObject().field(CONTENT, content).endObject()).execute()
+					.actionGet();
 		} catch (ElasticSearchException e) {
 			throw new SearchException(e);
 		} catch (IOException e) {
@@ -173,25 +162,70 @@ public class TextSearch {
 			return;
 		}
 
-		BulkRequestBuilder bulkRequest = client.prepareBulk();
-		for (ObjectId modelId : data.keySet()) {
-			try {
-				bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
-						XContentFactory.jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
-			} catch (IOException e) {
-				throw new SearchException(e);
-			}
-		}
-		BulkResponse bulkResponse = bulkRequest.execute().actionGet();
-		if (bulkResponse.hasFailures()) {
-			for (BulkItemResponse response : bulkResponse) {
-				// TODO error handling
-				System.out.println(response.getFailureMessage());
-			}
-		}
+		// BulkRequestBuilder bulkRequest = client.prepareBulk();
+		// for (ObjectId modelId : data.keySet()) {
+		// try {
+		// bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
+		// jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
+		// } catch (IOException e) {
+		// throw new SearchException(e);
+		// }
+		// }
+		// BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+		// if (bulkResponse.hasFailures()) {
+		// for (BulkItemResponse response : bulkResponse) {
+		// // TODO error handling
+		// System.out.println(response.getFailureMessage());
+		// }
+		// }
 	}
 
+	@Deprecated
 	public static void addPublic(Type type, ObjectId documentId, String data) throws SearchException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
+		// switch (type) {
+		// case USER:
+		// // add the user to the global user index and create an own index for the user
+		// try {
+		// client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
+		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
+		// } catch (ElasticSearchException e) {
+		// throw new SearchException(e);
+		// } catch (IOException e) {
+		// throw new SearchException(e);
+		// }
+		// createIndex(documentId);
+		// break;
+		// case APP:
+		// try {
+		// client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
+		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
+		// } catch (ElasticSearchException e) {
+		// throw new SearchException(e);
+		// } catch (IOException e) {
+		// throw new SearchException(e);
+		// }
+		// break;
+		// case VISUALIZATION:
+		// try {
+		// client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
+		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
+		// } catch (ElasticSearchException e) {
+		// throw new SearchException(e);
+		// } catch (IOException e) {
+		// throw new SearchException(e);
+		// }
+		// break;
+		// default:
+		// throw new NoSuchElementException("There is no such type.");
+		// }
+	}
+
+	public static void addPublic(Type type, ObjectId documentId, String title, String content) throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
@@ -202,7 +236,7 @@ public class TextSearch {
 			// add the user to the global user index and create an own index for the user
 			try {
 				client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
-						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
 						.execute().actionGet();
 			} catch (ElasticSearchException e) {
 				throw new SearchException(e);
@@ -214,7 +248,7 @@ public class TextSearch {
 		case APP:
 			try {
 				client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
-						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
 						.execute().actionGet();
 			} catch (ElasticSearchException e) {
 				throw new SearchException(e);
@@ -225,7 +259,7 @@ public class TextSearch {
 		case VISUALIZATION:
 			try {
 				client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
-						.setSource(XContentFactory.jsonBuilder().startObject().field(FIELD, data).endObject())
+						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
 						.execute().actionGet();
 			} catch (ElasticSearchException e) {
 				throw new SearchException(e);
@@ -289,6 +323,33 @@ public class TextSearch {
 		}
 	}
 
+	public static List<String> complete(ObjectId userId, String query) {
+		List<String> results = new ArrayList<String>();
+
+		// return if not connected
+		if (client == null) {
+			return results;
+		}
+
+		// only autocomplete in public and user's own index
+		ListenableActionFuture<SuggestResponse> publicSuggest = client.prepareSuggest(PUBLIC).setSuggestText(query)
+				.execute();
+		ListenableActionFuture<SuggestResponse> userSuggest = client.prepareSuggest(userId.toString())
+				.setSuggestText(query).execute();
+		SuggestResponse publicResponse = publicSuggest.actionGet();
+		SuggestResponse userResponse = userSuggest.actionGet();
+		System.out.println("User response: " + userResponse.toString());
+		for (Suggestion suggestion : publicResponse.getSuggest()) {
+			System.out.println(suggestion.toString());
+			results.add(suggestion.toString());
+		}
+		for (Suggestion suggestion : userResponse.getSuggest()) {
+			System.out.println(suggestion.toString());
+			results.add(suggestion.toString());
+		}
+		return results;
+	}
+
 	public static List<SearchResult> searchPublic(Type type, String query) {
 		// return if not connected
 		if (client == null) {
@@ -296,7 +357,7 @@ public class TextSearch {
 		}
 
 		SearchResponse response = client.prepareSearch(PUBLIC).setTypes(getType(type))
-				.setQuery(QueryBuilders.matchQuery(FIELD, query)).execute().actionGet();
+				.setQuery(QueryBuilders.multiMatchQuery(query, TITLE, CONTENT)).execute().actionGet();
 		Map<String, List<SearchResult>> searchResults = getSearchResults(response);
 		if (!searchResults.containsKey(getType(type))) {
 			return new ArrayList<SearchResult>();
@@ -373,7 +434,7 @@ public class TextSearch {
 
 	private static SearchRequestBuilder searchPrivateIndex(ObjectId userId, String query, String... types) {
 		SearchRequestBuilder builder = client.prepareSearch(userId.toString()).setQuery(
-				QueryBuilders.matchQuery(FIELD, query));
+				QueryBuilders.multiMatchQuery(query, TITLE, CONTENT));
 		if (types != null) {
 			builder.setTypes(types);
 		}
@@ -381,7 +442,8 @@ public class TextSearch {
 	}
 
 	private static SearchRequestBuilder searchPublicIndex(String query) {
-		SearchRequestBuilder builder = client.prepareSearch(PUBLIC).setQuery(QueryBuilders.matchQuery(FIELD, query));
+		SearchRequestBuilder builder = client.prepareSearch(PUBLIC).setQuery(
+				QueryBuilders.multiMatchQuery(query, TITLE, CONTENT));
 		return addHighlighting(builder);
 	}
 
@@ -406,13 +468,13 @@ public class TextSearch {
 		}
 		String[] indicesArray = new String[queriedIndices.size()];
 		SearchRequestBuilder builder = client.prepareSearch(queriedIndices.toArray(indicesArray))
-				.setQuery(QueryBuilders.matchQuery(FIELD, query))
+				.setQuery(QueryBuilders.multiMatchQuery(query, TITLE, CONTENT))
 				.setFilter(FilterBuilders.idsFilter("record").ids(recordIds));
 		return addHighlighting(builder);
 	}
 
 	private static SearchRequestBuilder addHighlighting(SearchRequestBuilder builder) {
-		return builder.addHighlightedField(FIELD, 150).setHighlighterPreTags("<span class=\"text-info\"><strong>")
+		return builder.addHighlightedField(CONTENT, 150).setHighlighterPreTags("<span class=\"text-info\"><strong>")
 				.setHighlighterPostTags("</strong></span>");
 	}
 
@@ -429,7 +491,7 @@ public class TextSearch {
 				SearchResult searchResult = new SearchResult();
 				searchResult.id = hit.getId();
 				searchResult.score = hit.getScore();
-				searchResult.data = (String) hit.getSource().get(FIELD);
+				searchResult.title = (String) hit.getSource().get("title");
 				if (!hit.getHighlightFields().isEmpty()) {
 					for (String field : hit.getHighlightFields().keySet()) {
 						Text[] fragments = hit.getHighlightFields().get(field).getFragments();

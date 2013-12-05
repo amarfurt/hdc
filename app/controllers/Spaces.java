@@ -39,7 +39,7 @@ public class Spaces extends Controller {
 	}
 
 	public static Result show(String activeSpaceId) {
-		return show(null, new ObjectId(activeSpaceId));
+		return show(Form.form(SpaceForm.class), new ObjectId(activeSpaceId));
 	}
 
 	public static Result show(Form<SpaceForm> spaceForm, ObjectId activeSpace) {
