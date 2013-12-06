@@ -55,11 +55,9 @@ public class Search extends Controller {
 	 * Suggests completions for the given query. Used by the auto-completion feature.
 	 */
 	public static Result complete(String query) {
-		System.out.println("Received autocompletion request for: " + query);
 		List<String> completions = TextSearch.complete(new ObjectId(request().username()), query);
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
 		for (String completion : completions) {
-			System.out.println("Found: " + completion);
 			ObjectNode datum = Json.newObject();
 			datum.put("value", completion);
 			datum.put("tokens", Json.toJson(completion.split("[ ,\\.]+")));

@@ -22,12 +22,17 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.text.Text;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.suggest.Suggest.Suggestion;
+import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry;
+import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry.Option;
+import org.elasticsearch.search.suggest.SuggestBuilder.SuggestionBuilder;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 
 public class TextSearch {
 
@@ -43,6 +48,7 @@ public class TextSearch {
 
 	private static Node node;
 	private static Client client;
+	private static XContentBuilder mapping;
 
 	public static void connect() {
 		// start a client node (holds no data)
@@ -64,7 +70,7 @@ public class TextSearch {
 	/**
 	 * Create global indices.
 	 */
-	public static void initialize() {
+	public static void initialize() throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
@@ -72,8 +78,22 @@ public class TextSearch {
 
 		// check whether the public index exists and create it otherwise
 		if (!client.admin().indices().prepareExists(PUBLIC).execute().actionGet().isExists()) {
-			client.admin().indices().prepareCreate(PUBLIC).execute().actionGet();
+			client.admin().indices().prepareCreate(PUBLIC).addMapping("_default_", getMapping()).execute().actionGet();
 		}
+	}
+
+	public static XContentBuilder getMapping() throws SearchException {
+		if (mapping == null) {
+			try {
+				mapping = jsonBuilder().startObject().startObject("mapping").startObject("properties")
+						.startObject("title").field("type", "string").endObject().startObject("content")
+						.field("type", "string").endObject().startObject("suggest").field("type", "completion")
+						.endObject().endObject().endObject().endObject();
+			} catch (IOException e) {
+				throw new SearchException(e);
+			}
+		}
+		return mapping;
 	}
 
 	/**
@@ -92,9 +112,10 @@ public class TextSearch {
 	/**
 	 * Create a user's index.
 	 */
-	private static void createIndex(ObjectId userId) {
+	private static void createIndex(ObjectId userId) throws SearchException {
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
-			client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
+			client.admin().indices().prepareCreate(userId.toString()).addMapping("_default_", getMapping()).execute()
+					.actionGet();
 		}
 	}
 
@@ -332,20 +353,29 @@ public class TextSearch {
 		}
 
 		// only autocomplete in public and user's own index
-		ListenableActionFuture<SuggestResponse> publicSuggest = client.prepareSuggest(PUBLIC).setSuggestText(query)
-				.execute();
+		SuggestionBuilder<CompletionSuggestionBuilder> suggestionBuilder = new CompletionSuggestionBuilder("suggestion")
+				.text(query).field("suggest");
+		ListenableActionFuture<SuggestResponse> publicSuggest = client.prepareSuggest(PUBLIC)
+				.addSuggestion(suggestionBuilder).execute();
 		ListenableActionFuture<SuggestResponse> userSuggest = client.prepareSuggest(userId.toString())
-				.setSuggestText(query).execute();
+				.addSuggestion(suggestionBuilder).execute();
 		SuggestResponse publicResponse = publicSuggest.actionGet();
 		SuggestResponse userResponse = userSuggest.actionGet();
-		System.out.println("User response: " + userResponse.toString());
-		for (Suggestion suggestion : publicResponse.getSuggest()) {
-			System.out.println(suggestion.toString());
-			results.add(suggestion.toString());
+		for (Suggestion<? extends Entry<? extends Option>> suggestion : publicResponse.getSuggest()) {
+			for (Entry<? extends Option> entry : suggestion) {
+				for (Option option : entry) {
+					System.out.println("Score: " + option.getScore() + "\tText: " + option.getText().string());
+					results.add(option.getText().string());
+				}
+			}
 		}
-		for (Suggestion suggestion : userResponse.getSuggest()) {
-			System.out.println(suggestion.toString());
-			results.add(suggestion.toString());
+		for (Suggestion<? extends Entry<? extends Option>> suggestion : userResponse.getSuggest()) {
+			for (Entry<? extends Option> entry : suggestion) {
+				for (Option option : entry) {
+					System.out.println("Score: " + option.getScore() + "\tText: " + option.getText().string());
+					results.add(option.getText().string());
+				}
+			}
 		}
 		return results;
 	}
