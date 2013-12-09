@@ -34,6 +34,10 @@ import org.elasticsearch.search.suggest.Suggest.Suggestion.Entry.Option;
 import org.elasticsearch.search.suggest.SuggestBuilder.SuggestionBuilder;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 
+import play.libs.Json;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 public class TextSearch {
 
 	public static enum Type {
@@ -88,7 +92,7 @@ public class TextSearch {
 				mapping = jsonBuilder().startObject().startObject("mapping").startObject("properties")
 						.startObject("title").field("type", "string").endObject().startObject("content")
 						.field("type", "string").endObject().startObject("suggest").field("type", "completion")
-						.endObject().endObject().endObject().endObject();
+						.field("payloads", true).endObject().endObject().endObject().endObject();
 			} catch (IOException e) {
 				throw new SearchException(e);
 			}
@@ -162,8 +166,9 @@ public class TextSearch {
 			client.prepareIndex(userId.toString(), type, modelId.toString())
 					.setSource(
 							jsonBuilder().startObject().field(TITLE, title).startObject(SUGGEST).array("input", split)
-									.field("output", title).endObject().field(CONTENT, content).endObject()).execute()
-					.actionGet();
+									.field("output", title).startObject("payload").field("type", type)
+									.field("id", modelId.toString()).endObject().endObject().field(CONTENT, content)
+									.endObject()).execute().actionGet();
 		} catch (ElasticSearchException e) {
 			throw new SearchException(e);
 		} catch (IOException e) {
@@ -344,8 +349,8 @@ public class TextSearch {
 		}
 	}
 
-	public static List<String> complete(ObjectId userId, String query) {
-		List<String> results = new ArrayList<String>();
+	public static Map<String, List<SearchResult>> complete(ObjectId userId, String query) {
+		Map<String, List<SearchResult>> results = new HashMap<String, List<SearchResult>>();
 
 		// return if not connected
 		if (client == null) {
@@ -361,21 +366,47 @@ public class TextSearch {
 				.addSuggestion(suggestionBuilder).execute();
 		SuggestResponse publicResponse = publicSuggest.actionGet();
 		SuggestResponse userResponse = userSuggest.actionGet();
-		for (Suggestion<? extends Entry<? extends Option>> suggestion : publicResponse.getSuggest()) {
-			for (Entry<? extends Option> entry : suggestion) {
-				for (Option option : entry) {
-					System.out.println("Score: " + option.getScore() + "\tText: " + option.getText().string());
-					results.add(option.getText().string());
+		SuggestResponse[] responses = { publicResponse, userResponse };
+		for (SuggestResponse response : responses) {
+			for (Suggestion<? extends Entry<? extends Option>> suggestion : response.getSuggest()) {
+				for (Entry<? extends Option> entry : suggestion) {
+					for (Option option : entry) {
+						String type = null;
+						SearchResult searchResult = new SearchResult();
+						try {
+							// proper payload support might be introduced in version 1.0.0
+							// for now: parse payload JSON object
+							String xContent = option.toXContent(jsonBuilder(), null).string();
+							JsonNode json = Json.parse(xContent);
+							if (json.has("payload")) {
+								JsonNode payload = json.get("payload");
+								if (payload.has("type")) {
+									type = payload.get("type").asText();
+								}
+								if (payload.has("id")) {
+									searchResult.id = payload.get("id").asText();
+								}
+							}
+						} catch (IOException e) {
+							// error while parsing payload, type and id stay null
+						}
+						searchResult.score = option.getScore();
+						searchResult.title = option.getText().string();
+
+						// highlighting not supported yet; might be introduced in future versions?
+						if (option.getHighlighted() != null) {
+							searchResult.highlighted = option.getHighlighted().string();
+						}
+						addToListInMap(results, type, searchResult);
+					}
 				}
 			}
 		}
-		for (Suggestion<? extends Entry<? extends Option>> suggestion : userResponse.getSuggest()) {
-			for (Entry<? extends Option> entry : suggestion) {
-				for (Option option : entry) {
-					System.out.println("Score: " + option.getScore() + "\tText: " + option.getText().string());
-					results.add(option.getText().string());
-				}
-			}
+
+		// set types of incomplete/failed results to "other"
+		if (results.containsKey(null)) {
+			results.put("other", results.get(null));
+			results.remove(null);
 		}
 		return results;
 	}
@@ -512,11 +543,6 @@ public class TextSearch {
 		Map<String, List<SearchResult>> searchResults = new HashMap<String, List<SearchResult>>();
 		for (SearchResponse response : responses) {
 			for (SearchHit hit : response.getHits()) {
-				// add result list to map if not present for this type
-				if (!searchResults.containsKey(hit.getType())) {
-					searchResults.put(hit.getType(), new ArrayList<SearchResult>());
-				}
-
 				// construct search result
 				SearchResult searchResult = new SearchResult();
 				searchResult.id = hit.getId();
@@ -535,10 +561,17 @@ public class TextSearch {
 				}
 
 				// add search result to result list of respective type
-				searchResults.get(hit.getType()).add(searchResult);
+				addToListInMap(searchResults, hit.getType(), searchResult);
 			}
 		}
 		return searchResults;
+	}
+
+	private static <T> void addToListInMap(Map<T, List<SearchResult>> map, T key, SearchResult value) {
+		if (!map.containsKey(key)) {
+			map.put(key, new ArrayList<SearchResult>());
+		}
+		map.get(key).add(value);
 	}
 
 }

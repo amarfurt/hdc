@@ -55,25 +55,29 @@ public class Search extends Controller {
 	 * Suggests completions for the given query. Used by the auto-completion feature.
 	 */
 	public static Result complete(String query) {
-		List<String> completions = TextSearch.complete(new ObjectId(request().username()), query);
+		Map<String, List<SearchResult>> completions = TextSearch.complete(new ObjectId(request().username()), query);
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
-		for (String completion : completions) {
-			ObjectNode datum = Json.newObject();
-			datum.put("value", completion);
-			datum.put("tokens", Json.toJson(completion.split("[ ,\\.]+")));
-			jsonRecords.add(datum);
+		for (String type : completions.keySet()) {
+			for (SearchResult completion : completions.get(type)) {
+				ObjectNode datum = Json.newObject();
+				datum.put("value", completion.title);
+				datum.put("tokens", Json.toJson(completion.title.split("[ ,\\.]+")));
+				datum.put("type", type);
+				datum.put("id", completion.id);
+				jsonRecords.add(datum);
+			}
 		}
 		return ok(Json.toJson(jsonRecords));
 	}
 
 	/**
-	 * Display the details for the 'model' with id 'objectId'.
+	 * Display the details for the 'type' with id 'objectId'.
 	 */
-	public static Result show(String model, String objectId) {
+	public static Result show(String type, String objectId) {
 		ObjectId id = new ObjectId(objectId);
 		Method method;
 		try {
-			method = Search.class.getMethod("show" + WordUtils.capitalize(model), ObjectId.class);
+			method = Search.class.getMethod("show" + WordUtils.capitalize(type), ObjectId.class);
 		} catch (SecurityException e) {
 			return internalServerError(e.getMessage());
 		} catch (NoSuchMethodException e) {

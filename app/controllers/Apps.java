@@ -38,13 +38,13 @@ public class Apps extends Controller {
 		JsonNode json = request().body().asJson();
 		if (json == null) {
 			return badRequest("No json found.");
-		} else if (json.get("user") == null) {
+		} else if (!json.has("user")) {
 			return badRequest("No user found.");
-		} else if (json.get("data") == null) {
+		} else if (!json.has("data")) {
 			return badRequest("No data found.");
-		} else if (json.get("name") == null) {
+		} else if (!json.has("name")) {
 			return badRequest("No name found.");
-		} else if (json.get("description") == null) {
+		} else if (!json.has("description")) {
 			return badRequest("No description found.");
 		}
 

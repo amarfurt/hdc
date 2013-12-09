@@ -129,6 +129,9 @@ loadSpace = (url, records, spaceId, compare) ->
 		success: (response) ->
 			iframeId = iframeName+"-"+spaceId
 			$("#"+iframeId).replaceWith('<iframe id="'+iframeId+'" src="'+response+'" height="420px" width="100%"></iframe>')
+		error: (err) ->
+			console.error("Error when loading space.")
+			console.error(err.responseText)
 
 filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"

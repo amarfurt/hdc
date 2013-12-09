@@ -123,7 +123,8 @@ public class Application extends Controller {
 				controllers.visualizations.routes.javascript.RecordList.findCirclesWith(),
 				controllers.visualizations.routes.javascript.RecordList.updateSpaces(),
 				controllers.visualizations.routes.javascript.RecordList.updateSharing(),
-				controllers.routes.javascript.Search.complete()));
+				controllers.routes.javascript.Search.complete(),
+				controllers.routes.javascript.Search.show()));
 	}
 
 }

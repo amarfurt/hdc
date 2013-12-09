@@ -23,9 +23,9 @@ public class Visualizations extends Controller {
 	protected static String requestComplete(JsonNode json) {
 		if (json == null) {
 			return "No json found.";
-		} else if (json.get("spaceId") == null) {
+		} else if (!json.has("spaceId")) {
 			return "No space id found.";
-		} else if (json.get("records") == null) {
+		} else if (!json.has("records")) {
 			return "No records found.";
 		} else {
 			return null;
