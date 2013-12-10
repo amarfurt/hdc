@@ -9,7 +9,7 @@ import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -144,7 +144,7 @@ public class Record extends Model implements Comparable<Record> {
 		}
 
 		// also index the data for the text search
-		TextSearch.add(newRecord.owner, "record", newRecord._id, newRecord.name, newRecord.description);
+		Search.add(newRecord.owner, "record", newRecord._id, newRecord.name, newRecord.description);
 		return null;
 	}
 

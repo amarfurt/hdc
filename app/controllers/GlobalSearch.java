@@ -24,7 +24,7 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utils.ModelConversion.ConversionException;
 import utils.search.SearchResult;
-import utils.search.TextSearch;
+import utils.search.Search;
 import views.html.search;
 import views.html.details.app;
 import views.html.details.message;
@@ -35,20 +35,20 @@ import views.html.details.visualization;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
-public class Search extends Controller {
+public class GlobalSearch extends Controller {
 
 	/**
 	 * Search in all the user's accessible data.
 	 */
-	public static Result globalSearch() {
+	public static Result submit() {
 		String query = Form.form().bindFromRequest().get("globalSearch");
-		return redirect(routes.Search.search(query));
+		return redirect(routes.GlobalSearch.search(query));
 	}
 
 	public static Result search(String query) {
 		ObjectId userId = new ObjectId(request().username());
 		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
-		Map<String, List<SearchResult>> searchResults = TextSearch.search(userId, visibleRecords, query);
+		Map<String, List<SearchResult>> searchResults = Search.search(userId, visibleRecords, query);
 		return ok(search.render(searchResults, userId));
 	}
 
@@ -56,7 +56,7 @@ public class Search extends Controller {
 	 * Suggests completions for the given query. Used by the auto-completion feature.
 	 */
 	public static Result complete(String query) {
-		Map<String, List<SearchResult>> completions = TextSearch.complete(new ObjectId(request().username()), query);
+		Map<String, List<SearchResult>> completions = Search.complete(new ObjectId(request().username()), query);
 		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
 		for (String type : completions.keySet()) {
 			for (SearchResult completion : completions.get(type)) {
@@ -78,14 +78,14 @@ public class Search extends Controller {
 		ObjectId id = new ObjectId(objectId);
 		Method method;
 		try {
-			method = Search.class.getMethod("show" + WordUtils.capitalize(type), ObjectId.class);
+			method = GlobalSearch.class.getMethod("show" + WordUtils.capitalize(type), ObjectId.class);
 		} catch (SecurityException e) {
 			return internalServerError(e.getMessage());
 		} catch (NoSuchMethodException e) {
 			return internalServerError(e.getMessage());
 		}
 		try {
-			return (Result) method.invoke(Search.class, id);
+			return (Result) method.invoke(GlobalSearch.class, id);
 		} catch (IllegalArgumentException e) {
 			return internalServerError(e.getMessage());
 		} catch (IllegalAccessException e) {

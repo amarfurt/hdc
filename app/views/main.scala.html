@@ -53,7 +53,7 @@
 						<li @if("Circles".equals(active)){class="active"}><a href="/circles">Circles</a></li>
 						<li @if("Market".equals(active)){class="active"}><a href="/market">Market</a></li>
 					</ul>
-					@helper.form(routes.Search.globalSearch, 'id -> "globalSearchForm", 'class -> "navbar-form navbar-left") {
+					@helper.form(routes.GlobalSearch.submit, 'id -> "globalSearchForm", 'class -> "navbar-form navbar-left") {
 						<div class="form-group">
 							<input type="text" id="globalSearch" name="globalSearch" class="form-control" placeholder="Search">
 						</div>

@@ -9,9 +9,9 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilders;
 
-import utils.search.TextSearch;
+import utils.search.Search;
 
-public class TextSearchTestHelper extends TextSearch {
+public class SearchTestHelper extends Search {
 
 	/**
 	 * Refresh the index, e.g. before counting.
@@ -30,7 +30,7 @@ public class TextSearchTestHelper extends TextSearch {
 			index = userId.toString();
 		}
 
-		// get values of TextSearch class
+		// get values of Search class
 		Client client = (Client) makeAccessible("client");
 		String FIELD = (String) makeAccessible("FIELD");
 		GetResponse response = client.prepareGet(index, type, documentId.toString()).execute().actionGet();
@@ -47,7 +47,7 @@ public class TextSearchTestHelper extends TextSearch {
 			index = userId.toString();
 		}
 
-		// get values of TextSearch class
+		// get values of Search class
 		Client client = (Client) makeAccessible("client");
 
 		// get the count of indexed items
@@ -58,7 +58,7 @@ public class TextSearchTestHelper extends TextSearch {
 
 	private static Object makeAccessible(String fieldName) {
 		try {
-			Field field = TextSearch.class.getDeclaredField(fieldName);
+			Field field = Search.class.getDeclaredField(fieldName);
 			field.setAccessible(true);
 			return field.get(null);
 		} catch (SecurityException e) {

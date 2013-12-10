@@ -5,7 +5,7 @@ class SearchController extends Backbone.View
 			remote: {
 				url: null
 				replace: (url, query) ->
-					jsRoutes.controllers.Search.complete(query).url
+					jsRoutes.controllers.GlobalSearch.complete(query).url
 			}
 		})
 	events:
@@ -16,7 +16,7 @@ class SearchController extends Backbone.View
 		if e.keyCode is 13 then $("#globalSearchForm").submit()
 	selected: (e, datum) ->
 		if datum.type isnt "other"
-			window.location.href = jsRoutes.controllers.Search.show(datum.type, datum.id).url
+			window.location.href = jsRoutes.controllers.GlobalSearch.show(datum.type, datum.id).url
 
 # Instantiate views
 $ ->

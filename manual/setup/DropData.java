@@ -4,7 +4,7 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 import utils.db.Database;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 public class DropData {
 
@@ -15,7 +15,7 @@ public class DropData {
 		Database.connect();
 		System.out.println("done.");
 		System.out.print("Connecting to ElasticSearch...");
-		TextSearch.connect();
+		Search.connect();
 		System.out.println("done.");
 
 		// dropping old content
@@ -23,13 +23,13 @@ public class DropData {
 		Database.destroy();
 		System.out.println("done.");
 		System.out.print("Deleting existing ElasticSearch indices...");
-		TextSearch.destroy();
+		Search.destroy();
 		System.out.println("done.");
 
 		// shutting down
 		System.out.println("Shutting down...");
 		Database.close();
-		TextSearch.close();
+		Search.close();
 		System.out.println("Finished.");
 	}
 

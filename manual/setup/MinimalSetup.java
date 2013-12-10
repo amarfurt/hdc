@@ -10,7 +10,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.ObjectId;
 
 import utils.db.Database;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 /**
  * Minimal setup that is necessary to start a fresh Health Data Cooperative platform.
@@ -26,7 +26,7 @@ public class MinimalSetup {
 		Database.connect();
 		System.out.println("done.");
 		System.out.print("Connecting to ElasticSearch...");
-		TextSearch.connect();
+		Search.connect();
 		System.out.println("done.");
 
 		// initializing
@@ -34,7 +34,7 @@ public class MinimalSetup {
 		Database.initialize();
 		System.out.println("done.");
 		System.out.print("Setting up ElasticSearch...");
-		TextSearch.initialize();
+		Search.initialize();
 		System.out.println("done.");
 
 		// create developer id (used as a creator of the default visualization)
@@ -75,7 +75,7 @@ public class MinimalSetup {
 
 		System.out.println("Shutting down...");
 		Database.close();
-		TextSearch.close();
+		Search.close();
 		System.out.println("Minimal setup complete.");
 	}
 

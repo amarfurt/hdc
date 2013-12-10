@@ -9,8 +9,8 @@ import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -108,7 +108,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		}
 
 		// add to search index (concatenate name and description)
-		TextSearch.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + ": "
+		Search.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + ": "
 				+ newVisualization.description);
 		return null;
 	}
@@ -119,7 +119,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		}
 
 		// remove from search index
-		TextSearch.deletePublic(Type.VISUALIZATION, visualizationId);
+		Search.deletePublic(Type.VISUALIZATION, visualizationId);
 
 		// TODO only hide or remove from all users (including deleting their spaces associated with it)?
 

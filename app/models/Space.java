@@ -11,7 +11,7 @@ import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -105,7 +105,7 @@ public class Space extends Model implements Comparable<Space> {
 		}
 
 		// also add this space to the user's search index
-		TextSearch.add(newSpace.owner, "space", newSpace._id, newSpace.name);
+		Search.add(newSpace.owner, "space", newSpace._id, newSpace.name);
 		return null;
 	}
 
@@ -130,8 +130,8 @@ public class Space extends Model implements Comparable<Space> {
 		}
 
 		// update search index
-		TextSearch.delete(ownerId, "space", spaceId);
-		TextSearch.add(ownerId, "space", spaceId, newName);
+		Search.delete(ownerId, "space", spaceId);
+		Search.add(ownerId, "space", spaceId, newName);
 		return null;
 	}
 
@@ -162,7 +162,7 @@ public class Space extends Model implements Comparable<Space> {
 		}
 
 		// remove from search index
-		TextSearch.delete(ownerId, "space", spaceId);
+		Search.delete(ownerId, "space", spaceId);
 		return null;
 	}
 

@@ -42,10 +42,10 @@ PUT     /market/visualizations/:id  controllers.Market.installVisualization(id: 
 DELETE  /market/visualizations/:id  controllers.Market.uninstallVisualization(id: String)
 GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Search
-POST    /search                     controllers.Search.globalSearch()
-GET     /search/:query              controllers.Search.search(query: String)
-GET     /search/complete/:query     controllers.Search.complete(query: String)
-GET     /search/:type/:id           controllers.Search.show(type: String, id: String)
+POST    /search                     controllers.GlobalSearch.submit()
+GET     /search/:query              controllers.GlobalSearch.search(query: String)
+GET     /search/complete/:query     controllers.GlobalSearch.complete(query: String)
+GET     /search/:type/:id           controllers.GlobalSearch.show(type: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)
 # Records

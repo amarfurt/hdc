@@ -10,7 +10,7 @@ import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -161,7 +161,7 @@ public class Circle extends Model implements Comparable<Circle> {
 			}
 
 			// also add this circle to the user's search index
-			TextSearch.add(newCircle.owner, "circle", newCircle._id, newCircle.name);
+			Search.add(newCircle.owner, "circle", newCircle._id, newCircle.name);
 			return null;
 		} else {
 			return "A circle with this name already exists.";
@@ -189,8 +189,8 @@ public class Circle extends Model implements Comparable<Circle> {
 		}
 
 		// update search index
-		TextSearch.delete(ownerId, "circle", circleId);
-		TextSearch.add(ownerId, "circle", circleId, newName);
+		Search.delete(ownerId, "circle", circleId);
+		Search.add(ownerId, "circle", circleId, newName);
 		return null;
 	}
 
@@ -221,7 +221,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		}
 
 		// remove from search index
-		TextSearch.delete(ownerId, "circle", circleId);
+		Search.delete(ownerId, "circle", circleId);
 		return null;
 	}
 

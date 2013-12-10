@@ -19,13 +19,13 @@ import org.bson.types.ObjectId;
 import org.junit.After;
 import org.junit.Before;
 
-import utils.TextSearchTestHelper;
+import utils.SearchTestHelper;
 import utils.search.SearchException;
 import utils.search.SearchResult;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 
-public class TextSearchTest {
+public class SearchTest {
 
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.RUNTIME)
@@ -33,13 +33,13 @@ public class TextSearchTest {
 	}
 
 	/**
-	 * Manual testing because of timeout error for subsequent tests that call the TextSearch module (even if its not
+	 * Manual testing because of timeout error for subsequent tests that call the Search module (even if its not
 	 * connected).
 	 */
 	public static void main(String[] args) throws Exception {
-		System.out.println("Starting TextSearch tests.");
-		TextSearchTest tester = new TextSearchTest();
-		for (Method method : TextSearchTest.class.getMethods()) {
+		System.out.println("Starting Search tests.");
+		SearchTest tester = new SearchTest();
+		for (Method method : SearchTest.class.getMethods()) {
 			if (method.isAnnotationPresent(ManualTest.class)) {
 				tester.setUp();
 				System.out.print("Testing " + method.getName() + "...");
@@ -53,44 +53,44 @@ public class TextSearchTest {
 
 	@Before
 	public void setUp() throws Exception {
-		TextSearch.connectToTest();
+		Search.connectToTest();
 		Thread.sleep(1000);
-		TextSearch.destroy();
-		TextSearch.initialize();
-		TextSearchTestHelper.refreshIndex();
+		Search.destroy();
+		Search.initialize();
+		SearchTestHelper.refreshIndex();
 	}
 
 	@After
 	public void tearDown() {
-		TextSearch.close();
+		Search.close();
 	}
 
 	@ManualTest
 	public void indexUser() throws SearchException {
-		assertEquals(0, TextSearchTestHelper.count(null, "user"));
+		assertEquals(0, SearchTestHelper.count(null, "user"));
 		ObjectId userId = addUser();
-		assertEquals(1, TextSearchTestHelper.count(null, "user"));
-		assertNotNull(TextSearchTestHelper.getData(null, "user", userId));
+		assertEquals(1, SearchTestHelper.count(null, "user"));
+		assertNotNull(SearchTestHelper.getData(null, "user", userId));
 	}
 
 	private ObjectId addUser() throws SearchException {
 		ObjectId userId = new ObjectId();
 		String data = "test@example.com Test User";
-		TextSearch.addPublic(Type.USER, userId, data);
-		TextSearchTestHelper.refreshIndex();
+		Search.addPublic(Type.USER, userId, data);
+		SearchTestHelper.refreshIndex();
 		return userId;
 	}
 
 	@ManualTest
 	public void indexRecord() throws SearchException {
 		ObjectId userId = addUser();
-		assertEquals(0, TextSearchTestHelper.count(userId, "record"));
+		assertEquals(0, SearchTestHelper.count(userId, "record"));
 		ObjectId recordId = new ObjectId();
 		String data = "Test data";
-		TextSearch.add(userId, "record", recordId, data);
-		TextSearchTestHelper.refreshIndex();
-		assertEquals(1, TextSearchTestHelper.count(userId, "record"));
-		assertEquals(data, TextSearchTestHelper.getData(userId, "record", recordId));
+		Search.add(userId, "record", recordId, data);
+		SearchTestHelper.refreshIndex();
+		assertEquals(1, SearchTestHelper.count(userId, "record"));
+		assertEquals(data, SearchTestHelper.getData(userId, "record", recordId));
 	}
 
 	@ManualTest
@@ -100,7 +100,7 @@ public class TextSearchTest {
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		visibleRecords.put(userId2, new HashSet<ObjectId>());
 		String query = "data";
-		Map<String, List<SearchResult>> result = TextSearch.search(userId1, visibleRecords, query);
+		Map<String, List<SearchResult>> result = Search.search(userId1, visibleRecords, query);
 		assertEquals(0, result.size());
 	}
 
@@ -109,12 +109,12 @@ public class TextSearchTest {
 		ObjectId userId = addUser();
 		ObjectId recordId = new ObjectId();
 		String data = "Test data";
-		TextSearch.add(userId, "record", recordId, data);
-		TextSearchTestHelper.refreshIndex();
-		assertEquals(1, TextSearchTestHelper.count(userId, "record"));
+		Search.add(userId, "record", recordId, data);
+		SearchTestHelper.refreshIndex();
+		assertEquals(1, SearchTestHelper.count(userId, "record"));
 		String query = "data";
 		HashMap<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
-		Map<String, List<SearchResult>> result = TextSearch.search(userId, visibleRecords, query);
+		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));
 		assertEquals(1, result.get("record").size());
@@ -129,15 +129,15 @@ public class TextSearchTest {
 		ObjectId userId2 = addUser();
 		ObjectId recordId = new ObjectId();
 		String data = "Test data";
-		TextSearch.add(userId1, "record", recordId, data);
-		TextSearchTestHelper.refreshIndex();
-		assertEquals(1, TextSearchTestHelper.count(userId1, "record"));
+		Search.add(userId1, "record", recordId, data);
+		SearchTestHelper.refreshIndex();
+		assertEquals(1, SearchTestHelper.count(userId1, "record"));
 		String query = "data";
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
 		visibleRecordIds.add(recordId);
 		visibleRecords.put(userId1, visibleRecordIds);
-		Map<String, List<SearchResult>> result = TextSearch.search(userId2, visibleRecords, query);
+		Map<String, List<SearchResult>> result = Search.search(userId2, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));
 		assertEquals(1, result.get("record").size());
@@ -151,18 +151,18 @@ public class TextSearchTest {
 		ObjectId userId = addUser();
 		ObjectId recordId1 = new ObjectId();
 		String data1 = "Test data 1";
-		TextSearch.add(userId, "record", recordId1, data1);
+		Search.add(userId, "record", recordId1, data1);
 		ObjectId recordId2 = new ObjectId();
 		String data2 = "Test data 2";
-		TextSearch.add(userId, "record", recordId2, data2);
+		Search.add(userId, "record", recordId2, data2);
 		ObjectId recordId3 = new ObjectId();
 		String data3 = "Unrelated";
-		TextSearch.add(userId, "record", recordId3, data3);
-		TextSearchTestHelper.refreshIndex();
-		assertEquals(3, TextSearchTestHelper.count(userId, "record"));
+		Search.add(userId, "record", recordId3, data3);
+		SearchTestHelper.refreshIndex();
+		assertEquals(3, SearchTestHelper.count(userId, "record"));
 		String query = "data 2";
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
-		Map<String, List<SearchResult>> result = TextSearch.search(userId, visibleRecords, query);
+		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));
 		assertEquals(2, result.get("record").size());

@@ -11,7 +11,7 @@
 			<ul>
 			@results.get(resultType).map { result =>
 				<li>
-					<a href="@routes.Search.show(resultType, result.id.toString())">@result.title</a>
+					<a href="@routes.GlobalSearch.show(resultType, result.id.toString())">@result.title</a>
 					@if(result.highlighted != null) {
 						<p>@Html(result.highlighted)</p>
 					}

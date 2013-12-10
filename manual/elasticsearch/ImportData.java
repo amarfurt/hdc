@@ -16,8 +16,8 @@ import models.Space;
 import org.bson.types.ObjectId;
 
 import utils.db.Database;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -35,8 +35,8 @@ public class ImportData {
 		Database.connect();
 
 		// connect to ElasticSearch
-		TextSearch.connect();
-		TextSearch.initialize();
+		Search.connect();
+		Search.initialize();
 
 		// waiting for previous operations to finish...
 		Thread.sleep(1000);
@@ -54,7 +54,7 @@ public class ImportData {
 			ObjectId userId = (ObjectId) cur.get("_id");
 			String email = (String) cur.get("email");
 			String name = (String) cur.get("name");
-			TextSearch.addPublic(Type.USER, userId, name, email);
+			Search.addPublic(Type.USER, userId, name, email);
 			users.put(userId, name);
 		}
 
@@ -68,25 +68,25 @@ public class ImportData {
 			// messages
 			Set<Message> messages = Message.findSentTo(userId);
 			for (Message message : messages) {
-				TextSearch.add(userId, "message", message._id, message.title, message.content);
+				Search.add(userId, "message", message._id, message.title, message.content);
 			}
 
 			// spaces
 			Set<Space> spaces = Space.findOwnedBy(userId);
 			for (Space space : spaces) {
-				TextSearch.add(userId, "space", space._id, space.name);
+				Search.add(userId, "space", space._id, space.name);
 			}
 
 			// circles
 			Set<Circle> circles = Circle.findOwnedBy(userId);
 			for (Circle circle : circles) {
-				TextSearch.add(userId, "circle", circle._id, circle.name);
+				Search.add(userId, "circle", circle._id, circle.name);
 			}
 
 			// records
 			Set<Record> records = Record.findOwnedBy(userId);
 			for (Record record : records) {
-				TextSearch.add(userId, "record", record._id, record.name, record.description);
+				Search.add(userId, "record", record._id, record.name, record.description);
 			}
 			System.out.println("done.");
 		}
@@ -102,7 +102,7 @@ public class ImportData {
 			ObjectId appId = (ObjectId) cur.get("_id");
 			String name = (String) cur.get("name");
 			String description = (String) cur.get("description");
-			TextSearch.addPublic(Type.APP, appId, name, description);
+			Search.addPublic(Type.APP, appId, name, description);
 		}
 		System.out.println("done.");
 
@@ -117,13 +117,13 @@ public class ImportData {
 			ObjectId visualizationId = (ObjectId) cur.get("_id");
 			String name = (String) cur.get("name");
 			String description = (String) cur.get("description");
-			TextSearch.addPublic(Type.VISUALIZATION, visualizationId, name, description);
+			Search.addPublic(Type.VISUALIZATION, visualizationId, name, description);
 		}
 		System.out.println("done.");
 
 		// disconnect
 		Database.close();
-		TextSearch.close();
+		Search.close();
 		System.out.println("Finished.");
 	}
 

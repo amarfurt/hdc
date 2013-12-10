@@ -19,8 +19,8 @@ import play.mvc.Security;
 import utils.ModelConversion.ConversionException;
 import utils.search.SearchException;
 import utils.search.SearchResult;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 import views.html.circles;
 import views.html.elements.usersearchresults;
 
@@ -165,7 +165,7 @@ public class Circles extends Controller {
 		members.add(new ObjectId(request().username()));
 		while (users.size() < limit) {
 			// TODO use caching/incremental retrieval of results (scrolls)
-			List<SearchResult> searchResults = TextSearch.searchPublic(Type.USER, query);
+			List<SearchResult> searchResults = Search.searchPublic(Type.USER, query);
 			Set<ObjectId> userIds = new HashSet<ObjectId>();
 			for (SearchResult searchResult : searchResults) {
 				userIds.add(new ObjectId(searchResult.id));

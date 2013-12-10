@@ -14,8 +14,8 @@ import utils.ModelConversion.ConversionException;
 import utils.PasswordHash;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -105,7 +105,7 @@ public class User extends Model implements Comparable<User> {
 		}
 
 		// add to search index (concatenate email and name)
-		TextSearch.addPublic(Type.USER, newUser._id, newUser.email + " " + newUser.name);
+		Search.addPublic(Type.USER, newUser._id, newUser.email + " " + newUser.name);
 		return null;
 	}
 
@@ -115,7 +115,7 @@ public class User extends Model implements Comparable<User> {
 		}
 
 		// remove from search index
-		TextSearch.deletePublic(Type.USER, userId);
+		Search.deletePublic(Type.USER, userId);
 
 		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
 		// the marketplace), ...

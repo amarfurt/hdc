@@ -38,7 +38,7 @@ import play.libs.Json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class TextSearch {
+public class Search {
 
 	public static enum Type {
 		USER, APP, VISUALIZATION

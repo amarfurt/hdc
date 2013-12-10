@@ -9,8 +9,8 @@ import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 import utils.search.SearchException;
-import utils.search.TextSearch;
-import utils.search.TextSearch.Type;
+import utils.search.Search;
+import utils.search.Search.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -81,7 +81,7 @@ public class App extends Model implements Comparable<App> {
 		}
 
 		// add to search index (concatenate name and description)
-		TextSearch.addPublic(Type.APP, newApp._id, newApp.name + ": " + newApp.description);
+		Search.addPublic(Type.APP, newApp._id, newApp.name + ": " + newApp.description);
 		return null;
 	}
 

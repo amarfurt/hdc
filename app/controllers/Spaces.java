@@ -23,7 +23,7 @@ import play.mvc.Security;
 import utils.ModelConversion.ConversionException;
 import utils.search.SearchException;
 import utils.search.SearchResult;
-import utils.search.TextSearch;
+import utils.search.Search;
 import views.html.elements.recordsearchresults;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -170,7 +170,7 @@ public class Spaces extends Controller {
 		Set<ObjectId> recordsAlreadyInSpace = Space.getRecords(spaceId);
 		while (records.size() < limit) {
 			// TODO use caching/incremental retrieval of results (scrolls)
-			List<SearchResult> searchResults = TextSearch.searchRecords(userId, visibleRecords, query);
+			List<SearchResult> searchResults = Search.searchRecords(userId, visibleRecords, query);
 			Set<ObjectId> recordIds = new HashSet<ObjectId>();
 			for (SearchResult searchResult : searchResults) {
 				recordIds.add(new ObjectId(searchResult.id));

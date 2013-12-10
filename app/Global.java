@@ -1,7 +1,7 @@
 import play.Application;
 import play.GlobalSettings;
 import utils.db.Database;
-import utils.search.TextSearch;
+import utils.search.Search;
 
 public class Global extends GlobalSettings {
 
@@ -11,7 +11,7 @@ public class Global extends GlobalSettings {
 		Database.connect();
 
 		// Connect to search cluster
-		TextSearch.connect();
+		Search.connect();
 	}
 
 	@Override
@@ -20,7 +20,7 @@ public class Global extends GlobalSettings {
 		Database.close();
 
 		// Close connection to search cluster
-		TextSearch.close();
+		Search.close();
 	}
 
 }
