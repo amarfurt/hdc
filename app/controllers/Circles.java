@@ -29,6 +29,10 @@ import com.mongodb.BasicDBList;
 @Security.Authenticated(Secured.class)
 public class Circles extends Controller {
 
+	public static Result index() {
+		return show(null);
+	}
+
 	public static Result show(String activeCircleId) {
 		try {
 			ObjectId user = new ObjectId(request().username());
@@ -95,7 +99,7 @@ public class Circles extends Controller {
 		if (Secured.isOwnerOfCircle(id)) {
 			String errorMessage = Circle.delete(id);
 			if (errorMessage == null) {
-				return ok(routes.Application.circles().url());
+				return ok(routes.Circles.index().url());
 			} else {
 				return badRequest(errorMessage);
 			}

@@ -34,7 +34,7 @@ import controllers.forms.SpaceForm;
 @Security.Authenticated(Secured.class)
 public class Spaces extends Controller {
 
-	public static Result show() {
+	public static Result index() {
 		return show(Form.form(SpaceForm.class), null);
 	}
 
@@ -116,7 +116,7 @@ public class Spaces extends Controller {
 		if (Secured.isOwnerOfSpace(id)) {
 			String errorMessage = Space.delete(id);
 			if (errorMessage == null) {
-				return ok(routes.Application.spaces().url());
+				return ok(routes.Spaces.index().url());
 			} else {
 				return badRequest(errorMessage);
 			}

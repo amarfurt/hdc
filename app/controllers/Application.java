@@ -41,16 +41,6 @@ public class Application extends Controller {
 		return ok(welcome.render(Form.form(Login.class), Form.form(Registration.class)));
 	}
 
-	@Security.Authenticated(Secured.class)
-	public static Result circles() {
-		return Circles.show(null);
-	}
-
-	@Security.Authenticated(Secured.class)
-	public static Result spaces() {
-		return Spaces.show();
-	}
-
 	public static Result authenticate() {
 		Form<Login> loginForm = Form.form(Login.class).bindFromRequest();
 		if (loginForm.hasErrors()) {
