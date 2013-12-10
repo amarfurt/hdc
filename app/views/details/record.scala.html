@@ -17,7 +17,7 @@
 		<p class="col-sm-2">Created on:</p>
 		<p class="col-sm-10">@utils.DateTimeUtils.getDate(record.created) at @utils.DateTimeUtils.getTime(record.created)</p>
 	</div>
-	@defining(app.details.replaceAll(":recordId", record._id.toString())) { detailsUrl =>
+	@defining(app.details.replaceAll(":host", localhost).replaceAll(":recordId", record._id.toString())) { detailsUrl =>
 		<iframe src="http://@localhost:3000/@app._id.toString()/@detailsUrl" height="420px" width="100%"></iframe>
 	}
 }
