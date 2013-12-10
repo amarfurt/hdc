@@ -4,6 +4,7 @@ import models.App;
 
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -21,7 +22,8 @@ public class Records extends Controller {
 		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
-		return ok(createrecords.render(app, new ObjectId(request().username())));
+		String localhost = Play.application().configuration().getString("external.host");
+		return ok(createrecords.render(app, localhost, new ObjectId(request().username())));
 	}
 
 }

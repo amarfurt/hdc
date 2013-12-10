@@ -16,6 +16,7 @@ import models.Visualization;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -106,7 +107,8 @@ public class Search extends Controller {
 		} catch (ConversionException e) {
 			return internalServerError(e.getMessage());
 		}
-		return ok(record.render(recordToShow, app, new ObjectId(request().username())));
+		String localhost = Play.application().configuration().getString("external.host");
+		return ok(record.render(recordToShow, app, localhost, new ObjectId(request().username())));
 	}
 
 	public static Result showMessage(ObjectId messageId) {

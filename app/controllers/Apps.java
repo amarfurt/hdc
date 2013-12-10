@@ -4,6 +4,7 @@ import models.Record;
 
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -20,13 +21,15 @@ public class Apps extends Controller {
 		String data = Record.getData(new ObjectId(recordId));
 
 		// allow cross origin request from app server
-		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		String localhost = Play.application().configuration().getString("external.host");
+		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
 		return ok(data);
 	}
 
 	public static Result checkPreflight() {
 		// allow cross origin request from app server
-		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		String localhost = Play.application().configuration().getString("external.host");
+		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
 		response().setHeader("Access-Control-Allow-Methods", "POST");
 		response().setHeader("Access-Control-Allow-Headers", "Content-Type");
 		return ok();
@@ -78,7 +81,8 @@ public class Apps extends Controller {
 		}
 
 		// allow cross origin request from app server
-		response().setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+		String localhost = Play.application().configuration().getString("external.host");
+		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
 		return ok();
 	}
 
