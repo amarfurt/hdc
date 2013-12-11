@@ -138,9 +138,9 @@ filterRecords = (url, records, spaceId, compare) ->
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
 	sliderFilter = if not compare then "filterSlider" else "filterSlider2"
 	
-	creator = $("#"+creatorFilter+"-"+spaceId).attr("value")
-	owner = $("#"+ownerFilter+"-"+spaceId).attr("value")
-	range = $("#"+sliderFilter+"-"+spaceId).attr("value")
+	creator = $("#"+creatorFilter+"-"+spaceId).prop("value")
+	owner = $("#"+ownerFilter+"-"+spaceId).prop("value")
+	range = $("#"+sliderFilter+"-"+spaceId).prop("value")
 	split = range.split(/\,/)
 	startdate = dateToString(new Date(Number(split[0])))	
 	enddate = dateToString(new Date(Number(split[1])))
@@ -158,7 +158,7 @@ filterByPropertyRangeDate = (list, property, minvalue, maxvalue) ->
 	_.filter list, (record) ->
 		# extract only date (skip time)
 		date = record[property].split(" ")[0]
-		date >= minvalue && date <= maxvalue
+		minvalue <= date && date <= maxvalue
 
 stringToDate = (dateString) ->
 	split = dateString.split(/[ -]/)
