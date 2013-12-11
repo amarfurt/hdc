@@ -206,7 +206,7 @@ loadFilters = (url, records, spaceId, compare) ->
 	firstdate = if created.length > 0 then stringToDate(created[0]) else new Date()
 	lastdate = if created.length > 0 then stringToDate(created[created.length - 1]) else new Date()
 	day = 1000 * 60 * 60 * 24
-	$("#"+sliderFilter+"-"+spaceId).slider({min:firstdate.getTime(), max:lastdate.getTime(), step:day, value:[firstdate.getTime(), lastdate.getTime()], formater: (a) -> dateToString(new Date(a))})
+	$("#"+sliderFilter+"-"+spaceId).slider({min:firstdate.getTime(), max:lastdate.getTime() + day, step:day, value:[firstdate.getTime(), lastdate.getTime() + day], formater: (a) -> dateToString(new Date(a))})
 		
 	# Register the filter events
 	$("#"+creatorFilter+"-"+spaceId).on "change", (e) ->
