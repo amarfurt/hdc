@@ -1,7 +1,7 @@
 class Member extends Backbone.View
 	initialize: ->
-		@circleId = @el.attr("circle-id")
-		@memberId = @el.attr("member-id")
+		@circleId = @el.attr("data-cid")
+		@memberId = @el.attr("data-mid")
 	events:
 		"click .removeMember": "removeMember"
 	removeMember: (e) ->

@@ -34,23 +34,22 @@
 			@circles.map { circle =>
 				<!-- views.html.elements.circle(contacts, users, circle, active(circle._id)) -->
 				<div id="@circle._id" class="circle tab-pane fade @if(active(circle._id)){in active}">
-					<div class="list-group">
-						<span class="list-group-item active">Members</span>
-						@if(circle.members.size() > 0) {
+					@if(circle.members.size() > 0) {
+						<ul class="list-group">
 							@circle.members.map { member =>
-								<div circle-id="@circle._id" member-id="@member" class="list-group-item member">
+								<li class="list-group-item member" data-cid="@circle._id" data-mid="@member">
 									@User.getName(member.asInstanceOf[org.bson.types.ObjectId])
 									<div class="pull-right">
 										<button class="btn btn-xs btn-danger removeMember">
 											<span class="glyphicon glyphicon-remove"></span>
 										</button>
 									</div>
-								</div>
+								</li>
 							}
-						} else {
-							<p class="list-group-item">This circle has no members yet.</p>
-						}
-				   	</div>
+					   	</ul>
+					} else {
+						<p>This circle has no members yet.</p>
+					}
 				   	<button data-toggle="modal" data-target="#userForm@circle._id" class="btn btn-primary addUser">
 						<span class="glyphicon glyphicon-plus-sign"></span> Add user
 					</button>

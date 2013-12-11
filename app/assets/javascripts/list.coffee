@@ -1,6 +1,6 @@
 class Record extends Backbone.View
 	initialize: ->
-		@id = @el.attr("record-id")
+		@id = @el.attr("data-rid")
 	events:
 		"click .spacesButton": "findSpaces"
 		"click .circlesButton": "findCircles"
@@ -34,7 +34,7 @@ class Record extends Backbone.View
 				success: ->
 					# if record has been removed from this space, remove it from the visualization
 					if @parent.spaceId isnt "default" and @parent.spaceId not in spaces
-						$("[record-id=" + @parent.curRecord + "]").remove()
+						$("[data-rid=" + @parent.curRecord + "]").remove()
 				error: (err) ->
 					console.error("Updating the spaces of this record failed.")
 					console.error(err.responseText)
@@ -53,7 +53,7 @@ class Record extends Backbone.View
 					
 class List extends Backbone.View
 	initialize: ->
-		@spaceId = $("[space-id]").attr("space-id")
+		@spaceId = $("[data-sid]").attr("data-sid")
 		@curRecord = null
 		@records = _.map $(".record"), (record) -> new Record el: $ record
 		_.each @records, ((record) -> record.parent = this), this

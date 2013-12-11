@@ -2,13 +2,13 @@
 @(spaceId: String, records: List[Record], user: org.bson.types.ObjectId)
 
 @skeleton {
-	<div space-id="@spaceId" class="list-group">
-		<p class="list-group-item active">Records</p>
+	<div data-sid="@spaceId">
 		@if(records.size() > 0) {
+			<ul class="list-group">
 			@records.map { record =>
-				<a href="javascript:;" record-id="@record._id" class="list-group-item record">
+				<li class="list-group-item record" data-rid="@record._id" >
 					<span class="label label-info">@User.getName(record.creator)</span>
-					@record.description
+					@record.name
 					<div class="pull-right">
 						<button data-toggle="modal" data-target="#spacesModal" data-backdrop="false" class="btn btn-sm btn-primary spacesButton">
 							<span class="glyphicon glyphicon-picture"></span> Show
@@ -17,10 +17,11 @@
 							<span class="glyphicon glyphicon-share"></span> Share
 						</button>
 					</div>
-				</a>
+				</li>
 			}
+			</ul>
 		} else {
-			<p class="list-group-item">No available records found.</p>
+			<p>No available records found.</p>
 		}
 	</div>
 	
