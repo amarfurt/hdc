@@ -20,7 +20,6 @@ import utils.ModelConversion.ConversionException;
 import utils.search.SearchException;
 import views.html.index;
 import views.html.welcome;
-import controllers.forms.Login;
 import controllers.forms.Registration;
 
 public class Application extends Controller {
@@ -38,11 +37,11 @@ public class Application extends Controller {
 	}
 
 	public static Result welcome() {
-		return ok(welcome.render(Form.form(Login.class), Form.form(Registration.class)));
+		return ok(welcome.render(Form.form(User.class), Form.form(Registration.class)));
 	}
 
 	public static Result authenticate() {
-		Form<Login> loginForm = Form.form(Login.class).bindFromRequest();
+		Form<User> loginForm = Form.form(User.class).bindFromRequest();
 		if (loginForm.hasErrors()) {
 			return badRequest(welcome.render(loginForm, Form.form(Registration.class)));
 		} else {
@@ -55,7 +54,7 @@ public class Application extends Controller {
 	public static Result register() {
 		Form<Registration> registrationForm = Form.form(Registration.class).bindFromRequest();
 		if (registrationForm.hasErrors()) {
-			return badRequest(welcome.render(Form.form(Login.class), registrationForm));
+			return badRequest(welcome.render(Form.form(User.class), registrationForm));
 		} else {
 			Registration registration = registrationForm.get();
 			User newUser = new User();

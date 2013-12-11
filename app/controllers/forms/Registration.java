@@ -5,8 +5,8 @@ import models.User;
 public class Registration {
 
 	public String email;
-	public String firstName;
-	public String lastName;
+	public String firstName; // stored as name in user class
+	public String lastName; // stored as name in user class
 	public String password;
 
 	public String validate() {

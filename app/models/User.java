@@ -44,6 +44,24 @@ public class User extends Model implements Comparable<User> {
 		return name;
 	}
 
+	public String validate() {
+		try {
+			if (email.isEmpty() || password.isEmpty()) {
+				return "Please provide an email address and a password.";
+			} else if (!User.authenticationValid(email, password)) {
+				return "Invalid user or password.";
+			} else {
+				return null;
+			}
+		} catch (ConversionException e) {
+			return "Server error: " + e.getMessage();
+		} catch (NoSuchAlgorithmException e) {
+			return "Server error: " + e.getMessage();
+		} catch (InvalidKeySpecException e) {
+			return "Server error: " + e.getMessage();
+		}
+	}
+
 	public static String getCollection() {
 		return collection;
 	}
