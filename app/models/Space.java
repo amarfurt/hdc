@@ -34,11 +34,6 @@ public class Space extends Model implements Comparable<Space> {
 		return this.order - o.order;
 	}
 
-	@Override
-	public String toString() {
-		return name;
-	}
-
 	public static boolean exists(ObjectId ownerId, String name) {
 		DBObject query = new BasicDBObject("owner", ownerId);
 		query.put("name", name);

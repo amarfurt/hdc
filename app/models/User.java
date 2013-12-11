@@ -39,11 +39,9 @@ public class User extends Model implements Comparable<User> {
 		return this.name.compareTo(o.name);
 	}
 
-	@Override
-	public String toString() {
-		return name;
-	}
-
+	/**
+	 * Login validation. Returns a non-null value if validation fails.
+	 */
 	public String validate() {
 		try {
 			if (email.isEmpty() || password.isEmpty()) {
@@ -94,7 +92,7 @@ public class User extends Model implements Comparable<User> {
 		return users;
 	}
 
-	public static boolean authenticationValid(String email, String password) throws ConversionException,
+	private static boolean authenticationValid(String email, String password) throws ConversionException,
 			NoSuchAlgorithmException, InvalidKeySpecException {
 		if (!userExists(email)) {
 			return false;

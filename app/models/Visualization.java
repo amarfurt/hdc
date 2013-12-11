@@ -34,11 +34,6 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return this.name.compareTo(o.name);
 	}
 
-	@Override
-	public String toString() {
-		return name;
-	}
-
 	/**
 	 * Validate form input data for registering a new visualization.
 	 */
