@@ -18,6 +18,7 @@ class Space extends Backbone.View
 		$(".hideCompare", @el).removeClass("hidden")
 		$(".compare1", @el).addClass("col-lg-6")
 		$(".compare2", @el).removeClass("hidden")
+		$(".slider", @el).attr("style", "width:250px")
 		@loadSpace(true)
 	hideCompare: (e) ->
 		e.preventDefault()
@@ -25,6 +26,7 @@ class Space extends Backbone.View
 		$(".showCompare", @el).removeClass("hidden")
 		$(".compare1", @el).removeClass("col-lg-6")
 		$(".compare2", @el).addClass("hidden")
+		$(".slider", @el).attr("style", "width:500px")
 	loadSpaceRecords: ->
 		jsRoutes.controllers.Spaces.loadRecords(@id).ajax
 			context: this
