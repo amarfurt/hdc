@@ -3,6 +3,7 @@ package setup;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
+import models.ModelException;
 import models.User;
 import models.Visualization;
 
@@ -50,9 +51,10 @@ public class MinimalSetup {
 				+ "Lists your records and lets you choose for a particular record: "
 				+ "(1) In which spaces it is shown, and (2) which circles it is shared with.";
 		recordList.url = controllers.visualizations.routes.RecordList.load().url();
-		String errorMessage = Visualization.add(recordList);
-		if (errorMessage != null) {
-			System.out.println("error.\n" + errorMessage + "\nAborting...");
+		try {
+			Visualization.add(recordList);
+		} catch (ModelException e) {
+			System.out.println("error.\n" + e.getMessage() + "\nAborting...");
 			System.exit(1);
 		}
 		System.out.println("done.");
@@ -66,9 +68,10 @@ public class MinimalSetup {
 		developer.email = "developers@hdc.ch";
 		developer.name = "Health Data Cooperative Developers";
 		developer.password = RandomStringUtils.randomAlphanumeric(20);
-		errorMessage = User.add(developer);
-		if (errorMessage != null) {
-			System.out.println("error.\n" + errorMessage + "\nAborting...");
+		try {
+			User.add(developer);
+		} catch (ModelException e) {
+			System.out.println("error.\n" + e.getMessage() + "\nAborting...");
 			System.exit(1);
 		}
 		System.out.println("done.");
