@@ -9,6 +9,7 @@ import java.util.Set;
 
 import models.App;
 import models.Message;
+import models.ModelException;
 import models.Record;
 import models.User;
 import models.Visualization;
@@ -22,9 +23,8 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.ModelConversion.ConversionException;
-import utils.search.SearchResult;
 import utils.search.Search;
+import utils.search.SearchResult;
 import views.html.search;
 import views.html.details.app;
 import views.html.details.message;
@@ -104,7 +104,7 @@ public class GlobalSearch extends Controller {
 		try {
 			recordToShow = Record.find(recordId);
 			app = App.find(recordToShow.app);
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		String localhost = Play.application().configuration().getString("external.host");
@@ -115,7 +115,7 @@ public class GlobalSearch extends Controller {
 		Message messageToShow;
 		try {
 			messageToShow = Message.find(messageId);
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(message.render(messageToShow, new ObjectId(request().username())));
@@ -129,7 +129,7 @@ public class GlobalSearch extends Controller {
 		User userToShow;
 		try {
 			userToShow = User.find(userId);
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(user.render(userToShow, new ObjectId(request().username())));
@@ -143,7 +143,7 @@ public class GlobalSearch extends Controller {
 		App appToShow;
 		try {
 			appToShow = App.find(appId);
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(app.render(appToShow, new ObjectId(request().username())));
@@ -153,7 +153,7 @@ public class GlobalSearch extends Controller {
 		Visualization visualizationToShow;
 		try {
 			visualizationToShow = Visualization.find(visualizationId);
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		return ok(visualization.render(visualizationToShow, new ObjectId(request().username())));

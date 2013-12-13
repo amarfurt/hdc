@@ -29,19 +29,27 @@ public class Message extends Model implements Comparable<Message> {
 		return -this.created.compareTo(o.created);
 	}
 
-	public static Message find(ObjectId messageId) throws ConversionException {
+	public static Message find(ObjectId messageId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", messageId);
 		DBObject result = Database.getCollection(collection).findOne(query);
-		return ModelConversion.mapToModel(Message.class, result.toMap());
+		try {
+			return ModelConversion.mapToModel(Message.class, result.toMap());
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static Set<Message> findSentTo(ObjectId userId) throws ConversionException {
+	public static Set<Message> findSentTo(ObjectId userId) throws ModelException {
 		Set<Message> messages = new HashSet<Message>();
 		DBObject query = new BasicDBObject("receiver", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			messages.add(ModelConversion.mapToModel(Message.class, cur.toMap()));
+			try {
+				messages.add(ModelConversion.mapToModel(Message.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return messages;
 	}

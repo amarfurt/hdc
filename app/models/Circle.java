@@ -9,8 +9,8 @@ import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -33,23 +33,44 @@ public class Circle extends Model implements Comparable<Circle> {
 		return this.order - other.order;
 	}
 
-	public static boolean isOwner(ObjectId circleId, ObjectId userId) {
-		DBObject query = new BasicDBObject();
-		query.put("_id", circleId);
-		query.put("owner", userId);
-		return (Database.getCollection(collection).findOne(query) != null);
+	public static boolean exists(ObjectId ownerId, String name) {
+		DBObject query = new BasicDBObject("owner", ownerId);
+		query.put("name", name);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	public static boolean exists(ObjectId ownerId, ObjectId circleId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		query.put("owner", ownerId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	/**
+	 * Checks whether the user is a member of the circle.
+	 */
+	public static boolean contains(ObjectId circleId, ObjectId userId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	/**
 	 * Find the circles that are owned by the given user.
 	 */
-	public static Set<Circle> findOwnedBy(ObjectId userId) throws ConversionException {
+	public static Set<Circle> findOwnedBy(ObjectId userId) throws ModelException {
 		Set<Circle> circles = new HashSet<Circle>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+			try {
+				circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return circles;
 	}
@@ -57,38 +78,75 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Find the circles this user is a member of.
 	 */
-	public static Set<Circle> findMemberOf(ObjectId userId) throws ConversionException {
+	public static Set<Circle> findMemberOf(ObjectId userId) throws ModelException {
 		Set<Circle> circles = new HashSet<Circle>();
 		DBObject query = new BasicDBObject("members", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+			try {
+				circles.add(ModelConversion.mapToModel(Circle.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return circles;
 	}
 
 	/**
+	 * Returns a list of all records shared with this circle.
+	 */
+	public static Set<ObjectId> getShared(ObjectId circleId) {
+		Set<ObjectId> sharedRecordIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("shared", 1);
+		BasicDBList shared = (BasicDBList) Database.getCollection(collection).findOne(query, projection).get("shared");
+		for (Object sharedRecord : shared) {
+			sharedRecordIds.add((ObjectId) sharedRecord);
+		}
+		return sharedRecordIds;
+	}
+
+	/**
 	 * Returns the ids of the records that are shared with this user.
 	 */
-	public static Set<ObjectId> getSharedWith(ObjectId userId) {
+	public static Set<ObjectId> getSharedWith(ObjectId ownerId, ObjectId userId) {
 		Set<ObjectId> recordIds = new HashSet<ObjectId>();
-		DBObject query = new BasicDBObject("members", userId);
+		DBObject query = new BasicDBObject("owner", ownerId);
+		query.put("members", userId);
 		DBObject projection = new BasicDBObject("shared", 1);
 		DBCursor result = Database.getCollection(collection).find(query, projection);
 		while (result.hasNext()) {
 			BasicDBList shared = (BasicDBList) result.next().get("shared");
-			for (Object id : shared) {
-				recordIds.add((ObjectId) id);
+			for (Object recordId : shared) {
+				recordIds.add((ObjectId) recordId);
 			}
 		}
 		return recordIds;
+	}
+	
+	/**
+	 * Returns the ids of the users that this record is shared with.
+	 */
+	public static Set<ObjectId> getUsersSharedWith(ObjectId ownerId, ObjectId recordId) {
+		Set<ObjectId> userIds = new HashSet<ObjectId>();
+		DBObject query = new BasicDBObject("owner", ownerId);
+		query.put("shared", recordId);
+		DBObject projection = new BasicDBObject("members", 1);
+		DBCursor result = Database.getCollection(collection).find(query, projection);
+		while (result.hasNext()) {
+			BasicDBList members = (BasicDBList) result.next().get("members");
+			for (Object userId : members) {
+				userIds.add((ObjectId) userId);
+			}
+		}
+		return userIds;
 	}
 
 	/**
 	 * Find the users that the given user has already added to his circles.
 	 */
-	public static Set<User> findContacts(ObjectId userId) throws ConversionException {
+	public static Set<User> findContacts(ObjectId userId) throws ModelException {
 		Set<ObjectId> contacts = new HashSet<ObjectId>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBObject projection = new BasicDBObject("members", 1);
@@ -130,6 +188,12 @@ public class Circle extends Model implements Comparable<Circle> {
 		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("owner");
 	}
 
+	public static int getOrder(ObjectId circleId) {
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject projection = new BasicDBObject("order", 1);
+		return (Integer) Database.getCollection(collection).findOne(query, projection).get("order");
+	}
+
 	/**
 	 * Returns a set with ids of the members of the given circle.
 	 */
@@ -145,209 +209,133 @@ public class Circle extends Model implements Comparable<Circle> {
 		return userIds;
 	}
 
-	/**
-	 * Adds a circle and returns the error message (null in absence of errors). Also adds the generated id to the circle
-	 * object.
-	 */
-	public static String add(Circle newCircle) throws ConversionException, SearchException {
-		if (!circleWithSameNameExists(newCircle.name, newCircle.owner)) {
-			newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
-			DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
-			WriteResult result = Database.getCollection(collection).insert(insert);
-			newCircle._id = (ObjectId) insert.get("_id");
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
+	public static void add(Circle newCircle) throws ModelException {
+		newCircle.order = OrderOperations.getMax(collection, newCircle.owner) + 1;
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newCircle));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
+		WriteResult result = Database.getCollection(collection).insert(insert);
+		newCircle._id = (ObjectId) insert.get("_id");
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
-			// also add this circle to the user's search index
+		// also add this circle to the user's search index
+		try {
 			Search.add(newCircle.owner, "circle", newCircle._id, newCircle.name);
-			return null;
-		} else {
-			return "A circle with this name already exists.";
+		} catch (SearchException e) {
+			throw new ModelException(e);
 		}
 	}
 
-	/**
-	 * Tries to rename the circle with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String rename(ObjectId circleId, String newName) throws SearchException {
+	public static void rename(ObjectId ownerId, ObjectId circleId, String newName) throws ModelException {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject foundCircle = Database.getCollection(collection).findOne(query);
-		if (foundCircle == null) {
-			return "No circle with this id exists.";
-		}
-		ObjectId ownerId = (ObjectId) foundCircle.get("owner");
-		if (circleWithSameNameExists(newName, ownerId)) {
-			return "A circle with this name already exists.";
-		}
 		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// update search index
-		Search.delete(ownerId, "circle", circleId);
-		Search.add(ownerId, "circle", circleId, newName);
-		return null;
+		try {
+			Search.update(ownerId, "circle", circleId, newName);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	/**
-	 * Tries to delete the circle with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String delete(ObjectId circleId) {
-		// find owner and order first
+	public static void delete(ObjectId ownerId, ObjectId circleId) throws ModelException {
+		// find order first
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject circle = Database.getCollection(collection).findOne(query);
-		if (circle == null) {
-			return "No circle with this id exists.";
-		}
-		ObjectId ownerId = (ObjectId) circle.get("owner");
-		int order = (Integer) circle.get("order");
+		int order = getOrder(circleId);
 
 		// remove circle
 		WriteResult result = Database.getCollection(collection).remove(query);
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// decrement all order fields greater than the removed circle
-		errorMessage = OrderOperations.decrement(collection, ownerId, order, 0);
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(OrderOperations.decrement(collection, ownerId, order, 0));
 
 		// remove from search index
 		Search.delete(ownerId, "circle", circleId);
-		return null;
 	}
 
 	/**
-	 * Adds a member to the circle with the given id and returns the error message (null in absence of errors).
+	 * Adds a member to the given circle with the given id.
 	 */
-	public static String addMember(ObjectId circleId, ObjectId userId) throws ConversionException {
-		if (User.find(userId) == null) {
-			return "No user with this email address exists.";
-		} else if (Circle.isOwner(circleId, userId)) {
-			return "Owner can't be added to own circle.";
-		} else if (Circle.userIsInCircle(circleId, userId)) {
-			return "User is already in this circle.";
-		} else {
-			DBObject query = new BasicDBObject("_id", circleId);
-			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
-			WriteResult result = Database.getCollection(collection).update(query, update);
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-
-			// also add all the records shared with this circle to the visible records of the newly added member
-			ObjectId ownerId = Circle.getOwner(circleId);
-			Set<ObjectId> recordIds = Circle.getShared(circleId);
-			Set<ObjectId> userIds = new HashSet<ObjectId>();
-			userIds.add(userId);
-			return User.makeRecordsVisible(ownerId, recordIds, userIds);
-		}
-	}
-
-	/**
-	 * Removes a member from the circle with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String removeMember(ObjectId circleId, ObjectId userId) throws ConversionException {
-		if (User.find(userId) == null) {
-			return "No user with this email address exists.";
-		} else if (!Circle.userIsInCircle(circleId, userId)) {
-			return "User is not in this circle.";
-		} else {
-			DBObject query = new BasicDBObject("_id", circleId);
-			DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", userId));
-			WriteResult result = Database.getCollection(collection).update(query, update);
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-
-			// also remove the records shared with this circle from the visible records of the removed member
-			// TODO if records are are still in another circle that this is user is a member of: don't remove from
-			// visible records
-			ObjectId ownerId = Circle.getOwner(circleId);
-			Set<ObjectId> recordIds = Circle.getShared(circleId);
-			Set<ObjectId> userIds = new HashSet<ObjectId>();
-			userIds.add(userId);
-			return User.makeRecordsInvisible(ownerId, recordIds, userIds);
-		}
-	}
-
-	/**
-	 * Returns a list of all records shared with this circle.
-	 */
-	public static Set<ObjectId> getShared(ObjectId circleId) {
-		Set<ObjectId> sharedRecordIds = new HashSet<ObjectId>();
+	public static void addMember(ObjectId ownerId, ObjectId circleId, ObjectId userId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject projection = new BasicDBObject("shared", 1);
-		BasicDBList shared = (BasicDBList) Database.getCollection(collection).findOne(query, projection).get("shared");
-		for (Object sharedRecord : shared) {
-			sharedRecordIds.add((ObjectId) sharedRecord);
-		}
-		return sharedRecordIds;
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+
+		// also add all the records shared with this circle to the visible records of the newly added member
+		Set<ObjectId> recordIds = Circle.getShared(circleId);
+		Set<ObjectId> userIds = new HashSet<ObjectId>(1);
+		userIds.add(userId);
+		User.makeRecordsVisible(ownerId, recordIds, userIds);
 	}
 
-	public static String updateShared(Set<ObjectId> circleIds, ObjectId recordId, ObjectId userId)
-			throws ConversionException {
-		if (Record.find(recordId) == null) {
-			return "Record doesn't exist.";
-		} else {
-			DBObject query = new BasicDBObject("owner", userId);
-			query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
-			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
-			WriteResult result = Database.getCollection(collection).updateMulti(query, update);
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-			query = new BasicDBObject("owner", userId);
-			query.put("_id", new BasicDBObject("$nin", circleIds.toArray()));
-			update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
-			result = Database.getCollection(collection).updateMulti(query, update);
-			return result.getLastError().getErrorMessage();
+	/**
+	 * Removes a member from the circle with the given id.
+	 */
+	public static void removeMember(ObjectId ownerId, ObjectId circleId, ObjectId userId) throws ModelException {
+		DBObject query = new BasicDBObject("_id", circleId);
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("members", userId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+
+		// also remove the records shared with this circle from the visible records of the removed member
+		// (that are not shared with this user via another circle)
+		Set<ObjectId> removedRecordIds = Circle.getShared(circleId);
+
+		// get the records that are still shared with this user (by the same owner)
+		Set<ObjectId> sharedRecordIds = Circle.getSharedWith(ownerId, userId);
+		for (ObjectId recordId : sharedRecordIds) {
+			removedRecordIds.remove(recordId);
 		}
+		Set<ObjectId> userIds = new HashSet<ObjectId>();
+		userIds.add(userId);
+		User.makeRecordsInvisible(ownerId, removedRecordIds, userIds);
 	}
 
-	public static String startSharingWith(ObjectId userId, ObjectId recordId, Set<ObjectId> circleIds) {
-		DBObject query = new BasicDBObject("owner", userId);
+	public static void startSharingWith(ObjectId ownerId, ObjectId recordId, Set<ObjectId> circleIds)
+			throws ModelException {
+		DBObject query = new BasicDBObject("owner", ownerId);
 		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("shared", recordId));
-		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+
+		// also add this record to the visible records of all members of the given circles
+		Set<ObjectId> recordIds = new HashSet<ObjectId>(1);
+		recordIds.add(recordId);
+		Set<ObjectId> userIds = new HashSet<ObjectId>();
+		for (ObjectId circleId : circleIds) {
+			userIds.addAll(Circle.getMembers(circleId));
+		}
+		User.makeRecordsVisible(ownerId, recordIds, userIds);
 	}
 
-	public static String stopSharingWith(ObjectId userId, ObjectId recordId, Set<ObjectId> circleIds) {
-		DBObject query = new BasicDBObject("owner", userId);
+	public static void stopSharingWith(ObjectId ownerId, ObjectId recordId, Set<ObjectId> circleIds)
+			throws ModelException {
+		DBObject query = new BasicDBObject("owner", ownerId);
 		query.put("_id", new BasicDBObject("$in", circleIds.toArray()));
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
-		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
-	}
-
-	/**
-	 * Checks whether a circle with the same name already exists for the given owner.
-	 */
-	private static boolean circleWithSameNameExists(String name, ObjectId userId) {
-		DBObject query = new BasicDBObject();
-		query.put("name", name);
-		query.put("owner", userId);
-		return (Database.getCollection(collection).findOne(query) != null);
-	}
-
-	/**
-	 * Checks whether the given user is in the given circle.
-	 */
-	private static boolean userIsInCircle(ObjectId circleId, ObjectId userId) {
-		DBObject query = new BasicDBObject();
-		query.put("_id", circleId);
-		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
-		return (Database.getCollection(collection).findOne(query) != null);
+		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+		
+		// also remove this record from the visible records of all members of the given circles
+		Set<ObjectId> recordIds = new HashSet<ObjectId>(1);
+		recordIds.add(recordId);
+		Set<ObjectId> invisibleUserIds = new HashSet<ObjectId>();
+		for (ObjectId circleId : circleIds) {
+			invisibleUserIds.addAll(Circle.getMembers(circleId));
+		}
+		
+		// remove the users that this record is still shared with via another circle
+		Set<ObjectId> stillVisibleUserIds = Circle.getUsersSharedWith(ownerId, recordId);
+		invisibleUserIds.removeAll(stillVisibleUserIds);
+		User.makeRecordsInvisible(ownerId, recordIds, invisibleUserIds);
 	}
 
 }

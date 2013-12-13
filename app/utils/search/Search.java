@@ -146,7 +146,6 @@ public class Search {
 		}
 	}
 
-	@Deprecated
 	public static void add(ObjectId userId, String type, ObjectId modelId, String title) throws SearchException {
 		add(userId, type, modelId, title, null);
 	}
@@ -174,81 +173,6 @@ public class Search {
 		} catch (IOException e) {
 			throw new SearchException(e);
 		}
-	}
-
-	@Deprecated
-	public static void addMultiple(ObjectId userId, String type, Map<ObjectId, String> data) throws SearchException {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		// return if no data is passed
-		if (data.size() == 0) {
-			return;
-		}
-
-		// BulkRequestBuilder bulkRequest = client.prepareBulk();
-		// for (ObjectId modelId : data.keySet()) {
-		// try {
-		// bulkRequest.add(client.prepareIndex(userId.toString(), type, modelId.toString()).setSource(
-		// jsonBuilder().startObject().field(FIELD, data.get(modelId)).endObject()));
-		// } catch (IOException e) {
-		// throw new SearchException(e);
-		// }
-		// }
-		// BulkResponse bulkResponse = bulkRequest.execute().actionGet();
-		// if (bulkResponse.hasFailures()) {
-		// for (BulkItemResponse response : bulkResponse) {
-		// // TODO error handling
-		// System.out.println(response.getFailureMessage());
-		// }
-		// }
-	}
-
-	@Deprecated
-	public static void addPublic(Type type, ObjectId documentId, String data) throws SearchException {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		// switch (type) {
-		// case USER:
-		// // add the user to the global user index and create an own index for the user
-		// try {
-		// client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
-		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
-		// } catch (ElasticSearchException e) {
-		// throw new SearchException(e);
-		// } catch (IOException e) {
-		// throw new SearchException(e);
-		// }
-		// createIndex(documentId);
-		// break;
-		// case APP:
-		// try {
-		// client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
-		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
-		// } catch (ElasticSearchException e) {
-		// throw new SearchException(e);
-		// } catch (IOException e) {
-		// throw new SearchException(e);
-		// }
-		// break;
-		// case VISUALIZATION:
-		// try {
-		// client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
-		// .setSource(jsonBuilder().startObject().field(FIELD, data).endObject()).execute().actionGet();
-		// } catch (ElasticSearchException e) {
-		// throw new SearchException(e);
-		// } catch (IOException e) {
-		// throw new SearchException(e);
-		// }
-		// break;
-		// default:
-		// throw new NoSuchElementException("There is no such type.");
-		// }
 	}
 
 	public static void addPublic(Type type, ObjectId documentId, String title, String content) throws SearchException {
@@ -296,6 +220,16 @@ public class Search {
 		default:
 			throw new NoSuchElementException("There is no such type.");
 		}
+	}
+
+	public static void update(ObjectId userId, String type, ObjectId modelId, String title) throws SearchException {
+		update(userId, type, modelId, title, null);
+	}
+
+	public static void update(ObjectId userId, String type, ObjectId modelId, String title, String content)
+			throws SearchException {
+		delete(userId, type, modelId);
+		add(userId, type, modelId, title, content);
 	}
 
 	public static void delete(ObjectId userId, String type, ObjectId modelId) {

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import models.App;
+import models.ModelException;
 import models.Record;
 import models.Space;
 import models.User;
@@ -20,10 +21,8 @@ import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.ModelConversion.ConversionException;
-import utils.search.SearchException;
-import utils.search.SearchResult;
 import utils.search.Search;
+import utils.search.SearchResult;
 import views.html.elements.recordsearchresults;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -51,7 +50,7 @@ public class Spaces extends Controller {
 			records = new ArrayList<Record>(Record.findVisible(userId));
 			spaces = new ArrayList<Space>(Space.findOwnedBy(userId));
 			apps = new ArrayList<App>(User.findApps(userId));
-		} catch (ConversionException e) {
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		Collections.sort(records);
@@ -61,27 +60,23 @@ public class Spaces extends Controller {
 	}
 
 	public static Result add() {
+		// check whether validation failed
 		Form<SpaceForm> spaceForm = Form.form(SpaceForm.class).bindFromRequest();
 		if (spaceForm.hasErrors()) {
 			return show(spaceForm, null);
 		}
 
+		// construct new space
 		SpaceForm form = spaceForm.get();
 		Space newSpace = new Space();
 		newSpace.name = form.name;
 		newSpace.owner = new ObjectId(request().username());
 		newSpace.visualization = new ObjectId(form.visualization);
 		newSpace.records = new BasicDBList();
-		String errorMessage;
 		try {
-			errorMessage = Space.add(newSpace);
-		} catch (ConversionException e) {
-			return internalServerError(e.getMessage());
-		} catch (SearchException e) {
-			return internalServerError(e.getMessage());
-		}
-		if (errorMessage != null) {
-			spaceForm.reject(errorMessage);
+			Space.add(newSpace);
+		} catch (ModelException e) {
+			spaceForm.reject(e.getMessage());
 			return show(spaceForm, null);
 		}
 
@@ -90,72 +85,67 @@ public class Spaces extends Controller {
 		return redirect(routes.Spaces.show(newSpace._id.toString()));
 	}
 
-	public static Result rename(String spaceId) {
-		// can't pass parameter of type ObjectId, using String
-		ObjectId id = new ObjectId(spaceId);
-		if (Secured.isOwnerOfSpace(id)) {
-			String newName = Form.form().bindFromRequest().get("name");
-			try {
-				String errorMessage = Space.rename(id, newName);
-				if (errorMessage == null) {
-					return ok(newName);
-				} else {
-					return badRequest(errorMessage);
-				}
-			} catch (SearchException e) {
-				return internalServerError(e.getMessage());
-			}
-		} else {
-			return forbidden();
+	public static Result rename(String spaceIdString) {
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId spaceId = new ObjectId(spaceIdString);
+		String newName = Form.form().bindFromRequest().get("name");
+		if (!Space.exists(userId, spaceId)) {
+			return badRequest("No space with this id exists.");
+		} else if (Space.exists(userId, newName)) {
+			return badRequest("A space with this name already exists.");
 		}
+
+		// rename space
+		try {
+			Space.rename(userId, spaceId, newName);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
 	}
 
-	public static Result delete(String spaceId) {
-		// can't pass parameter of type ObjectId, using String
-		ObjectId id = new ObjectId(spaceId);
-		if (Secured.isOwnerOfSpace(id)) {
-			String errorMessage = Space.delete(id);
-			if (errorMessage == null) {
-				return ok(routes.Spaces.index().url());
-			} else {
-				return badRequest(errorMessage);
-			}
-		} else {
-			return forbidden();
+	public static Result delete(String spaceIdString) {
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId spaceId = new ObjectId(spaceIdString);
+		if (!Space.exists(userId, spaceId)) {
+			return badRequest("No space with this id exists.");
 		}
+
+		// delete space
+		try {
+			Space.delete(userId, spaceId);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
 	}
 
-	public static Result addRecords(String spaceId) {
+	public static Result addRecords(String spaceIdString) {
 		// TODO pass data with ajax (same as updating spaces of a single record)
-		// can't pass parameter of type ObjectId, using String
-		ObjectId sId = new ObjectId(spaceId);
-		if (Secured.isOwnerOfSpace(sId)) {
-			Map<String, String> data = Form.form().bindFromRequest().data();
-			try {
-				String recordsAdded = "";
-				for (String recordId : data.keySet()) {
-					// skip search input field
-					if (recordId.equals("recordSearch")) {
-						continue;
-					}
-					ObjectId rId = new ObjectId(recordId);
-					String errorMessage = Space.addRecord(sId, rId);
-					if (errorMessage != null) {
-						// TODO remove previously added records?
-						return badRequest(recordsAdded + errorMessage);
-					}
-					if (recordsAdded.isEmpty()) {
-						recordsAdded = "Added some records, but then an error occurred: ";
-					}
-				}
-				// TODO return ok();
-				return redirect(routes.Spaces.show(spaceId));
-			} catch (ConversionException e) {
-				return internalServerError(e.getMessage());
-			}
-		} else {
-			return forbidden();
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId spaceId = new ObjectId(spaceIdString);
+		if (!Space.exists(userId, spaceId)) {
+			return badRequest("No space with this id exists.");
 		}
+
+		// add records to space (implicit: if not already present)
+		Map<String, String> data = Form.form().bindFromRequest().data();
+		for (String recordId : data.keySet()) {
+			// skip search input field
+			if (recordId.equals("recordSearch")) {
+				continue;
+			}
+			try {
+				Space.addRecord(spaceId, new ObjectId(recordId));
+			} catch (ModelException e) {
+				return badRequest(e.getMessage());
+			}
+		}
+		// TODO return ok();
+		return redirect(routes.Spaces.show(spaceIdString));
 	}
 
 	/**
@@ -176,10 +166,10 @@ public class Spaces extends Controller {
 				recordIds.add(new ObjectId(searchResult.id));
 			}
 			recordIds.removeAll(recordsAlreadyInSpace);
+			ObjectId[] targetArray = new ObjectId[recordIds.size()];
 			try {
-				ObjectId[] targetArray = new ObjectId[recordIds.size()];
 				records.addAll(Record.findAll(recordIds.toArray(targetArray)));
-			} catch (ConversionException e) {
+			} catch (ModelException e) {
 				return internalServerError(e.getMessage());
 			}
 
@@ -191,31 +181,32 @@ public class Spaces extends Controller {
 	}
 
 	public static Result loadAllRecords() {
+		List<Record> records;
 		try {
-			List<Record> records = new ArrayList<Record>(Record.findVisible(new ObjectId(request().username())));
-			Collections.sort(records);
-
-			// format records
-			List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
-			for (Record record : records) {
-				ObjectNode jsonRecord = Json.newObject();
-				jsonRecord.put("_id", record._id.toString());
-				jsonRecord.put("creator", record.creator.toString());
-				jsonRecord.put("owner", record.owner.toString());
-				jsonRecord.put("created", record.created);
-				jsonRecord.put("data", record.data);
-				jsonRecord.put("name", record.name);
-				jsonRecord.put("description", record.description);
-				jsonRecords.add(jsonRecord);
-			}
-			return ok(Json.toJson(jsonRecords));
-		} catch (ConversionException e) {
-			return badRequest(e.getMessage());
+			records = new ArrayList<Record>(Record.findVisible(new ObjectId(request().username())));
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
+		Collections.sort(records);
+
+		// format records
+		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>(records.size());
+		for (Record record : records) {
+			ObjectNode jsonRecord = Json.newObject();
+			jsonRecord.put("_id", record._id.toString());
+			jsonRecord.put("creator", record.creator.toString());
+			jsonRecord.put("owner", record.owner.toString());
+			jsonRecord.put("created", record.created);
+			jsonRecord.put("data", record.data);
+			jsonRecord.put("name", record.name);
+			jsonRecord.put("description", record.description);
+			jsonRecords.add(jsonRecord);
+		}
+		return ok(Json.toJson(jsonRecords));
 	}
 
-	public static Result loadRecords(String spaceId) {
-		Set<ObjectId> records = Space.getRecords(new ObjectId(spaceId));
+	public static Result loadRecords(String spaceIdString) {
+		Set<ObjectId> records = Space.getRecords(new ObjectId(spaceIdString));
 		List<String> recordIds = new ArrayList<String>(records.size());
 		for (ObjectId recordId : records) {
 			recordIds.add(recordId.toString());
@@ -223,8 +214,9 @@ public class Spaces extends Controller {
 		return ok(Json.toJson(recordIds));
 	}
 
-	public static Result getVisualizationURL(String spaceId) {
-		ObjectId visualizationId = Space.getVisualizationId(new ObjectId(spaceId), new ObjectId(request().username()));
+	public static Result getVisualizationURL(String spaceIdString) {
+		ObjectId visualizationId = Space.getVisualizationId(new ObjectId(spaceIdString), new ObjectId(request()
+				.username()));
 		String url = Visualization.getURL(visualizationId);
 		return ok(url);
 	}

@@ -8,8 +8,8 @@ import org.bson.types.ObjectId;
 import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -38,19 +38,27 @@ public class Record extends Model implements Comparable<Record> {
 		return collection;
 	}
 
-	public static Record find(ObjectId recordId) throws ConversionException {
+	public static Record find(ObjectId recordId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject result = Database.getCollection(collection).findOne(query);
-		return ModelConversion.mapToModel(Record.class, result.toMap());
+		try {
+			return ModelConversion.mapToModel(Record.class, result.toMap());
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static Set<Record> findAll(ObjectId... recordIds) throws ConversionException {
+	public static Set<Record> findAll(ObjectId... recordIds) throws ModelException {
 		Set<Record> records = new HashSet<Record>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", recordIds));
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
+			try {
+				records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return records;
 	}
@@ -58,13 +66,17 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Find the records that are owned by the given user.
 	 */
-	public static Set<Record> findOwnedBy(ObjectId userId) throws ConversionException {
+	public static Set<Record> findOwnedBy(ObjectId userId) throws ModelException {
 		Set<Record> records = new HashSet<Record>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
+			try {
+				records.add(ModelConversion.mapToModel(Record.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return records;
 	}
@@ -72,7 +84,7 @@ public class Record extends Model implements Comparable<Record> {
 	/**
 	 * Find all records visible to the given user.
 	 */
-	public static Set<Record> findVisible(ObjectId userId) throws ConversionException {
+	public static Set<Record> findVisible(ObjectId userId) throws ModelException {
 		// get records of this user
 		Set<Record> records = findOwnedBy(userId);
 
@@ -103,16 +115,6 @@ public class Record extends Model implements Comparable<Record> {
 		return ownedRecordIds;
 	}
 
-	public static Set<ObjectId> getVisible(ObjectId userId) {
-		// get all owned records
-		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
-		visibleRecordIds.addAll(getOwnedBy(userId));
-
-		// get all records that are shared with this user
-		visibleRecordIds.addAll(Circle.getSharedWith(userId));
-		return visibleRecordIds;
-	}
-
 	public static String getData(ObjectId recordId) {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject projection = new BasicDBObject("data", 1);
@@ -130,32 +132,30 @@ public class Record extends Model implements Comparable<Record> {
 		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
-	/**
-	 * Adds a record and returns the error message (null in absence of errors). Also adds the generated id to the record
-	 * object.
-	 */
-	public static String add(Record newRecord) throws ConversionException, SearchException {
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
+	public static void add(Record newRecord) throws ModelException {
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newRecord));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newRecord._id = (ObjectId) insert.get("_id");
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// also index the data for the text search
-		Search.add(newRecord.owner, "record", newRecord._id, newRecord.name, newRecord.description);
-		return null;
+		try {
+			Search.add(newRecord.owner, "record", newRecord._id, newRecord.name, newRecord.description);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	/**
-	 * Tries to delete the record with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String delete(ObjectId recordId) {
+	public static void delete(ObjectId recordId) throws ModelException {
 		// TODO remove from spaces and circles
 		DBObject query = new BasicDBObject("_id", recordId);
 		WriteResult result = Database.getCollection(collection).remove(query);
-		return result.getLastError().getErrorMessage();
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 }

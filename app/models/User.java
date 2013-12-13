@@ -13,9 +13,9 @@ import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.PasswordHash;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
 import utils.search.Search.Type;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -46,13 +46,11 @@ public class User extends Model implements Comparable<User> {
 		try {
 			if (email.isEmpty() || password.isEmpty()) {
 				return "Please provide an email address and a password.";
-			} else if (!User.authenticationValid(email, password)) {
+			} else if (!User.exists(email) || !User.authenticationValid(email, password)) {
 				return "Invalid user or password.";
 			} else {
 				return null;
 			}
-		} catch (ConversionException e) {
-			return "Server error: " + e.getMessage();
 		} catch (NoSuchAlgorithmException e) {
 			return "Server error: " + e.getMessage();
 		} catch (InvalidKeySpecException e) {
@@ -60,8 +58,22 @@ public class User extends Model implements Comparable<User> {
 		}
 	}
 
-	public static String getCollection() {
-		return collection;
+	private static boolean authenticationValid(String email, String password) throws NoSuchAlgorithmException,
+			InvalidKeySpecException {
+		String storedPassword = getPassword(email);
+		return PasswordHash.validatePassword(password, storedPassword);
+	}
+
+	public static boolean exists(ObjectId userId) {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	public static boolean exists(String email) {
+		DBObject query = new BasicDBObject("email", email);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	public static ObjectId getId(String email) {
@@ -76,60 +88,68 @@ public class User extends Model implements Comparable<User> {
 		return (String) Database.getCollection(collection).findOne(query, projection).get("name");
 	}
 
-	public static User find(ObjectId userId) throws ConversionException {
-		DBObject query = new BasicDBObject("_id", userId);
-		DBObject result = Database.getCollection(collection).findOne(query);
-		return ModelConversion.mapToModel(User.class, result.toMap());
+	private static String getPassword(String email) {
+		DBObject query = new BasicDBObject("email", email);
+		DBObject projection = new BasicDBObject("password", 1);
+		return (String) Database.getCollection(collection).findOne(query, projection).get("password");
 	}
 
-	public static Set<User> find(Set<ObjectId> userIds) throws ConversionException {
+	public static User find(ObjectId userId) throws ModelException {
+		DBObject query = new BasicDBObject("_id", userId);
+		DBObject result = Database.getCollection(collection).findOne(query);
+		try {
+			return ModelConversion.mapToModel(User.class, result.toMap());
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
+	}
+
+	public static Set<User> find(Set<ObjectId> userIds) throws ModelException {
 		Set<User> users = new HashSet<User>();
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
-			users.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
+			try {
+				users.add(ModelConversion.mapToModel(User.class, result.next().toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return users;
 	}
 
-	private static boolean authenticationValid(String email, String password) throws ConversionException,
-			NoSuchAlgorithmException, InvalidKeySpecException {
-		if (!userExists(email)) {
-			return false;
+	public static void add(User newUser) throws ModelException {
+		try {
+			newUser.password = PasswordHash.createHash(newUser.password);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ModelException(e);
+		} catch (InvalidKeySpecException e) {
+			throw new ModelException(e);
 		}
-		String storedPassword = getPassword(email);
-		return PasswordHash.validatePassword(password, storedPassword);
-	}
-
-	public static String add(User newUser) throws ConversionException, InvalidKeySpecException,
-			NoSuchAlgorithmException, SearchException {
-		if (userExists(newUser.email)) {
-			return "A user with this email address already exists.";
-		}
-		newUser.password = PasswordHash.createHash(newUser.password);
 		newUser.visible = new BasicDBList();
 		newUser.apps = new BasicDBList();
 		newUser.visualizations = new BasicDBList();
 		ObjectId defaultVisualizationId = Visualization.getId(Visualization.getDefaultVisualization());
 		newUser.visualizations.add(defaultVisualizationId);
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newUser));
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newUser));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newUser._id = (ObjectId) insert.get("_id");
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
-		// add to search index (concatenate email and name)
-		Search.addPublic(Type.USER, newUser._id, newUser.email + " " + newUser.name);
-		return null;
+		// add to search index (email is document's content, so that it is searchable as well)
+		try {
+			Search.addPublic(Type.USER, newUser._id, newUser.name, newUser.email);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static String remove(ObjectId userId) {
-		if (!userExists(userId)) {
-			return "No user with this id exists.";
-		}
-
+	public static void delete(ObjectId userId) throws ModelException {
 		// remove from search index
 		Search.deletePublic(Type.USER, userId);
 
@@ -137,30 +157,15 @@ public class User extends Model implements Comparable<User> {
 		// the marketplace), ...
 		DBObject query = new BasicDBObject("_id", userId);
 		WriteResult result = Database.getCollection(collection).remove(query);
-		return result.getLastError().getErrorMessage();
-	}
-
-	private static boolean userExists(ObjectId userId) {
-		DBObject query = new BasicDBObject("_id", userId);
-		return (Database.getCollection(collection).findOne(query) != null);
-	}
-
-	public static boolean userExists(String email) {
-		DBObject query = new BasicDBObject("email", email);
-		return (Database.getCollection(collection).findOne(query) != null);
-	}
-
-	private static String getPassword(String email) {
-		DBObject query = new BasicDBObject("email", email);
-		DBObject projection = new BasicDBObject("password", 1);
-		return (String) Database.getCollection(collection).findOne(query, projection).get("password");
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	// Record visibility methods
 	/**
 	 * Makes the given records of an owner visible to the given users.
 	 */
-	public static String makeRecordsVisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) {
+	public static void makeRecordsVisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds)
+			throws ModelException {
 		// create an entry for the owner if it doesn't exist yet in the users' visible field
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		query.put("visible", new BasicDBObject("$not", new BasicDBObject("$elemMatch", new BasicDBObject("owner",
@@ -168,28 +173,28 @@ public class User extends Model implements Comparable<User> {
 		DBObject visibleEntry = new BasicDBObject("owner", ownerId);
 		visibleEntry.put("records", new BasicDBList());
 		DBObject update = new BasicDBObject("$push", new BasicDBObject("visible", visibleEntry));
-		String errorMessage = Database.getCollection(collection).updateMulti(query, update).getLastError()
-				.getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// add records to visible records
 		query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		query.put("visible.owner", ownerId);
 		update = new BasicDBObject("$addToSet", new BasicDBObject("visible.$.records", new BasicDBObject("$each",
 				recordIds.toArray())));
-		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	/**
 	 * Removes records from the visible records of the given users.
 	 */
-	public static String makeRecordsInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) {
+	public static void makeRecordsInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds)
+			throws ModelException {
 		DBObject query = new BasicDBObject("_id", new BasicDBObject("$in", userIds.toArray()));
 		query.put("visible.owner", ownerId);
 		DBObject update = new BasicDBObject("$pullAll", new BasicDBObject("visible.$.records", recordIds.toArray()));
-		return Database.getCollection(collection).updateMulti(query, update).getLastError().getErrorMessage();
+		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	/**
@@ -236,7 +241,7 @@ public class User extends Model implements Comparable<User> {
 		return installedAppIds;
 	}
 
-	public static Set<App> findApps(ObjectId userId) throws ConversionException {
+	public static Set<App> findApps(ObjectId userId) throws ModelException {
 		Set<ObjectId> installedAppIds = getApps(userId);
 		Set<App> installedApps = new HashSet<App>();
 		for (ObjectId appId : installedAppIds) {
@@ -245,18 +250,18 @@ public class User extends Model implements Comparable<User> {
 		return installedApps;
 	}
 
-	public static String addApp(ObjectId userId, ObjectId appId) {
+	public static void addApp(ObjectId userId, ObjectId appId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("apps", appId));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
-	public static String removeApp(ObjectId userId, ObjectId appId) {
+	public static void removeApp(ObjectId userId, ObjectId appId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("apps", appId));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	// Visualization methods
@@ -281,7 +286,7 @@ public class User extends Model implements Comparable<User> {
 		return installedVisualizationIds;
 	}
 
-	public static Set<Visualization> findVisualizations(ObjectId userId) throws ConversionException {
+	public static Set<Visualization> findVisualizations(ObjectId userId) throws ModelException {
 		Set<ObjectId> installedVisualizationIds = getVisualizations(userId);
 		Set<Visualization> installedVisualizations = new HashSet<Visualization>();
 		for (ObjectId visualizationId : installedVisualizationIds) {
@@ -290,18 +295,18 @@ public class User extends Model implements Comparable<User> {
 		return installedVisualizations;
 	}
 
-	public static String addVisualization(ObjectId userId, ObjectId visualizationId) {
+	public static void addVisualization(ObjectId userId, ObjectId visualizationId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("visualizations", visualizationId));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
-	public static String removeVisualization(ObjectId userId, ObjectId visualizationId) {
+	public static void removeVisualization(ObjectId userId, ObjectId visualizationId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", userId);
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("visualizations", visualizationId));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		return result.getLastError().getErrorMessage();
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 }

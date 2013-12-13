@@ -8,9 +8,9 @@ import org.bson.types.ObjectId;
 import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
 import utils.search.Search.Type;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -75,44 +75,53 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return (String) Database.getCollection(collection).findOne(query, projection).get("url");
 	}
 
-	public static Visualization find(ObjectId visualizationId) throws ConversionException {
+	public static Visualization find(ObjectId visualizationId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject result = Database.getCollection(collection).findOne(query);
-		return ModelConversion.mapToModel(Visualization.class, result.toMap());
+		try {
+			return ModelConversion.mapToModel(Visualization.class, result.toMap());
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static Set<Visualization> findSpotlighted() throws ConversionException {
+	public static Set<Visualization> findSpotlighted() throws ModelException {
 		Set<Visualization> visualizations = new HashSet<Visualization>();
 		// TODO return only spotlighted visualizations
 		// for now: return all visualizations
 		DBCursor result = Database.getCollection(collection).find();
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			visualizations.add(ModelConversion.mapToModel(Visualization.class, cur.toMap()));
+			try {
+				visualizations.add(ModelConversion.mapToModel(Visualization.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return visualizations;
 	}
 
-	public static String add(Visualization newVisualization) throws ConversionException, SearchException {
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
+	public static void add(Visualization newVisualization) throws ModelException {
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newVisualization));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newVisualization._id = (ObjectId) insert.get("_id");
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
-		// add to search index (concatenate name and description)
-		Search.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name + ": "
-				+ newVisualization.description);
-		return null;
+		// add to search index
+		try {
+			Search.addPublic(Type.VISUALIZATION, newVisualization._id, newVisualization.name,
+					newVisualization.description);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static String delete(ObjectId creatorId, ObjectId visualizationId) {
-		if (!visualizationExists(creatorId, visualizationId)) {
-			return "No visualizations with this id exists.";
-		}
-
+	public static void delete(ObjectId creatorId, ObjectId visualizationId) throws ModelException {
 		// remove from search index
 		Search.deletePublic(Type.VISUALIZATION, visualizationId);
 
@@ -121,14 +130,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		// remove from visualizations
 		DBObject remove = new BasicDBObject("_id", visualizationId);
 		WriteResult result = Database.getCollection(collection).remove(remove);
-		return result.getLastError().getErrorMessage();
-	}
-
-	private static boolean visualizationExists(ObjectId creatorId, ObjectId visualizationId) {
-		DBObject query = new BasicDBObject("_id", visualizationId);
-		query.put("creator", creatorId);
-		DBObject projection = new BasicDBObject("_id", 1);
-		return Database.getCollection(collection).findOne(query, projection) != null;
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 }

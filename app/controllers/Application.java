@@ -1,12 +1,11 @@
 package controllers;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import models.Message;
+import models.ModelException;
 import models.User;
 
 import org.bson.types.ObjectId;
@@ -16,8 +15,6 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.ModelConversion.ConversionException;
-import utils.search.SearchException;
 import views.html.index;
 import views.html.welcome;
 import controllers.forms.Registration;
@@ -26,14 +23,15 @@ public class Application extends Controller {
 
 	@Security.Authenticated(Secured.class)
 	public static Result index() {
+		ObjectId user = new ObjectId(request().username());
+		List<Message> messages;
 		try {
-			ObjectId user = new ObjectId(request().username());
-			List<Message> messages = new ArrayList<Message>(Message.findSentTo(user));
-			Collections.sort(messages);
-			return ok(index.render(messages, user));
-		} catch (ConversionException e) {
+			messages = new ArrayList<Message>(Message.findSentTo(user));
+		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
+		Collections.sort(messages);
+		return ok(index.render(messages, user));
 	}
 
 	public static Result welcome() {
@@ -62,21 +60,12 @@ public class Application extends Controller {
 			newUser.name = registration.firstName + " " + registration.lastName;
 			newUser.password = registration.password;
 			try {
-				String errorMessage = User.add(newUser);
-				if (errorMessage != null) {
-					return badRequest(errorMessage);
-				}
+				User.add(newUser);
 				session().clear();
 				session("id", newUser._id.toString());
 				return redirect(routes.Application.index());
-			} catch (ConversionException e) {
-				return internalServerError(e.getMessage());
-			} catch (InvalidKeySpecException e) {
-				return internalServerError(e.getMessage());
-			} catch (NoSuchAlgorithmException e) {
-				return internalServerError(e.getMessage());
-			} catch (SearchException e) {
-				return internalServerError(e.getMessage());
+			} catch (ModelException e) {
+				return badRequest(e.getMessage());
 			}
 		}
 	}
@@ -101,11 +90,9 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Spaces.getVisualizationURL(),
-				controllers.routes.javascript.Market.installApp(),
-				controllers.routes.javascript.Market.uninstallApp(),
+				controllers.routes.javascript.Market.installApp(), controllers.routes.javascript.Market.uninstallApp(),
 				controllers.routes.javascript.Market.installVisualization(),
 				controllers.routes.javascript.Market.uninstallVisualization(),
-				controllers.routes.javascript.Market.loadVisualizations(),
 				controllers.routes.javascript.Users.getName(),
 				controllers.visualizations.routes.javascript.RecordList.load(),
 				controllers.visualizations.routes.javascript.RecordList.findSpacesWith(),

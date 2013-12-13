@@ -40,7 +40,6 @@ POST    /market/visualizations/register controllers.Market.registerVisualization
 GET     /market/visualizations/:id  controllers.Market.showVisualization(id: String)
 PUT     /market/visualizations/:id  controllers.Market.installVisualization(id: String)
 DELETE  /market/visualizations/:id  controllers.Market.uninstallVisualization(id: String)
-GET     /visualizations/load        controllers.Market.loadVisualizations()
 # Search
 POST    /search                     controllers.GlobalSearch.submit()
 GET     /search/:query              controllers.GlobalSearch.search(query: String)

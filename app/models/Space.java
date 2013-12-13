@@ -4,14 +4,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 
 import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.OrderOperations;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -41,12 +40,17 @@ public class Space extends Model implements Comparable<Space> {
 		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
-	public static boolean isOwner(ObjectId spaceId, ObjectId userId) {
-		DBObject query = new BasicDBObject();
-		query.put("_id", spaceId);
-		query.put("owner", userId);
+	public static boolean exists(ObjectId ownerId, ObjectId spaceId) {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		query.put("owner", ownerId);
 		DBObject projection = new BasicDBObject("_id", 1);
 		return Database.getCollection(collection).findOne(query, projection) != null;
+	}
+
+	private static int getOrder(ObjectId spaceId) {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject projection = new BasicDBObject("order", 1);
+		return (Integer) Database.getCollection(collection).findOne(query, projection).get("order");
 	}
 
 	public static ObjectId getVisualizationId(ObjectId spaceId, ObjectId userId) {
@@ -59,13 +63,17 @@ public class Space extends Model implements Comparable<Space> {
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
-	public static Set<Space> findOwnedBy(ObjectId userId) throws ConversionException {
+	public static Set<Space> findOwnedBy(ObjectId userId) throws ModelException {
 		Set<Space> spaces = new HashSet<Space>();
 		DBObject query = new BasicDBObject("owner", userId);
 		DBCursor result = Database.getCollection(collection).find(query);
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			spaces.add(ModelConversion.mapToModel(Space.class, cur.toMap()));
+			try {
+				spaces.add(ModelConversion.mapToModel(Space.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return spaces;
 	}
@@ -85,137 +93,91 @@ public class Space extends Model implements Comparable<Space> {
 		return spaces;
 	}
 
-	/**
-	 * Adds a space and returns the error message (null in absence of errors). Also adds the generated id to the space
-	 * object.
-	 */
-	public static String add(Space newSpace) throws ConversionException, SearchException {
+	public static void add(Space newSpace) throws ModelException {
 		newSpace.order = OrderOperations.getMax(collection, newSpace.owner) + 1;
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newSpace));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newSpace._id = (ObjectId) insert.get("_id");
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// also add this space to the user's search index
-		Search.add(newSpace.owner, "space", newSpace._id, newSpace.name);
-		return null;
+		try {
+			Search.add(newSpace.owner, "space", newSpace._id, newSpace.name);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	/**
-	 * Tries to rename the space with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String rename(ObjectId spaceId, String newName) throws ElasticSearchException, SearchException {
+	public static void rename(ObjectId ownerId, ObjectId spaceId, String newName) throws ModelException {
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject foundSpace = Database.getCollection(collection).findOne(query);
-		if (foundSpace == null) {
-			return "This space doesn't exist.";
-		}
-		ObjectId ownerId = (ObjectId) foundSpace.get("owner");
-		if (spaceWithSameNameExists(newName, ownerId)) {
-			return "A space with this name already exists.";
-		}
 		DBObject update = new BasicDBObject("$set", new BasicDBObject("name", newName));
 		WriteResult result = Database.getCollection(collection).update(query, update);
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// update search index
-		Search.delete(ownerId, "space", spaceId);
-		Search.add(ownerId, "space", spaceId, newName);
-		return null;
+		try {
+			Search.update(ownerId, "space", spaceId, newName);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	/**
-	 * Tries to delete the space with the given id and returns the error message (null in absence of errors).
-	 */
-	public static String delete(ObjectId spaceId) {
-		// find owner and order first
+	public static void delete(ObjectId ownerId, ObjectId spaceId) throws ModelException {
+		// find order first
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject space = Database.getCollection(collection).findOne(query);
-		if (space == null) {
-			return "No space with this id exists.";
-		}
-		ObjectId ownerId = (ObjectId) space.get("owner");
-		int order = (Integer) space.get("order");
+		int order = getOrder(spaceId);
 
 		// remove space
 		WriteResult result = Database.getCollection(collection).remove(query);
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// decrement all order fields greater than the removed space
-		errorMessage = OrderOperations.decrement(collection, ownerId, order, 0);
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(OrderOperations.decrement(collection, ownerId, order, 0));
 
 		// remove from search index
 		Search.delete(ownerId, "space", spaceId);
-		return null;
 	}
 
 	/**
-	 * Adds a new record to the space with the given id and returns the error message (null in absence of errors).
+	 * Adds a new record to the space with the given id.
 	 */
-	public static String addRecord(ObjectId spaceId, ObjectId recordId) throws ConversionException {
-		if (Record.find(recordId) == null) {
-			return "Record doesn't exist.";
-		} else if (Space.recordIsInSpace(spaceId, recordId)) {
-			return "Record is already in this space.";
-		} else {
-			DBObject query = new BasicDBObject("_id", spaceId);
-			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-			WriteResult result = Database.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
-		}
+	public static void addRecord(ObjectId spaceId, ObjectId recordId) throws ModelException {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	/**
-	 * Removes a record from the space with the given id and returns the error message (null in absence of errors).
+	 * Removes a record from the space with the given id.
 	 */
-	public static String removeRecord(ObjectId spaceId, ObjectId recordId) throws ConversionException {
-		if (Record.find(recordId) == null) {
-			return "Record doesn't exist.";
-		} else if (!Space.recordIsInSpace(spaceId, recordId)) {
-			return "Record is not in this space.";
-		} else {
-			DBObject query = new BasicDBObject("_id", spaceId);
-			DBObject update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
-			WriteResult result = Database.getCollection(collection).update(query, update);
-			return result.getLastError().getErrorMessage();
-		}
+	public static void removeRecord(ObjectId spaceId, ObjectId recordId) throws ModelException {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
+		WriteResult result = Database.getCollection(collection).update(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	/**
 	 * Adds the record to the given spaces of the user (if not already present), and removes it from the user's other
 	 * spaces.
 	 */
-	public static String updateRecords(Set<ObjectId> spaceIds, ObjectId recordId, ObjectId userId)
-			throws ConversionException {
-		if (Record.find(recordId) == null) {
-			return "Record doesn't exist.";
-		} else {
-			DBObject query = new BasicDBObject("owner", userId);
-			query.put("_id", new BasicDBObject("$in", spaceIds.toArray()));
-			DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-			WriteResult result = Database.getCollection(collection).updateMulti(query, update);
-			String errorMessage = result.getLastError().getErrorMessage();
-			if (errorMessage != null) {
-				return errorMessage;
-			}
-			query = new BasicDBObject("owner", userId);
-			query.put("_id", new BasicDBObject("$nin", spaceIds.toArray()));
-			update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
-			result = Database.getCollection(collection).updateMulti(query, update);
-			return result.getLastError().getErrorMessage();
-		}
+	public static void updateRecords(Set<ObjectId> spaceIds, ObjectId recordId, ObjectId userId) throws ModelException {
+		DBObject query = new BasicDBObject("owner", userId);
+		query.put("_id", new BasicDBObject("$in", spaceIds.toArray()));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+		query = new BasicDBObject("owner", userId);
+		query.put("_id", new BasicDBObject("$nin", spaceIds.toArray()));
+		update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
+		result = Database.getCollection(collection).updateMulti(query, update);
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 	public static Set<ObjectId> getRecords(ObjectId spaceId) {
@@ -228,26 +190,6 @@ public class Space extends Model implements Comparable<Space> {
 			recordIds.add((ObjectId) recordId);
 		}
 		return recordIds;
-	}
-
-	/**
-	 * Checks whether a space with the same name already exists for the given owner.
-	 */
-	private static boolean spaceWithSameNameExists(String name, ObjectId userId) {
-		DBObject query = new BasicDBObject();
-		query.put("name", name);
-		query.put("owner", userId);
-		return (Database.getCollection(collection).findOne(query) != null);
-	}
-
-	/**
-	 * Checks whether the given record is in the given space.
-	 */
-	private static boolean recordIsInSpace(ObjectId spaceId, ObjectId recordId) {
-		DBObject query = new BasicDBObject();
-		query.put("_id", spaceId);
-		query.put("records", new BasicDBObject("$in", new ObjectId[] { recordId }));
-		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 }

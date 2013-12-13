@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import models.Circle;
+import models.ModelException;
 import models.Record;
 import models.Space;
-import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -21,7 +21,6 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.ModelConversion.ConversionException;
 import views.html.visualizations.recordlist;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -111,16 +110,11 @@ public class RecordList extends Controller {
 			spaceIds.add(new ObjectId(id));
 		}
 		try {
-			String errorMessage = Space.updateRecords(spaceIds, new ObjectId(recordId), new ObjectId(request()
-					.username()));
-			if (errorMessage == null) {
-				return ok();
-			} else {
-				return badRequest(errorMessage);
-			}
-		} catch (ConversionException e) {
-			return internalServerError(e.getMessage());
+			Space.updateRecords(spaceIds, new ObjectId(recordId), new ObjectId(request().username()));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
 		}
+		return ok();
 	}
 
 	/**
@@ -137,42 +131,27 @@ public class RecordList extends Controller {
 			circleIdsStopped.add(new ObjectId(id));
 		}
 
-		// TODO Security checks here?
+		// validate circles
+		ObjectId userId = new ObjectId(request().username());
+		Iterator<ObjectId> iterator = circleIdsStarted.iterator();
+		while (iterator.hasNext()) {
+			if (!Circle.exists(userId, iterator.next())) {
+				iterator.remove();
+			}
+		}
+		iterator = circleIdsStopped.iterator();
+		while (iterator.hasNext()) {
+			if (!Circle.exists(userId, iterator.next())) {
+				iterator.remove();
+			}
+		}
 
 		// update circles
-		ObjectId userId = new ObjectId(request().username());
-		String errorMessage = Circle.startSharingWith(userId, recordId, circleIdsStarted);
-		if (errorMessage != null) {
-			return badRequest(errorMessage);
-		}
-
-		errorMessage = Circle.stopSharingWith(userId, recordId, circleIdsStopped);
-		if (errorMessage != null) {
-			return badRequest(errorMessage);
-		}
-
-		// update visible field of all involved users
-		HashSet<ObjectId> recordIds = new HashSet<ObjectId>();
-		recordIds.add(recordId);
-		HashSet<ObjectId> userIdsStarted = new HashSet<ObjectId>();
-		for (ObjectId circleId : circleIdsStarted) {
-			userIdsStarted.addAll(Circle.getMembers(circleId));
-		}
-		errorMessage = User.makeRecordsVisible(userId, recordIds, userIdsStarted);
-		if (errorMessage != null) {
-			return badRequest(errorMessage);
-		}
-		// TODO don't remove from users that are part of another circle of the owner that this record is also shared
-		// with
-		// TODO solve with pushing records so that there are duplicates in visible field? retrieve and add to set to
-		// avoid duplicates in the application
-		HashSet<ObjectId> userIdsStopped = new HashSet<ObjectId>();
-		for (ObjectId circleId : circleIdsStopped) {
-			userIdsStopped.addAll(Circle.getMembers(circleId));
-		}
-		errorMessage = User.makeRecordsInvisible(userId, recordIds, userIdsStopped);
-		if (errorMessage != null) {
-			return badRequest(errorMessage);
+		try {
+			Circle.startSharingWith(userId, recordId, circleIdsStarted);
+			Circle.stopSharingWith(userId, recordId, circleIdsStopped);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
 		}
 		return ok();
 	}

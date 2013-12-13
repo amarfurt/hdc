@@ -10,7 +10,7 @@ public class Registration {
 	public String password;
 
 	public String validate() {
-		if (User.userExists(email)) {
+		if (User.exists(email)) {
 			return "A user with this email address already exists.";
 		} else if (email.isEmpty() || firstName.isEmpty() || lastName.isEmpty() || password.isEmpty()) {
 			return "Please fill in all fields.";

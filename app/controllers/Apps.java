@@ -1,5 +1,6 @@
 package controllers;
 
+import models.ModelException;
 import models.Record;
 
 import org.bson.types.ObjectId;
@@ -9,8 +10,6 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.DateTimeUtils;
-import utils.ModelConversion.ConversionException;
-import utils.search.SearchException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -68,16 +67,10 @@ public class Apps extends Controller {
 		record.data = data;
 		record.name = name;
 		record.description = description;
-		String errorMessage;
 		try {
-			errorMessage = Record.add(record);
-		} catch (ConversionException e) {
+			Record.add(record);
+		} catch (ModelException e) {
 			return badRequest(e.getMessage());
-		} catch (SearchException e) {
-			return badRequest(e.getMessage());
-		}
-		if (errorMessage != null) {
-			return badRequest(errorMessage);
 		}
 
 		// allow cross origin request from app server

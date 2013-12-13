@@ -8,9 +8,9 @@ import org.bson.types.ObjectId;
 import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
-import utils.search.SearchException;
 import utils.search.Search;
 import utils.search.Search.Type;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -53,36 +53,49 @@ public class App extends Model implements Comparable<App> {
 		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
-	public static App find(ObjectId appId) throws ConversionException {
+	public static App find(ObjectId appId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", appId);
 		DBObject result = Database.getCollection(collection).findOne(query);
-		return ModelConversion.mapToModel(App.class, result.toMap());
+		try {
+			return ModelConversion.mapToModel(App.class, result.toMap());
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 	}
 
-	public static Set<App> findSpotlighted() throws ConversionException {
+	public static Set<App> findSpotlighted() throws ModelException {
 		Set<App> apps = new HashSet<App>();
 		// TODO return only spotlighted apps
 		// for now: return all apps
 		DBCursor result = Database.getCollection(collection).find();
 		while (result.hasNext()) {
 			DBObject cur = result.next();
-			apps.add(ModelConversion.mapToModel(App.class, cur.toMap()));
+			try {
+				apps.add(ModelConversion.mapToModel(App.class, cur.toMap()));
+			} catch (ConversionException e) {
+				throw new ModelException(e);
+			}
 		}
 		return apps;
 	}
 
-	public static String add(App newApp) throws ConversionException, SearchException {
-		DBObject insert = new BasicDBObject(ModelConversion.modelToMap(newApp));
+	public static void add(App newApp) throws ModelException {
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newApp));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
 		WriteResult result = Database.getCollection(collection).insert(insert);
 		newApp._id = (ObjectId) insert.get("_id");
-		String errorMessage = result.getLastError().getErrorMessage();
-		if (errorMessage != null) {
-			return errorMessage;
-		}
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
-		// add to search index (concatenate name and description)
-		Search.addPublic(Type.APP, newApp._id, newApp.name + ": " + newApp.description);
-		return null;
+		// add to search index
+		try {
+			Search.addPublic(Type.APP, newApp._id, newApp.name, newApp.description);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
 }
