@@ -20,10 +20,10 @@ import org.junit.After;
 import org.junit.Before;
 
 import utils.SearchTestHelper;
-import utils.search.SearchException;
-import utils.search.SearchResult;
 import utils.search.Search;
 import utils.search.Search.Type;
+import utils.search.SearchException;
+import utils.search.SearchResult;
 
 public class SearchTest {
 
@@ -67,16 +67,16 @@ public class SearchTest {
 
 	@ManualTest
 	public void indexUser() throws SearchException {
-		assertEquals(0, SearchTestHelper.count(null, "user"));
+		assertEquals(0, SearchTestHelper.count("public", "user"));
 		ObjectId userId = addUser();
-		assertEquals(1, SearchTestHelper.count(null, "user"));
-		assertNotNull(SearchTestHelper.getData(null, "user", userId));
+		assertEquals(1, SearchTestHelper.count("public", "user"));
+		assertNotNull(SearchTestHelper.getTitle("public", "user", userId));
+		assertNotNull(SearchTestHelper.getContent("public", "user", userId));
 	}
 
 	private ObjectId addUser() throws SearchException {
 		ObjectId userId = new ObjectId();
-		String data = "test@example.com Test User";
-		Search.addPublic(Type.USER, userId, data);
+		Search.addPublic(Type.USER, userId, "Test User", "test@example.com");
 		SearchTestHelper.refreshIndex();
 		return userId;
 	}
@@ -84,13 +84,15 @@ public class SearchTest {
 	@ManualTest
 	public void indexRecord() throws SearchException {
 		ObjectId userId = addUser();
-		assertEquals(0, SearchTestHelper.count(userId, "record"));
+		assertEquals(0, SearchTestHelper.count(userId.toString(), "record"));
 		ObjectId recordId = new ObjectId();
-		String data = "Test data";
-		Search.add(userId, "record", recordId, data);
+		String title = "Test title";
+		String content = "Test content";
+		Search.add(userId, "record", recordId, title, content);
 		SearchTestHelper.refreshIndex();
-		assertEquals(1, SearchTestHelper.count(userId, "record"));
-		assertEquals(data, SearchTestHelper.getData(userId, "record", recordId));
+		assertEquals(1, SearchTestHelper.count(userId.toString(), "record"));
+		assertEquals(title, SearchTestHelper.getTitle(userId.toString(), "record", recordId));
+		assertEquals(content, SearchTestHelper.getContent(userId.toString(), "record", recordId));
 	}
 
 	@ManualTest
@@ -99,7 +101,7 @@ public class SearchTest {
 		ObjectId userId2 = addUser();
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		visibleRecords.put(userId2, new HashSet<ObjectId>());
-		String query = "data";
+		String query = "title";
 		Map<String, List<SearchResult>> result = Search.search(userId1, visibleRecords, query);
 		assertEquals(0, result.size());
 	}
@@ -108,11 +110,11 @@ public class SearchTest {
 	public void indexAndSearchOwnIndex() throws SearchException {
 		ObjectId userId = addUser();
 		ObjectId recordId = new ObjectId();
-		String data = "Test data";
-		Search.add(userId, "record", recordId, data);
+		String title = "Test title";
+		Search.add(userId, "record", recordId, title);
 		SearchTestHelper.refreshIndex();
-		assertEquals(1, SearchTestHelper.count(userId, "record"));
-		String query = "data";
+		assertEquals(1, SearchTestHelper.count(userId.toString(), "record"));
+		String query = "title";
 		HashMap<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
@@ -120,7 +122,7 @@ public class SearchTest {
 		assertEquals(1, result.get("record").size());
 		assertEquals(recordId.toString(), result.get("record").get(0).id);
 		assertTrue(result.get("record").get(0).score > 0);
-		assertEquals(data, result.get("record").get(0).data);
+		assertEquals(title, result.get("record").get(0).title);
 	}
 
 	@ManualTest
@@ -128,11 +130,11 @@ public class SearchTest {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
 		ObjectId recordId = new ObjectId();
-		String data = "Test data";
-		Search.add(userId1, "record", recordId, data);
+		String title = "Test title";
+		Search.add(userId1, "record", recordId, title);
 		SearchTestHelper.refreshIndex();
-		assertEquals(1, SearchTestHelper.count(userId1, "record"));
-		String query = "data";
+		assertEquals(1, SearchTestHelper.count(userId1.toString(), "record"));
+		String query = "title";
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
 		visibleRecordIds.add(recordId);
@@ -143,24 +145,24 @@ public class SearchTest {
 		assertEquals(1, result.get("record").size());
 		assertEquals(recordId.toString(), result.get("record").get(0).id);
 		assertTrue(result.get("record").get(0).score > 0);
-		assertEquals(data, result.get("record").get(0).data);
+		assertEquals(title, result.get("record").get(0).title);
 	}
 
 	@ManualTest
 	public void ranking() throws SearchException {
 		ObjectId userId = addUser();
 		ObjectId recordId1 = new ObjectId();
-		String data1 = "Test data 1";
-		Search.add(userId, "record", recordId1, data1);
+		String title1 = "Test title 1";
+		Search.add(userId, "record", recordId1, title1);
 		ObjectId recordId2 = new ObjectId();
-		String data2 = "Test data 2";
-		Search.add(userId, "record", recordId2, data2);
+		String title2 = "Test title 2";
+		Search.add(userId, "record", recordId2, title2);
 		ObjectId recordId3 = new ObjectId();
-		String data3 = "Unrelated";
-		Search.add(userId, "record", recordId3, data3);
+		String title3 = "Unrelated";
+		Search.add(userId, "record", recordId3, title3);
 		SearchTestHelper.refreshIndex();
-		assertEquals(3, SearchTestHelper.count(userId, "record"));
-		String query = "data 2";
+		assertEquals(3, SearchTestHelper.count(userId.toString(), "record"));
+		String query = "title 2";
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
 		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
@@ -170,8 +172,27 @@ public class SearchTest {
 		SearchResult secondResult = result.get("record").get(1);
 		assertTrue(firstResult.score >= secondResult.score);
 		assertEquals(recordId2, firstResult.id);
-		assertEquals(data2, firstResult.data);
+		assertEquals(title2, firstResult.title);
 		assertEquals(recordId1, secondResult.id);
+	}
+
+	@ManualTest
+	public void complete() throws SearchException {
+		ObjectId userId = addUser();
+		ObjectId recordId = new ObjectId();
+		String title = "Test title";
+		String content = "Test content";
+		Search.add(userId, "record", recordId, title, content);
+		SearchTestHelper.refreshIndex();
+		String query = "title";
+		Map<String, List<SearchResult>> completions = Search.complete(userId, query);
+		assertEquals(1, completions.size());
+		assertTrue(completions.containsKey("record"));
+		assertEquals(1, completions.get("record").size());
+		SearchResult completion = completions.get("record").get(0);
+		assertTrue(completion.score > 0);
+		assertEquals(recordId, completion.id);
+		assertEquals(title, completion.title);
 	}
 
 }

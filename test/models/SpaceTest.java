@@ -3,27 +3,22 @@ package models;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
-import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
 import utils.db.Database;
-import utils.search.SearchException;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -37,6 +32,11 @@ public class SpaceTest {
 		start(fakeApplication(fakeGlobal()));
 		Database.connectToTest();
 		Database.destroy();
+		try {
+			CreateDBObjects.createDefaultVisualization();
+		} catch (ModelException e) {
+			Assert.fail();
+		}
 	}
 
 	@After
@@ -45,7 +45,7 @@ public class SpaceTest {
 	}
 
 	@Test
-	public void ownerSuccess() throws ConversionException {
+	public void exists() throws ModelException {
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -53,15 +53,13 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
+		Space.add(space);
 		assertEquals(1, spaces.count());
-		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
-		assertTrue(Space.isOwner(spaceId, space.owner));
+		assertTrue(Space.exists(space.owner, space._id));
 	}
 
 	@Test
-	public void ownerFailure() throws ConversionException {
+	public void notExists() throws ModelException {
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -69,15 +67,13 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
+		Space.add(space);
 		assertEquals(1, spaces.count());
-		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
-		assertFalse(Space.isOwner(spaceId, new ObjectId()));
+		assertFalse(Space.exists(new ObjectId(), space._id));
 	}
 
 	@Test
-	public void addSpace() throws ConversionException, SearchException {
+	public void add() throws ModelException {
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -85,14 +81,14 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		assertNull(Space.add(space));
+		Space.add(space);
 		assertEquals(1, spaces.count());
-		assertEquals("Test space", spaces.findOne().get("name"));
+		assertEquals(space.name, spaces.findOne().get("name"));
 		assertNotNull(space._id);
 	}
 
 	@Test
-	public void addSpaceWithExistingName() throws ConversionException, SearchException {
+	public void rename() throws ModelException {
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -100,37 +96,15 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		assertNull(Space.add(space));
+		Space.add(space);
 		assertEquals(1, spaces.count());
-		Space anotherSpace = new Space();
-		anotherSpace.name = space.name;
-		anotherSpace.owner = space.owner;
-		anotherSpace.visualization = space.visualization;
-		anotherSpace.records = space.records;
-		assertEquals("A space with this name already exists.", Space.add(anotherSpace));
-		assertEquals(1, spaces.count());
-	}
-
-	@Test
-	public void renameSuccess() throws ConversionException, SearchException {
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = new ObjectId();
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
-		assertNull(Space.rename(spaceId, "New space"));
+		Space.rename(space.owner, space._id, "New space");
 		assertEquals(1, spaces.count());
 		assertEquals("New space", spaces.findOne().get("name"));
 	}
 
 	@Test
-	public void renameWrongId() throws ConversionException, SearchException {
+	public void delete() throws ModelException {
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -138,70 +112,16 @@ public class SpaceTest {
 		space.owner = new ObjectId();
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
-		spaces.insert(new BasicDBObject(ModelConversion.modelToMap(space)));
+		Space.add(space);
 		assertEquals(1, spaces.count());
-		ObjectId spaceId = ObjectId.get();
-		assertEquals("This space doesn't exist.", Space.rename(spaceId, "New space"));
-		assertEquals(1, spaces.count());
-		assertEquals("Test space", spaces.findOne().get("name"));
-	}
-
-	@Test
-	public void renameExistingName() throws ConversionException, SearchException {
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = new ObjectId();
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		ObjectId spaceId = (ObjectId) spaceObject.get("_id");
-		assertEquals("A space with this name already exists.", Space.rename(spaceId, "Test space"));
-		assertEquals(1, spaces.count());
-		assertEquals("Test space", spaces.findOne().get("name"));
-	}
-
-	@Test
-	public void deleteSuccess() throws ConversionException {
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = new ObjectId();
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		assertEquals("Test space", spaces.findOne().get("name"));
-		assertNull(Space.delete((ObjectId) spaceObject.get("_id")));
+		Space.delete(space.owner, space._id);
 		assertEquals(0, spaces.count());
 	}
 
 	@Test
-	public void deleteFailure() throws ConversionException {
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = new ObjectId();
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		ObjectId randomId = ObjectId.get();
-		assertEquals("No space with this id exists.", Space.delete(randomId));
-		assertEquals(1, spaces.count());
-	}
-
-	@Test
-	public void addRecordSuccess() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void addRecord() throws ModelException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(2, userIds[0], userIds[1]);
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -210,40 +130,18 @@ public class SpaceTest {
 		space.visualization = new ObjectId();
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
+		Space.add(space);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertNull(Space.addRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
+		Space.addRecord(space._id, recordIds[1]);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
 	}
 
 	@Test
-	public void addRecordWrongId() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void removeRecord() throws ModelException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertNull(Space.addRecord(ObjectId.get(), recordIds[1]));
-		assertEquals(1, spaces.count());
-		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-	}
-
-	@Test
-	public void addRecordAlreadyInSpace() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
-		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(2, userIds[0], userIds[1]);
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
 		Space space = new Space();
@@ -253,136 +151,70 @@ public class SpaceTest {
 		space.records = new BasicDBList();
 		space.records.add(recordIds[0]);
 		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
+		Space.add(space);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertEquals("Record is already in this space.",
-				Space.addRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
-		assertEquals(1, spaces.count());
-		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-	}
-
-	@Test
-	public void removeRecordSuccess() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
-		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertNull(Space.removeRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
+		Space.removeRecord(space._id, recordIds[1]);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
 	}
 
 	@Test
-	public void removeRecordWrongId() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void updateRecords() throws ModelException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(2, userIds[0], userIds[1]);
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		space.records.add(recordIds[1]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertEquals("Record is not in this space.", Space.removeRecord(ObjectId.get(), recordIds[1]));
-		assertEquals(1, spaces.count());
-		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
-	}
-
-	@Test
-	public void removeRecordNotInSpace() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
-		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		DBObject spaceObject = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(spaceObject);
-		assertEquals(1, spaces.count());
-		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-		assertEquals("Record is not in this space.",
-				Space.removeRecord((ObjectId) spaceObject.get("_id"), recordIds[1]));
-		assertEquals(1, spaces.count());
-		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-	}
-
-	@Test
-	public void updateRecords() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
-		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
-		DBCollection spaces = Database.getCollection("spaces");
-		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space 1";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(space1);
-		space.name = "Test space 2";
-		space.records.clear();
-		space.records.add(recordIds[1]);
-		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(space2);
+		Space space1 = new Space();
+		space1.name = "Test space 1";
+		space1.owner = userIds[0];
+		space1.visualization = new ObjectId();
+		space1.records = new BasicDBList();
+		space1.records.add(recordIds[0]);
+		Space.add(space1);
+		Space space2 = new Space();
+		space2.name = "Test space 2";
+		space2.owner = userIds[0];
+		space2.visualization = new ObjectId();
+		space2.records = new BasicDBList();
+		space2.records.add(recordIds[1]);
+		Space.add(space2);
 		assertEquals(2, spaces.count());
-		DBObject query1 = new BasicDBObject("_id", space1.get("_id"));
-		DBObject query2 = new BasicDBObject("_id", space2.get("_id"));
+		DBObject query1 = new BasicDBObject("_id", space1._id);
+		DBObject query2 = new BasicDBObject("_id", space2._id);
 		assertEquals(1, ((BasicDBList) spaces.findOne(query1).get("records")).size());
 		assertEquals(1, ((BasicDBList) spaces.findOne(query2).get("records")).size());
 		Set<ObjectId> spaceList = new HashSet<ObjectId>();
-		spaceList.add((ObjectId) space2.get("_id"));
-		assertNull(Space.updateRecords(spaceList, recordIds[0], userIds[0]));
+		spaceList.add((ObjectId) space2._id);
+		Space.updateRecords(spaceList, recordIds[0], userIds[0]);
 		assertEquals(0, ((BasicDBList) spaces.findOne(query1).get("records")).size());
 		assertEquals(2, ((BasicDBList) spaces.findOne(query2).get("records")).size());
 	}
 
 	@Test
-	public void findWithRecord() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findWithRecord() throws ModelException {
 		ObjectId[] userIds = CreateDBObjects.insertUsers(2);
-		ObjectId[] recordIds = CreateDBObjects.insertRecords(userIds[0], userIds[1], 2);
+		ObjectId[] recordIds = CreateDBObjects.insertRecords(2, userIds[0], userIds[1]);
 		DBCollection spaces = Database.getCollection("spaces");
 		assertEquals(0, spaces.count());
-		Space space = new Space();
-		space.name = "Test space 1";
-		space.owner = userIds[0];
-		space.visualization = new ObjectId();
-		space.records = new BasicDBList();
-		space.records.add(recordIds[0]);
-		DBObject space1 = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(space1);
-		space.name = "Test space 2";
-		space.records.clear();
-		space.records.add(recordIds[1]);
-		DBObject space2 = new BasicDBObject(ModelConversion.modelToMap(space));
-		spaces.insert(space2);
+		Space space1 = new Space();
+		space1.name = "Test space 1";
+		space1.owner = userIds[0];
+		space1.visualization = new ObjectId();
+		space1.records = new BasicDBList();
+		space1.records.add(recordIds[0]);
+		Space.add(space1);
+		Space space2 = new Space();
+		space2.name = "Test space 2";
+		space2.owner = userIds[1];
+		space2.visualization = new ObjectId();
+		space2.records = new BasicDBList();
+		space2.records.add(recordIds[1]);
+		Space.add(space2);
 		assertEquals(2, spaces.count());
 		Set<ObjectId> spaceList = Space.findWithRecord(recordIds[0], userIds[0]);
 		assertEquals(1, spaceList.size());
-		assertTrue(spaceList.contains(space1.get("_id")));
+		assertTrue(spaceList.contains(space1._id));
 	}
 
 }

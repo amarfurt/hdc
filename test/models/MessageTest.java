@@ -13,11 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.DateTimeUtils;
-import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
 import utils.db.Database;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 
 public class MessageTest {
@@ -35,39 +32,51 @@ public class MessageTest {
 	}
 
 	@Test
-	public void findSuccess() throws ConversionException {
+	public void add() throws ModelException {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
-		User user = new User();
-		user._id = new ObjectId();
 		Message message = new Message();
 		message.sender = new ObjectId();
-		message.receiver = user._id;
+		message.receiver = new ObjectId();
 		message.created = DateTimeUtils.getNow();
-		message.title = "Title";
-		message.content = "Content content.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
+		message.title = "Test title";
+		message.content = "Test content.";
+		Message.add(message);
 		assertEquals(1, messages.count());
-		Set<Message> foundMessages = Message.findSentTo(user._id);
-		assertEquals(1, foundMessages.size());
-		assertEquals("Title", foundMessages.iterator().next().title);
+		assertEquals(message._id, messages.findOne().get("_id"));
+		assertEquals(message.title, messages.findOne().get("title"));
 	}
 
 	@Test
-	public void findFailure() throws ConversionException {
+	public void findSuccess() throws ModelException {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
-		User user = new User();
-		user._id = new ObjectId();
 		Message message = new Message();
-		message.sender = user._id;
+		message.sender = new ObjectId();
+		message.receiver = new ObjectId();
+		message.created = DateTimeUtils.getNow();
+		message.title = "Test title";
+		message.content = "Test content.";
+		Message.add(message);
+		assertEquals(1, messages.count());
+		Set<Message> foundMessages = Message.findSentTo(message.receiver);
+		assertEquals(1, foundMessages.size());
+		assertEquals(message.title, foundMessages.iterator().next().title);
+	}
+
+	@Test
+	public void findFailure() throws ModelException {
+		DBCollection messages = Database.getCollection("messages");
+		assertEquals(0, messages.count());
+		Message message = new Message();
+		message.sender = new ObjectId();
 		message.receiver = new ObjectId();
 		message.created = DateTimeUtils.getNow();
 		message.title = "Title";
 		message.content = "Content content.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
+		Message.add(message);
 		assertEquals(1, messages.count());
-		Set<Message> foundMessages = Message.findSentTo(user._id);
+		Set<Message> foundMessages = Message.findSentTo(message.sender);
 		assertEquals(0, foundMessages.size());
 	}
 }

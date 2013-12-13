@@ -61,8 +61,8 @@ public class Apps extends Controller {
 		String description = json.get("description").asText();
 		Record record = new Record();
 		record.app = new ObjectId(appId);
-		record.creator = new ObjectId(user);
 		record.owner = new ObjectId(user);
+		record.creator = new ObjectId(user);
 		record.created = DateTimeUtils.getNow();
 		record.data = data;
 		record.name = name;

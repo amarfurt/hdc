@@ -60,6 +60,18 @@ public class Space extends Model implements Comparable<Space> {
 		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("visualization");
 	}
 
+	public static Set<ObjectId> getRecords(ObjectId spaceId) {
+		DBObject query = new BasicDBObject("_id", spaceId);
+		DBObject projection = new BasicDBObject("records", 1);
+		BasicDBList records = (BasicDBList) Database.getCollection(collection).findOne(query, projection)
+				.get("records");
+		Set<ObjectId> recordIds = new HashSet<ObjectId>();
+		for (Object recordId : records) {
+			recordIds.add((ObjectId) recordId);
+		}
+		return recordIds;
+	}
+
 	/**
 	 * Find the spaces that are owned by the given user.
 	 */
@@ -178,18 +190,6 @@ public class Space extends Model implements Comparable<Space> {
 		update = new BasicDBObject("$pull", new BasicDBObject("records", recordId));
 		result = Database.getCollection(collection).updateMulti(query, update);
 		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
-	}
-
-	public static Set<ObjectId> getRecords(ObjectId spaceId) {
-		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject projection = new BasicDBObject("records", 1);
-		BasicDBList records = (BasicDBList) Database.getCollection(collection).findOne(query, projection)
-				.get("records");
-		Set<ObjectId> recordIds = new HashSet<ObjectId>();
-		for (Object recordId : records) {
-			recordIds.add((ObjectId) recordId);
-		}
-		return recordIds;
 	}
 
 }

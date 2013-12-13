@@ -3,8 +3,8 @@ package controllers;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.callAction;
+import static play.test.Helpers.contentAsString;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.fakeRequest;
@@ -67,8 +67,10 @@ public class CirclesTest {
 		DBObject circle = circles.findOne(query);
 		ObjectId circleId = (ObjectId) circle.get("_id");
 		ObjectId userId = (ObjectId) circle.get("owner");
-		Result result = callAction(controllers.routes.ref.Circles.rename(circleId.toString()), fakeRequest()
-				.withSession("id", userId.toString()).withFormUrlEncodedBody(ImmutableMap.of("name", "Renamed circle")));
+		Result result = callAction(
+				controllers.routes.ref.Circles.rename(circleId.toString()),
+				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
+						ImmutableMap.of("newName", "Renamed circle")));
 		assertEquals(200, status(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", circleId);
 		assertEquals("Renamed circle", circles.findOne(idQuery).get("name"));
@@ -88,8 +90,9 @@ public class CirclesTest {
 		Result result = callAction(
 				controllers.routes.ref.Circles.rename(circleId.toString()),
 				fakeRequest().withSession("id", User.getId("test2@example.com").toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Test circle 2")));
-		assertEquals(403, status(result));
+						ImmutableMap.of("newName", "Test circle 2")));
+		assertEquals(400, status(result));
+		assertEquals("No circle with this id exists.", contentAsString(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", circleId);
 		assertEquals(originalName, circles.findOne(idQuery).get("name"));
 		assertEquals(originalOwner, circles.findOne(idQuery).get("owner"));
@@ -119,13 +122,14 @@ public class CirclesTest {
 		String circleId = id.toString();
 		Result result = callAction(controllers.routes.ref.Circles.rename(circleId),
 				fakeRequest().withSession("id", userId.toString()));
-		assertEquals(403, status(result));
+		assertEquals(400, status(result));
+		assertEquals("No circle with this id exists.", contentAsString(result));
 		assertNotNull(circles.findOne(new BasicDBObject("_id", id)));
 	}
 
 	// forbidden requests are blocked by this controller, no longer testing this
 	@Test
-	public void addUserSuccess() {
+	public void addUser() {
 		DBCollection circles = Database.getCollection("circles");
 		ObjectId userId = User.getId("test3@example.com");
 		DBObject query = new BasicDBObject();
@@ -145,29 +149,7 @@ public class CirclesTest {
 	}
 
 	@Test
-	public void addUserInvalidUser() {
-		DBCollection circles = Database.getCollection("circles");
-		DBObject circle = circles.findOne();
-		ObjectId id = (ObjectId) circle.get("_id");
-		ObjectId userId = (ObjectId) circle.get("owner");
-		BasicDBList members = (BasicDBList) circle.get("members");
-		int oldSize = members.size();
-		String circleId = id.toString();
-		boolean exceptionCaught = false;
-		try {
-			callAction(
-					controllers.routes.ref.Circles.addUsers(circleId),
-					fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-							ImmutableMap.of(new ObjectId().toString(), "on")));
-		} catch (NullPointerException e) {
-			exceptionCaught = true;
-		}
-		assertTrue(exceptionCaught);
-		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
-	}
-
-	@Test
-	public void removeMemberSuccess() {
+	public void removeMember() {
 		DBCollection circles = Database.getCollection("circles");
 		ObjectId userId = User.getId("test2@example.com");
 		DBObject query = new BasicDBObject();
@@ -184,21 +166,4 @@ public class CirclesTest {
 		assertEquals(oldSize - 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 
-	@Test
-	public void removeMemberNotInCircle() {
-		DBCollection circles = Database.getCollection("circles");
-		ObjectId userId = User.getId("test3@example.com");
-		DBObject query = new BasicDBObject();
-		query.put("members", new BasicDBObject("$nin", new ObjectId[] { userId }));
-		DBObject circle = circles.findOne(query);
-		ObjectId id = (ObjectId) circle.get("_id");
-		ObjectId ownerId = (ObjectId) circle.get("owner");
-		BasicDBList members = (BasicDBList) circle.get("members");
-		int oldSize = members.size();
-		String circleId = id.toString();
-		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
-				fakeRequest().withSession("id", ownerId.toString()));
-		assertEquals(400, status(result));
-		assertEquals(oldSize, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
-	}
 }

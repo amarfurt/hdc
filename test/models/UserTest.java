@@ -1,28 +1,20 @@
 package models;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
 import org.bson.types.ObjectId;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
 import utils.LoadData;
-import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
-import utils.PasswordHash;
 import utils.db.Database;
-import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -35,6 +27,11 @@ public class UserTest {
 		start(fakeApplication(fakeGlobal()));
 		Database.connectToTest();
 		Database.destroy();
+		try {
+			CreateDBObjects.createDefaultVisualization();
+		} catch (ModelException e) {
+			Assert.fail();
+		}
 	}
 
 	@After
@@ -43,29 +40,28 @@ public class UserTest {
 	}
 
 	@Test
-	public void findSuccess() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findSuccess() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = PasswordHash.createHash("secret");
-		DBObject userObject = new BasicDBObject(ModelConversion.modelToMap(user));
-		users.insert(userObject);
+		user.password = "password";
+		User.add(user);
 		assertEquals(1, users.count());
-		User foundUser = User.find((ObjectId) userObject.get("_id"));
+		User foundUser = User.find(user._id);
 		assertEquals("Test User", foundUser.name);
 	}
 
 	@Test
-	public void findFailure() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void findFailure() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = PasswordHash.createHash("secret");
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
+		user.password = "password";
+		User.add(user);
 		assertEquals(1, users.count());
 		boolean exceptionCaught = false;
 		try {
@@ -77,7 +73,7 @@ public class UserTest {
 	}
 
 	@Test
-	public void add() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException, SearchException {
+	public void add() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		LoadData.createDefaultVisualization();
@@ -85,47 +81,21 @@ public class UserTest {
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = "secret";
-		assertNull(User.add(user));
+		user.password = "password";
+		User.add(user);
 		assertEquals(2, users.count());
 		DBObject query = new BasicDBObject("_id", user._id);
 		assertEquals(user.email, users.findOne(query).get("email"));
 	}
 
 	@Test
-	public void addSameEmail() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException,
-			SearchException {
-		DBCollection users = Database.getCollection("users");
-		assertEquals(0, users.count());
-		CreateDBObjects.insertUsers(1);
-		assertEquals(1, users.count());
-		User user = new User();
-		user.email = "test1@example.com";
-		user.name = "Test User";
-		user.password = "secret";
-		assertEquals("A user with this email address already exists.", User.add(user));
-		assertEquals(1, users.count());
-	}
-
-	@Test
-	public void remove() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
+	public void delete() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
 		assertEquals(1, users.count());
-		assertNull(User.remove(userIds[0]));
+		User.delete(userIds[0]);
 		assertEquals(0, users.count());
-	}
-
-	@Test
-	public void removeNotExisting() throws ConversionException, NoSuchAlgorithmException, InvalidKeySpecException {
-		DBCollection users = Database.getCollection("users");
-		assertEquals(0, users.count());
-		ObjectId[] userIds = CreateDBObjects.insertUsers(1);
-		assertFalse("new@example.com".equals(userIds[0]));
-		assertEquals(1, users.count());
-		assertEquals("No user with this id exists.", User.remove(new ObjectId()));
-		assertEquals(1, users.count());
 	}
 
 	@Test

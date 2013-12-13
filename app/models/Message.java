@@ -8,10 +8,13 @@ import org.bson.types.ObjectId;
 import utils.ModelConversion;
 import utils.ModelConversion.ConversionException;
 import utils.db.Database;
+import utils.search.Search;
+import utils.search.SearchException;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
 
 public class Message extends Model implements Comparable<Message> {
 
@@ -52,6 +55,25 @@ public class Message extends Model implements Comparable<Message> {
 			}
 		}
 		return messages;
+	}
+
+	public static void add(Message newMessage) throws ModelException {
+		DBObject insert;
+		try {
+			insert = new BasicDBObject(ModelConversion.modelToMap(newMessage));
+		} catch (ConversionException e) {
+			throw new ModelException(e);
+		}
+		WriteResult result = Database.getCollection(collection).insert(insert);
+		newMessage._id = (ObjectId) insert.get("_id");
+		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+
+		// also add this circle to the user's search index
+		try {
+			Search.add(newMessage.receiver, "message", newMessage._id, newMessage.title, newMessage.content);
+		} catch (SearchException e) {
+			throw new ModelException(e);
+		}
 	}
 
 }

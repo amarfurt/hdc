@@ -194,8 +194,9 @@ public class Spaces extends Controller {
 		for (Record record : records) {
 			ObjectNode jsonRecord = Json.newObject();
 			jsonRecord.put("_id", record._id.toString());
-			jsonRecord.put("creator", record.creator.toString());
+			jsonRecord.put("app", record.app.toString());
 			jsonRecord.put("owner", record.owner.toString());
+			jsonRecord.put("creator", record.creator.toString());
 			jsonRecord.put("created", record.created);
 			jsonRecord.put("data", record.data);
 			jsonRecord.put("name", record.name);

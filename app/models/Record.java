@@ -1,6 +1,7 @@
 package models;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -21,8 +22,8 @@ public class Record extends Model implements Comparable<Record> {
 	private static final String collection = "records";
 
 	public ObjectId app; // app that created the record
-	public ObjectId creator; // user that imported the record
 	public ObjectId owner; // person the record is about
+	public ObjectId creator; // user that imported the record
 	public String created; // date + time created
 	public String data; // arbitrary data (base64 encoded json string)
 	public String name; // used to display a record and for autocompletion
@@ -36,6 +37,13 @@ public class Record extends Model implements Comparable<Record> {
 
 	public static String getCollection() {
 		return collection;
+	}
+
+	public static boolean exists(ObjectId ownerId, ObjectId recordId) {
+		DBObject query = new BasicDBObject("_id", recordId);
+		query.put("owner", ownerId);
+		DBObject projection = new BasicDBObject("_id", 1);
+		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
 	public static Record find(ObjectId recordId) throws ModelException {
@@ -83,23 +91,15 @@ public class Record extends Model implements Comparable<Record> {
 
 	/**
 	 * Find all records visible to the given user.
+	 * TODO Very expensive operation, load in chunks.
 	 */
-	public static Set<Record> findVisible(ObjectId userId) throws ModelException {
-		// get records of this user
-		Set<Record> records = findOwnedBy(userId);
-
-		// get shared records of all circles this user is a member of
-		Set<Circle> memberCircles = Circle.findMemberOf(userId);
-		Set<ObjectId> sharedRecords = new HashSet<ObjectId>();
-		for (Circle circle : memberCircles) {
-			for (Object recordId : circle.shared) {
-				sharedRecords.add((ObjectId) recordId);
+	public static Set<Record> findVisible(ObjectId ownerId) throws ModelException {
+		Set<Record> records = findOwnedBy(ownerId);
+		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(ownerId);
+		for (ObjectId userId : visibleRecords.keySet()) {
+			for (ObjectId recordId : visibleRecords.get(userId)) {
+				records.add(Record.find(recordId));
 			}
-		}
-
-		// add all of these records (there is no intersection because only owners can share records)
-		for (ObjectId recordId : sharedRecords) {
-			records.add(find(recordId));
 		}
 		return records;
 	}
@@ -119,17 +119,6 @@ public class Record extends Model implements Comparable<Record> {
 		DBObject query = new BasicDBObject("_id", recordId);
 		DBObject projection = new BasicDBObject("data", 1);
 		return (String) Database.getCollection(collection).findOne(query, projection).get("data");
-	}
-
-	/**
-	 * Checks whether the user with the given email is the creator or owner of the record with the given id.
-	 */
-	public static boolean isCreatorOrOwner(ObjectId recordId, ObjectId userId) {
-		DBObject query = new BasicDBObject("_id", recordId);
-		DBObject creator = new BasicDBObject("creator", userId);
-		DBObject owner = new BasicDBObject("owner", userId);
-		query.put("$or", new DBObject[] { creator, owner });
-		return (Database.getCollection(collection).findOne(query) != null);
 	}
 
 	public static void add(Record newRecord) throws ModelException {

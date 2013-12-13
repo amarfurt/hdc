@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static play.test.Helpers.callAction;
+import static play.test.Helpers.contentAsString;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.fakeRequest;
@@ -29,7 +30,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 public class SpacesTest {
 
@@ -98,7 +98,8 @@ public class SpacesTest {
 				controllers.routes.ref.Spaces.rename(spaceId),
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test space 2")));
-		assertEquals(403, status(result));
+		assertEquals(400, status(result));
+		assertEquals("No space with this id exists.", contentAsString(result));
 		BasicDBObject idQuery = new BasicDBObject("_id", id);
 		assertEquals(originalName, spaces.findOne(idQuery).get("name"));
 		assertEquals(originalOwner, spaces.findOne(idQuery).get("owner"));
@@ -131,7 +132,8 @@ public class SpacesTest {
 		String spaceId = id.toString();
 		Result result = callAction(controllers.routes.ref.Spaces.rename(spaceId),
 				fakeRequest().withSession("id", userId.toString()));
-		assertEquals(403, status(result));
+		assertEquals(400, status(result));
+		assertEquals("No space with this id exists.", contentAsString(result));
 		assertNotNull(spaces.findOne(new BasicDBObject("_id", id)));
 		assertEquals(originalCount, spaces.count());
 	}
@@ -158,41 +160,6 @@ public class SpacesTest {
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
 		assertEquals(order, foundSpace.get("order"));
 		assertEquals(oldSize + 1, ((BasicDBList) foundSpace.get("records")).size());
-	}
-
-	@Test
-	public void addRecordAlreadyInSpace() {
-		// get a record
-		DBObject record = Database.getCollection("records").findOne();
-		ObjectId recordId = (ObjectId) record.get("_id");
-
-		// get a space without that record
-		DBCollection spaces = Database.getCollection("spaces");
-		DBObject query = new BasicDBObject();
-		query.put("records", new BasicDBObject("$nin", new ObjectId[] { recordId }));
-		DBObject space = spaces.findOne(query);
-		ObjectId id = (ObjectId) space.get("_id");
-		ObjectId userId = (ObjectId) space.get("owner");
-		int order = (Integer) space.get("order");
-
-		// insert that record into that space
-		DBObject updateQuery = new BasicDBObject("_id", id);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
-		WriteResult writeResult = Database.getCollection("spaces").update(updateQuery, update);
-		assertNull(writeResult.getLastError().getErrorMessage());
-
-		// try to insert the same record again
-		BasicDBList records = (BasicDBList) spaces.findOne(updateQuery).get("records");
-		int oldSize = records.size();
-		String spaceId = id.toString();
-		Result result = callAction(
-				controllers.routes.ref.Spaces.addRecords(spaceId),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of(recordId.toString(), "on")));
-		assertEquals(400, status(result));
-		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
-		assertEquals(order, foundSpace.get("order"));
-		assertEquals(oldSize, ((BasicDBList) foundSpace.get("records")).size());
 	}
 
 }

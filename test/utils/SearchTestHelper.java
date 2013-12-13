@@ -23,30 +23,29 @@ public class SearchTestHelper extends Search {
 		client.admin().indices().refresh(new RefreshRequest()).actionGet();
 	}
 
-	public static String getData(ObjectId userId, String type, ObjectId documentId) {
-		// decide which index to use
-		String index = "public";
-		if (userId != null) {
-			index = userId.toString();
-		}
-
+	public static String getTitle(String index, String type, ObjectId documentId) {
 		// get values of Search class
 		Client client = (Client) makeAccessible("client");
-		String FIELD = (String) makeAccessible("FIELD");
+		String title = (String) makeAccessible("TITLE");
 		GetResponse response = client.prepareGet(index, type, documentId.toString()).execute().actionGet();
 		if (!response.isExists()) {
 			return null;
 		}
-		return (String) response.getSource().get(FIELD);
+		return (String) response.getSource().get(title);
 	}
 
-	public static long count(ObjectId userId, String type) {
-		// decide which index to use
-		String index = "public";
-		if (userId != null) {
-			index = userId.toString();
+	public static String getContent(String index, String type, ObjectId documentId) {
+		// get values of Search class
+		Client client = (Client) makeAccessible("client");
+		String content = (String) makeAccessible("CONTENT");
+		GetResponse response = client.prepareGet(index, type, documentId.toString()).execute().actionGet();
+		if (!response.isExists()) {
+			return null;
 		}
+		return (String) response.getSource().get(content);
+	}
 
+	public static long count(String index, String type) {
 		// get values of Search class
 		Client client = (Client) makeAccessible("client");
 

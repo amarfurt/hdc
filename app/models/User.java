@@ -198,7 +198,7 @@ public class User extends Model implements Comparable<User> {
 	}
 
 	/**
-	 * Returns the visible records, grouped by their respective owner.
+	 * Returns the visible records (excluding owned records), grouped by their respective owner.
 	 */
 	public static Map<ObjectId, Set<ObjectId>> getVisibleRecords(ObjectId userId) {
 		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
