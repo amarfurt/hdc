@@ -3,6 +3,7 @@ package controllers;
 import models.App;
 import models.ModelException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.bson.types.ObjectId;
 
 import play.Play;
@@ -22,8 +23,17 @@ public class Records extends Controller {
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
-		String localhost = Play.application().configuration().getString("external.host");
-		return ok(createrecords.render(app, localhost, new ObjectId(request().username())));
-	}
 
+		// create reply to address and encode it with Base64
+		String applicationServer = Play.application().configuration().getString("application.server");
+		String replyTo = "http://" + applicationServer
+				+ routes.Apps.createRecord(appIdString, request().username()).url();
+		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
+
+		// put together url to load in iframe
+		String externalServer = Play.application().configuration().getString("external.server");
+		String createUrl = app.create.replace(":replyTo", encodedReplyTo);
+		String url = "http://" + externalServer + "/" + appIdString + "/" + createUrl;
+		return ok(createrecords.render(url, new ObjectId(request().username())));
+	}
 }

@@ -16,32 +16,21 @@ import com.fasterxml.jackson.databind.JsonNode;
 // Not secured, accessible from app server
 public class Apps extends Controller {
 
-	public static Result getRecord(String recordId) {
-		String data = Record.getData(new ObjectId(recordId));
-
+	public static Result checkPreflight(String appIdString, String userIdString) {
 		// allow cross origin request from app server
-		String localhost = Play.application().configuration().getString("external.host");
-		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
-		return ok(data);
-	}
-
-	public static Result checkPreflight() {
-		// allow cross origin request from app server
-		String localhost = Play.application().configuration().getString("external.host");
-		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
+		String externalServer = Play.application().configuration().getString("external.server");
+		response().setHeader("Access-Control-Allow-Origin", "http://" + externalServer);
 		response().setHeader("Access-Control-Allow-Methods", "POST");
 		response().setHeader("Access-Control-Allow-Headers", "Content-Type");
 		return ok();
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
-	public static Result createRecord() {
+	public static Result createRecord(String appIdString, String userIdString) {
 		// check whether the request is complete
 		JsonNode json = request().body().asJson();
 		if (json == null) {
 			return badRequest("No json found.");
-		} else if (!json.has("user")) {
-			return badRequest("No user found.");
 		} else if (!json.has("data")) {
 			return badRequest("No data found.");
 		} else if (!json.has("name")) {
@@ -50,19 +39,14 @@ public class Apps extends Controller {
 			return badRequest("No description found.");
 		}
 
-		// parse the header to retrieve app id
-		String[] split = request().getHeader("Referer").split("/");
-		String appId = split[split.length - 1];
-
 		// save new record with additional metadata
-		String user = json.get("user").asText();
 		String data = json.get("data").toString();
 		String name = json.get("name").asText();
 		String description = json.get("description").asText();
 		Record record = new Record();
-		record.app = new ObjectId(appId);
-		record.owner = new ObjectId(user);
-		record.creator = new ObjectId(user);
+		record.app = new ObjectId(appIdString);
+		record.owner = new ObjectId(userIdString);
+		record.creator = new ObjectId(userIdString);
 		record.created = DateTimeUtils.getNow();
 		record.data = data;
 		record.name = name;
@@ -74,8 +58,8 @@ public class Apps extends Controller {
 		}
 
 		// allow cross origin request from app server
-		String localhost = Play.application().configuration().getString("external.host");
-		response().setHeader("Access-Control-Allow-Origin", "http://" + localhost + ":3000");
+		String externalServer = Play.application().configuration().getString("external.server");
+		response().setHeader("Access-Control-Allow-Origin", "http://" + externalServer);
 		return ok();
 	}
 

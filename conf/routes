@@ -67,6 +67,5 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
 # Apps Public API
-OPTIONS /apps/records/create        controllers.Apps.checkPreflight()
-POST    /apps/records/create        controllers.Apps.createRecord()
-GET     /apps/records/:recordId     controllers.Apps.getRecord(recordId: String)
+OPTIONS /apps/:appId/records/create/:userId controllers.Apps.checkPreflight(appId: String, userId: String)
+POST    /apps/:appId/records/create/:userId controllers.Apps.createRecord(appId: String, userId: String)

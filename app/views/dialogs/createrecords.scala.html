@@ -1,8 +1,6 @@
-@(app: App, localhost: String, userId: org.bson.types.ObjectId)
+@(url: String, userId: org.bson.types.ObjectId)
 
 @main(userId, "Create a new record") {
 	<a href="@routes.Spaces.index()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Back to spaces</a>
-	@defining(app.create.replaceAll(":host", localhost).replaceAll(":userId", userId.toString())) { createUrl =>
-		<iframe src="http://@localhost:3000/@app._id.toString()/@createUrl" height="420px" width="100%"></iframe>
-	}
+	<iframe src="@url" height="420px" width="100%"></iframe>
 }

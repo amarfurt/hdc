@@ -53,6 +53,24 @@ public class App extends Model implements Comparable<App> {
 		return Database.getCollection(collection).findOne(query, projection) != null;
 	}
 
+	public static String getName(ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", appId);
+		DBObject projection = new BasicDBObject("name", 1);
+		return (String) Database.getCollection(collection).findOne(query, projection).get("name");
+	}
+
+	public static String getCreate(ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", appId);
+		DBObject projection = new BasicDBObject("create", 1);
+		return (String) Database.getCollection(collection).findOne(query, projection).get("create");
+	}
+
+	public static String getDetails(ObjectId appId) {
+		DBObject query = new BasicDBObject("_id", appId);
+		DBObject projection = new BasicDBObject("details", 1);
+		return (String) Database.getCollection(collection).findOne(query, projection).get("details");
+	}
+
 	public static App find(ObjectId appId) throws ModelException {
 		DBObject query = new BasicDBObject("_id", appId);
 		DBObject result = Database.getCollection(collection).findOne(query);

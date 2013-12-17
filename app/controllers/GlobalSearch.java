@@ -14,6 +14,7 @@ import models.Record;
 import models.User;
 import models.Visualization;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bson.types.ObjectId;
 
@@ -100,15 +101,19 @@ public class GlobalSearch extends Controller {
 	 */
 	public static Result showRecord(ObjectId recordId) {
 		Record recordToShow;
-		App app;
 		try {
 			recordToShow = Record.find(recordId);
-			app = App.find(recordToShow.app);
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
-		String localhost = Play.application().configuration().getString("external.host");
-		return ok(record.render(recordToShow, app, localhost, new ObjectId(request().username())));
+
+		// put together url to
+		String externalServer = Play.application().configuration().getString("external.server");
+		String encodedData = new String(Base64.encodeBase64(recordToShow.data.getBytes()));
+		String detailsUrl = App.getDetails(recordToShow.app).replace(":record", encodedData);
+		String url = "http://" + externalServer + "/" + recordToShow.app.toString() + "/" + detailsUrl;
+		Result result = ok(record.render(recordToShow, url, new ObjectId(request().username())));
+		return result;
 	}
 
 	public static Result showMessage(ObjectId messageId) {
