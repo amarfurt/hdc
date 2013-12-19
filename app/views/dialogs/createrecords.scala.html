@@ -1,6 +1,6 @@
 @(url: String, userId: org.bson.types.ObjectId)
 
 @main(userId, "Create a new record") {
-	<a href="@routes.Spaces.index()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Back to spaces</a>
+	<a href="@routes.Records.index()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Back to records</a>
 	<iframe src="@url" height="420px" width="100%"></iframe>
 }

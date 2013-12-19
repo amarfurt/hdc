@@ -1,12 +1,15 @@
 class Space extends Backbone.View
 	initialize: ->
 		@id = @el.attr("id")
-		jsRoutes.controllers.Spaces.getVisualizationURL(@id).ajax
+		jsRoutes.controllers.Spaces.getVisualizationUrl(@id).ajax
 			context: this
 			success: (url) ->
 				@url = url
 				if @el.hasClass("active")
 					@loadSpaceRecords()
+			error: (err) ->
+				console.error("Failed to load visualization url for space " + @id)
+				console.error(err.responseText)
 	events:
 		"click .showCompare": "showCompare"
 		"click .hideCompare": "hideCompare"
@@ -71,7 +74,7 @@ class Space extends Backbone.View
 
 class SpaceTab extends Backbone.View
 	initialize: ->
-		@id = @el.attr("tab-id")
+		@id = @el.attr("data-sid")
 		@name = $(".spaceName", @el).editInPlace
 			context: this
 			onChange: @renameSpace
@@ -92,22 +95,17 @@ class SpaceTab extends Backbone.View
 
 # Instantiate views
 $ ->
-	# Load all records and default space
+	# Load all records and active space (make first one active if there is none)
 	window.records = []
-	spaceId = "default"
-	url = jsRoutes.controllers.visualizations.RecordList.load().url
+	if not $(".spaceTab").hasClass("active")
+		$(".spaceTab").first().addClass("active")
+		$(".space").first().addClass("active in")
 	jsRoutes.controllers.Spaces.loadAllRecords().ajax
 		context: this
 		success: (data) ->
 			window.records = data
 			
-			# Load the filters
-			loadFilters(url, window.records, spaceId, false)
-			
-			# Load the space
-			loadSpace(url, window.records, spaceId, false)
-			
-			# Load the other spaces (window.records needs to be set)
+			# Load the spaces (window.records needs to be set)
 			tabs = _.map $(".spaceTab"), (spaceTab) -> new SpaceTab el: $ spaceTab
 			spaces = _.map $(".space"), (space) -> new Space el: $ space
 			_.each tabs, (tab) ->
@@ -120,21 +118,11 @@ $ ->
 
 # General functions
 loadSpace = (url, records, spaceId, compare) ->
+	url = url.replace(":records", btoa(JSON.stringify(records)))
 	iframeName = if not compare then "iframe" else "iframe2"
-	json = {"spaceId": spaceId, "records": records}
-	$.ajax
-		type: "POST"
-		url: url
-		context: this
-		contentType: "application/json; charset=utf-8"
-		data: JSON.stringify(json)
-		success: (response) ->
-			iframeId = iframeName+"-"+spaceId
-			$("#"+iframeId).replaceWith('<iframe id="'+iframeId+'" src="'+response+'" height="420px" width="100%"></iframe>')
-		error: (err) ->
-			console.error("Error when loading space.")
-			console.error(err.responseText)
-
+	iframeId = iframeName+"-"+spaceId
+	$("#"+iframeId).replaceWith('<iframe id="'+iframeId+'" src="'+url+'" height="420px" width="100%"></iframe>')
+	
 filterRecords = (url, records, spaceId, compare) ->
 	creatorFilter = if not compare then "filterCreator" else "filterCreator2"
 	ownerFilter = if not compare then "filterOwner" else "filterOwner2"
@@ -152,7 +140,7 @@ filterRecords = (url, records, spaceId, compare) ->
 	records = filterByProperty(records, "owner", owner)
 	records = filterByPropertyRangeDate(records, "created", startdate, enddate)
 	loadSpace(url, records, spaceId, compare)
-
+	
 filterByProperty = (list, property, value) ->
 	_.filter list, (record) -> if value is "any" then true else record[property] is value
 
@@ -217,3 +205,4 @@ loadFilters = (url, records, spaceId, compare) ->
 		filterRecords(url, records, spaceId, compare)
 	$("#"+sliderFilter+"-"+spaceId).on "slideStop", (e) -> 
 	    filterRecords(url, records, spaceId, compare)	
+

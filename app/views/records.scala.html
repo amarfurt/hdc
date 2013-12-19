@@ -1,0 +1,118 @@
+@(records: List[Record], apps: List[App], user: org.bson.types.ObjectId)
+
+@main(user, "Records") {
+	<div class="page-header">
+		<div class="pull-right">
+			<div class="btn-group">
+				<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+					<span class="glyphicon glyphicon-plus"></span> Create or import a new record
+				</button>
+				<ul class="dropdown-menu" role="menu">
+					@apps.map { app =>
+						<li><a href="@routes.Records.create(app._id.toString())">@app.name</a></li>
+					}
+				</ul>
+			</div>
+		</div>
+		<h1>My records</h1>
+	</div>
+	
+	<!-- Records -->
+	@if(records.size() > 0) {
+		<ul class="list-group">
+		@records.map { record =>
+			<li class="list-group-item record" data-rid="@record._id" >
+				<span class="label label-info">@User.getName(record.creator)</span>
+				<a href="@routes.GlobalSearch.show("record", record._id.toString())">@record.name</a>
+				<div class="pull-right">
+					<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary spacesButton">
+						<span class="glyphicon glyphicon-picture"></span> Show
+					</button>
+					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary circlesButton" @if(!record.owner.equals(user)){disabled}>
+						<span class="glyphicon glyphicon-share"></span> Share
+					</button>
+				</div>
+			</li>
+		}
+		</ul>
+	} else {
+		<p>No available records found.</p>
+	}
+	
+	<!-- Spaces modal -->
+	<div class="modal fade" id="spacesModal" role="dialog" aria-labelledby="spacesLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="spacesLabel">Spaces this record is shown in</h4>
+				</div>
+				<div class="modal-body">
+					@defining(Space.findOwnedBy(user)) { spaces =>
+						@if(spaces.size() > 0) {
+							@spaces.map { space =>
+								@views.html.elements.checkbox(space._id.toString()){@space.name}
+							}
+						} else {
+							<p>You have no spaces yet. Go to <a href="/spaces">your spaces</a> now.</p>
+						}
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" id="updateSpaces" class="btn btn-primary" data-dismiss="modal">Update</button>
+				</div>
+			</div> <!-- /.modal-content -->
+		</div> <!-- /.modal-dialog -->
+	</div> <!-- /.modal -->
+	
+	<!-- Circles modal -->
+	<div class="modal fade" id="circlesModal" role="dialog" aria-labelledby="circlesLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title" id="circlesLabel">Circles this record is shared with</h4>
+				</div>
+				<div class="modal-body">
+					@defining(Circle.findOwnedBy(user)) { circles =>
+						@if(circles.size() > 0) {
+							@circles.map { circle =>
+								@views.html.elements.checkbox(circle._id.toString()){@circle.name}
+							}
+						} else {
+							<p>You have no circles yet. Go to <a href="/circles">your circles</a> now.</p>
+						}
+					}
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button type="button" id="updateCircles" class="btn btn-primary" data-dismiss="modal">Update</button>
+				</div>
+			</div> <!-- /.modal-content -->
+		</div> <!-- /.modal-dialog -->
+	</div> <!-- /.modal -->
+	
+	<!-- Filters -->
+	<!-- TODO include filters for record view
+	<div class="filters">
+		<form class="form-inline" role="form">
+			<div class="form-group col-lg-3">
+				<label for="filterCreator-default" class="control-label">Created by: </label>						
+				<select id="filterCreator-default" class="form-control"></select>						
+			</div>
+			<div class="form-group col-lg-3">
+				<label for="filterOwner-default" class="control-label">Owned by: </label>						
+				<select id="filterOwner-default" class="form-control"></select>						
+			</div>
+			<div class="form-group col-lg-6">
+				<label for="filterDate-default" class="control-label">Created between: <span style="color:#707070" id="filterSliderRange-default">any</span></label>
+				<input id="filterSlider-default" style="width:100%" />
+			</div>
+		</form>
+	</div>
+	-->
+	
+	<!-- Load specific js -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/list.js")"></script>
+}

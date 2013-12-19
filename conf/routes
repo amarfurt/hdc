@@ -8,9 +8,17 @@ GET     /welcome                    controllers.Application.welcome()
 POST    /welcome                    controllers.Application.authenticate()
 POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
+# Records
+GET     /records                    controllers.Records.index()
+GET     /records/create/:appId      controllers.Records.create(appId: String)
+GET     /records/:id/spaces         controllers.Records.findSpacesWith(id: String)
+GET     /records/:id/circles        controllers.Records.findCirclesWith(id: String)
+POST    /records/:id/spaces/update  controllers.Records.updateSpaces(id: String, spaceIds: java.util.List[String])
+POST    /records/:id/circles/update controllers.Records.updateSharing(id: String, started: java.util.List[String], stopped: java.util.List[String])
 # Spaces
 GET     /spaces                     controllers.Spaces.index()
 POST    /spaces                     controllers.Spaces.add()
+GET     /spaces/loading             controllers.Spaces.loading()
 GET     /spaces/:id                 controllers.Spaces.show(id: String)
 PUT     /spaces/:id                 controllers.Spaces.rename(id: String)
 DELETE  /spaces/:id                 controllers.Spaces.delete(id: String)
@@ -18,7 +26,7 @@ POST    /spaces/records/:id/add     controllers.Spaces.addRecords(id: String)
 GET     /spaces/records/search      controllers.Spaces.searchRecords(id: String, query: String)
 GET     /spaces/records/loadall     controllers.Spaces.loadAllRecords()
 GET     /spaces/records/load        controllers.Spaces.loadRecords(spaceId: String)
-GET     /spaces/:id/visualization/url controllers.Spaces.getVisualizationURL(id: String)
+GET     /spaces/:id/visualization   controllers.Spaces.getVisualizationUrl(id: String)
 # Circles
 GET     /circles                    controllers.Circles.index()
 POST    /circles                    controllers.Circles.add()
@@ -47,17 +55,6 @@ GET     /search/complete/:query     controllers.GlobalSearch.complete(query: Str
 GET     /search/:type/:id           controllers.GlobalSearch.show(type: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)
-# Records
-GET     /records/create/:appId      controllers.Records.create(appId: String)
-# Default visualizations
-GET     /visualizations/loading     controllers.visualizations.Visualizations.loading()
-GET     /visualizations/:id         controllers.visualizations.Visualizations.show(id: String)
-POST    /visualizations/recordlist  controllers.visualizations.RecordList.load()
-GET     /visualizations/recordlist/spaces/findwith/:id controllers.visualizations.RecordList.findSpacesWith(id: String)
-GET     /visualizations/recordlist/circles/findwith/:id controllers.visualizations.RecordList.findCirclesWith(id: String)
-POST    /visualizations/recordlist/spaces/update controllers.visualizations.RecordList.updateSpaces(id: String, spaceIds: java.util.List[String])
-POST    /visualizations/recordlist/circles/update controllers.visualizations.RecordList.updateSharing(id: String, started: java.util.List[String], stopped: java.util.List[String])
-POST    /visualizations/runaggregator controllers.visualizations.RunAggregator.load()
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()

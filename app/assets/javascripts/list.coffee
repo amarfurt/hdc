@@ -5,7 +5,7 @@ class Record extends Backbone.View
 		"click .spacesButton": "findSpaces"
 		"click .circlesButton": "findCircles"
 	findSpaces: ->
-		jsRoutes.controllers.visualizations.RecordList.findSpacesWith(@id).ajax
+		jsRoutes.controllers.Records.findSpacesWith(@id).ajax
 			context: this
 			success: (data) ->
 				_.each $(":checkbox"), (checkbox) -> $(checkbox).prop("checked", false)
@@ -15,7 +15,7 @@ class Record extends Backbone.View
 				console.error("Error when finding spaces with record.")
 				console.error(err.responseText)
 	findCircles: ->
-		jsRoutes.controllers.visualizations.RecordList.findCirclesWith(@id).ajax
+		jsRoutes.controllers.Records.findCirclesWith(@id).ajax
 			context: this
 			success: (data) ->
 				_.each $(":checkbox"), (checkbox) -> $(checkbox).prop("checked", false)
@@ -29,7 +29,7 @@ class Record extends Backbone.View
 		if @parent.curRecord == @id
 			spaces = []
 			_.each $(":checkbox"), (checkbox) -> spaces.push $(checkbox).attr("name") if $(checkbox).prop("checked")
-			jsRoutes.controllers.visualizations.RecordList.updateSpaces(@id, spaces).ajax
+			jsRoutes.controllers.Records.updateSpaces(@id, spaces).ajax
 				context: this
 				success: ->
 					# if record has been removed from this space, remove it from the visualization
@@ -45,7 +45,7 @@ class Record extends Backbone.View
 			intersection = _.intersection @prevCheckedCircles, checkedCircles
 			sharingStopped = _.difference @prevCheckedCircles, intersection
 			sharingStarted = _.difference checkedCircles, intersection
-			jsRoutes.controllers.visualizations.RecordList.updateSharing(@id, sharingStarted, sharingStopped).ajax
+			jsRoutes.controllers.Records.updateSharing(@id, sharingStarted, sharingStopped).ajax
 				context: this
 				error: (err) ->
 					console.error("Updating the sharing settings of this record failed.")
@@ -53,7 +53,9 @@ class Record extends Backbone.View
 					
 class List extends Backbone.View
 	initialize: ->
-		@spaceId = $("[data-sid]").attr("data-sid")
+		# List.coffee is only used in records (former default space)
+		@spaceId = "default"
+		#@spaceId = $("[data-sid]").attr("data-sid")
 		@curRecord = null
 		@records = _.map $(".record"), (record) -> new Record el: $ record
 		_.each @records, ((record) -> record.parent = this), this

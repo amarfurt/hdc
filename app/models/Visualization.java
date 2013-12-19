@@ -69,7 +69,7 @@ public class Visualization extends Model implements Comparable<Visualization> {
 		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("_id");
 	}
 
-	public static String getURL(ObjectId visualizationId) {
+	public static String getUrl(ObjectId visualizationId) {
 		DBObject query = new BasicDBObject("_id", visualizationId);
 		DBObject projection = new BasicDBObject("url", 1);
 		return (String) Database.getCollection(collection).findOne(query, projection).get("url");

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import models.App;
 import models.ModelException;
 import models.Record;
 import models.Space;
@@ -16,6 +15,7 @@ import models.Visualization;
 
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.data.Form;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -45,18 +45,22 @@ public class Spaces extends Controller {
 		ObjectId userId = new ObjectId(request().username());
 		List<Record> records;
 		List<Space> spaces;
-		List<App> apps;
 		try {
 			records = new ArrayList<Record>(Record.findVisible(userId));
 			spaces = new ArrayList<Space>(Space.findOwnedBy(userId));
-			apps = new ArrayList<App>(User.findApps(userId));
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		Collections.sort(records);
 		Collections.sort(spaces);
-		Collections.sort(apps);
-		return ok(views.html.spaces.render(spaceForm, records, spaces, activeSpace, apps, userId));
+		return ok(views.html.spaces.render(spaceForm, records, spaces, activeSpace, userId));
+	}
+
+	/**
+	 * Displays a note when a visualization is loading.
+	 */
+	public static Result loading() {
+		return ok("Loading space...");
 	}
 
 	public static Result add() {
@@ -215,10 +219,11 @@ public class Spaces extends Controller {
 		return ok(Json.toJson(recordIds));
 	}
 
-	public static Result getVisualizationURL(String spaceIdString) {
+	public static Result getVisualizationUrl(String spaceIdString) {
 		ObjectId visualizationId = Space.getVisualizationId(new ObjectId(spaceIdString), new ObjectId(request()
 				.username()));
-		String url = Visualization.getURL(visualizationId);
+		String externalServer = Play.application().configuration().getString("external.server");
+		String url = "http://" + externalServer + "/" + visualizationId + "/" + Visualization.getUrl(visualizationId);
 		return ok(url);
 	}
 
