@@ -92,7 +92,7 @@ public class ImportData {
 		}
 
 		// apps
-		System.out.println("Importing apps...");
+		System.out.print("Importing apps...");
 		query = new BasicDBObject();
 		projection = new BasicDBObject("name", 1);
 		projection.put("description", 1);
