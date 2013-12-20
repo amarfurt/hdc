@@ -4,15 +4,12 @@ import static org.junit.Assert.assertEquals;
 import models.ModelException;
 import models.Record;
 import models.User;
-import models.Visualization;
 
 import org.bson.types.ObjectId;
 
 import utils.db.Database;
 
 import com.mongodb.DBCollection;
-
-import controllers.visualizations.routes;
 
 public class CreateDBObjects {
 
@@ -58,35 +55,6 @@ public class CreateDBObjects {
 		}
 		assertEquals(originalCount + numRecords, records.count());
 		return recordIds;
-	}
-
-	public static ObjectId createDeveloperAccount() throws ModelException {
-		DBCollection users = Database.getCollection("users");
-		long originalCount = users.count();
-		User user = new User();
-		user.email = "developers@hdc.ch";
-		user.name = "Health Data Cooperative Developers";
-		user.password = "password";
-		User.add(user);
-		assertEquals(originalCount + 1, users.count());
-		return user._id;
-	}
-
-	public static ObjectId createDefaultVisualization() throws ModelException {
-		return createDefaultVisualization(new ObjectId());
-	}
-
-	public static ObjectId createDefaultVisualization(ObjectId developerId) throws ModelException {
-		DBCollection visualizations = Database.getCollection("visualizations");
-		long originalCount = visualizations.count();
-		Visualization visualization = new Visualization();
-		visualization.creator = developerId;
-		visualization.name = Visualization.getDefaultVisualization();
-		visualization.description = "Default record list implementation.";
-		visualization.url = routes.RecordList.load().url();
-		Visualization.add(visualization);
-		assertEquals(originalCount + 1, visualizations.count());
-		return visualization._id;
 	}
 
 }

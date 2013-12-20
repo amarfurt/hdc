@@ -8,12 +8,10 @@ import static play.test.Helpers.start;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
-import utils.LoadData;
 import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
@@ -27,11 +25,6 @@ public class UserTest {
 		start(fakeApplication(fakeGlobal()));
 		Database.connectToTest();
 		Database.destroy();
-		try {
-			CreateDBObjects.createDefaultVisualization();
-		} catch (ModelException e) {
-			Assert.fail();
-		}
 	}
 
 	@After
@@ -76,14 +69,12 @@ public class UserTest {
 	public void add() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
-		LoadData.createDefaultVisualization();
-		assertEquals(1, users.count());
 		User user = new User();
 		user.email = "test1@example.com";
 		user.name = "Test User";
 		user.password = "password";
 		User.add(user);
-		assertEquals(2, users.count());
+		assertEquals(1, users.count());
 		DBObject query = new BasicDBObject("_id", user._id);
 		assertEquals(user.email, users.findOne(query).get("email"));
 	}

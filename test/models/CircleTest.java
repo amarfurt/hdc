@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,11 +28,6 @@ public class CircleTest {
 		start(fakeApplication(fakeGlobal()));
 		Database.connectToTest();
 		Database.destroy();
-		try {
-			CreateDBObjects.createDefaultVisualization();
-		} catch (ModelException e) {
-			Assert.fail();
-		}
 	}
 
 	@After
