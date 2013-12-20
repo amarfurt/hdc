@@ -136,22 +136,28 @@
 						<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
 					</div>
 					<div class="modal-body">
-						<div class="form-group">
-							<label for="newSpaceName" class="col-lg-2 control-label">Name</label>
-							<div class="col-lg-10">
-								<input type="text" id="newSpaceName" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
-							</div>
-						</div>
-						<div class="form-group">
-							<label for="newSpaceVisualization" class="col-lg-2 control-label">Visualization</label>
-							<div class="col-lg-10">
-								<select name="visualization" id="newSpaceVisualization" class="form-control">
-									@User.findVisualizations(user).map { visualization =>
-										<option value="@visualization._id">@visualization.name</option>
-									}
-								</select>
-							</div>
-						</div>
+						@defining(User.findVisualizations(user)) { visualizations =>
+							@if(visualizations.size() > 0) {
+								<div class="form-group">
+									<label for="newSpaceName" class="col-lg-2 control-label">Name</label>
+									<div class="col-lg-10">
+										<input type="text" id="newSpaceName" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
+									</div>
+								</div>
+								<div class="form-group">
+									<label for="newSpaceVisualization" class="col-lg-2 control-label">Visualization</label>
+									<div class="col-lg-10">
+										<select name="visualization" id="newSpaceVisualization" class="form-control">
+										@visualizations.map { visualization =>
+											<option value="@visualization._id">@visualization.name</option>
+										}
+										</select>
+									</div>
+								</div>
+							} else {
+								<p>You have now visualizations installed yet. Go to the <a href="@routes.Market.index()">Market</a> to install one.</p>
+							}
+						}
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>

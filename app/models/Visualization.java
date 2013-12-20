@@ -22,7 +22,6 @@ import controllers.Application;
 public class Visualization extends Model implements Comparable<Visualization> {
 
 	private static final String collection = "visualizations";
-	private static final String DEFAULT_VISUALIZATION = "Record List";
 
 	public ObjectId creator;
 	public String name;
@@ -44,10 +43,6 @@ public class Visualization extends Model implements Comparable<Visualization> {
 			return "A visualization with the same name already exists.";
 		}
 		return null;
-	}
-
-	public static String getDefaultVisualization() {
-		return DEFAULT_VISUALIZATION;
 	}
 
 	public static boolean exists(ObjectId creatorId, String name) {

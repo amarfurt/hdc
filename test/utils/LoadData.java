@@ -6,10 +6,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import models.ModelException;
-
-import org.bson.types.ObjectId;
-
 import play.libs.Json;
 import utils.db.Database;
 
@@ -49,15 +45,6 @@ public class LoadData {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void createDefaultVisualization() {
-		try {
-			ObjectId developerId = CreateDBObjects.createDeveloperAccount();
-			CreateDBObjects.createDefaultVisualization(developerId);
-		} catch (ModelException e) {
 			e.printStackTrace();
 		}
 	}

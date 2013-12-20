@@ -129,8 +129,6 @@ public class User extends Model implements Comparable<User> {
 		newUser.visible = new BasicDBList();
 		newUser.apps = new BasicDBList();
 		newUser.visualizations = new BasicDBList();
-		ObjectId defaultVisualizationId = Visualization.getId(Visualization.getDefaultVisualization());
-		newUser.visualizations.add(defaultVisualizationId);
 		DBObject insert;
 		try {
 			insert = new BasicDBObject(ModelConversion.modelToMap(newUser));

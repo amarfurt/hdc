@@ -3,16 +3,20 @@
 @main(user, "Records") {
 	<div class="page-header">
 		<div class="pull-right">
-			<div class="btn-group">
-				<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
-					<span class="glyphicon glyphicon-plus"></span> Create or import a new record
-				</button>
-				<ul class="dropdown-menu" role="menu">
-					@apps.map { app =>
-						<li><a href="@routes.Records.create(app._id.toString())">@app.name</a></li>
-					}
-				</ul>
-			</div>
+			@if(apps.size() > 0) {
+				<div class="btn-group">
+					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+						<span class="glyphicon glyphicon-plus"></span> Create or import a new record
+					</button>
+					<ul class="dropdown-menu" role="menu">
+						@apps.map { app =>
+							<li><a href="@routes.Records.create(app._id.toString())">@app.name</a></li>
+						}
+					</ul>
+				</div>
+			} else {
+				<p>You can create or import records with apps. Go to the <a href="@routes.Market.index()">Market</a> to install one.</p>
+			}
 		</div>
 		<h1>My records</h1>
 	</div>
