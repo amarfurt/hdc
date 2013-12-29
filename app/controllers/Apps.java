@@ -6,6 +6,7 @@ import models.Record;
 import org.bson.types.ObjectId;
 
 import play.Play;
+import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -40,7 +41,7 @@ public class Apps extends Controller {
 		}
 
 		// save new record with additional metadata
-		String data = json.get("data").toString();
+		String data = Json.stringify(json.get("data"));
 		String name = json.get("name").asText();
 		String description = json.get("description").asText();
 		Record record = new Record();
