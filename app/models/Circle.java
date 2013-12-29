@@ -48,16 +48,6 @@ public class Circle extends Model implements Comparable<Circle> {
 	}
 
 	/**
-	 * Checks whether the user is a member of the circle.
-	 */
-	public static boolean contains(ObjectId circleId, ObjectId userId) {
-		DBObject query = new BasicDBObject("_id", circleId);
-		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
-		DBObject projection = new BasicDBObject("_id", 1);
-		return Database.getCollection(collection).findOne(query, projection) != null;
-	}
-
-	/**
 	 * Find the circles that are owned by the given user.
 	 */
 	public static Set<Circle> findOwnedBy(ObjectId userId) throws ModelException {
@@ -124,7 +114,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		}
 		return recordIds;
 	}
-	
+
 	/**
 	 * Returns the ids of the users that this record is shared with.
 	 */
@@ -262,16 +252,15 @@ public class Circle extends Model implements Comparable<Circle> {
 	/**
 	 * Adds a member to the given circle with the given id.
 	 */
-	public static void addMember(ObjectId ownerId, ObjectId circleId, ObjectId userId) throws ModelException {
+	public static void addMembers(ObjectId ownerId, ObjectId circleId, Set<ObjectId> userIds) throws ModelException {
 		DBObject query = new BasicDBObject("_id", circleId);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", userId));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("members", new BasicDBObject("$each",
+				userIds.toArray())));
 		WriteResult result = Database.getCollection(collection).update(query, update);
 		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 
 		// also add all the records shared with this circle to the visible records of the newly added member
 		Set<ObjectId> recordIds = Circle.getShared(circleId);
-		Set<ObjectId> userIds = new HashSet<ObjectId>(1);
-		userIds.add(userId);
 		User.makeRecordsVisible(ownerId, recordIds, userIds);
 	}
 
@@ -323,7 +312,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		DBObject update = new BasicDBObject("$pull", new BasicDBObject("shared", recordId));
 		WriteResult result = Database.getCollection(collection).updateMulti(query, update);
 		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
-		
+
 		// also remove this record from the visible records of all members of the given circles
 		Set<ObjectId> recordIds = new HashSet<ObjectId>(1);
 		recordIds.add(recordId);
@@ -331,7 +320,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		for (ObjectId circleId : circleIds) {
 			invisibleUserIds.addAll(Circle.getMembers(circleId));
 		}
-		
+
 		// remove the users that this record is still shared with via another circle
 		Set<ObjectId> stillVisibleUserIds = Circle.getUsersSharedWith(ownerId, recordId);
 		invisibleUserIds.removeAll(stillVisibleUserIds);

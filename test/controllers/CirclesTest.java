@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
@@ -51,7 +52,7 @@ public class CirclesTest {
 				controllers.routes.ref.Circles.add(),
 				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
 						ImmutableMap.of("name", "Test circle")));
-		assertEquals(303, status(result));
+		assertEquals(200, status(result));
 		DBObject foundCircle = Database.getCollection("circles").findOne(new BasicDBObject("name", "Test circle"));
 		Circle circle = ModelConversion.mapToModel(Circle.class, foundCircle.toMap());
 		assertNotNull(circle);
@@ -142,9 +143,9 @@ public class CirclesTest {
 		String circleId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Circles.addUsers(circleId),
-				fakeRequest().withSession("id", ownerId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of(userId.toString(), "on")));
-		assertEquals(303, status(result));
+				fakeRequest().withSession("id", ownerId.toString()).withJsonBody(
+						Json.parse("{\"users\": [\"" + userId.toString() + "\"]}")));
+		assertEquals(200, status(result));
 		assertEquals(oldSize + 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 

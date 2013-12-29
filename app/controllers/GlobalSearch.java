@@ -141,7 +141,9 @@ public class GlobalSearch extends Controller {
 	}
 
 	public static Result showCircle(ObjectId circleId) {
-		return redirect(routes.Circles.show(circleId.toString()));
+		// TOOD show circle directly (or show details page?)
+		// return redirect(routes.Circles.show(circleId.toString()));
+		return redirect(routes.Circles.index());
 	}
 
 	public static Result showApp(ObjectId appId) {

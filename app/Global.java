@@ -1,5 +1,7 @@
 import play.Application;
 import play.GlobalSettings;
+import play.libs.Json;
+import utils.db.CustomObjectMapper;
 import utils.db.Database;
 import utils.search.Search;
 
@@ -12,6 +14,9 @@ public class Global extends GlobalSettings {
 
 		// Connect to search cluster
 		Search.connect();
+
+		// Set custom object mapper for Json
+		Json.setObjectMapper(new CustomObjectMapper());
 	}
 
 	@Override

@@ -11,7 +11,7 @@
 		<meta name="author" content="amarfurt">
 		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 		<!-- Clear CSS defaults -->
-		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/reset.css")">
 		<!-- Bootstrap core CSS -->
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
 		<!-- Plugin CSS -->
@@ -19,12 +19,15 @@
 		<link href="@routes.Assets.at("bootstrap/css/typeahead.css")" rel="stylesheet">
 		<!-- Custom styles for this template -->
 		<link href="@routes.Assets.at("bootstrap/css/custom/main.css")" rel="stylesheet">
-		<!-- JS libraries -->
+		<!-- JS framework and libraries -->
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+        <!-- jQuery needed for Bootstrap's JavaScript plugins -->
 		<script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
-		<script type="text/javascript" src="@routes.Assets.at("javascripts/underscore-min.js")"></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
 		<script type="text/javascript" src="@routes.Assets.at("javascripts/backbone-min.js")"></script>
-		<script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>
-		<script type="text/javascript" src="@routes.Application.javascriptRoutes()"></script>
+		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/bootstrap-slider.js")"></script>
+		<script type="text/javascript" src="@routes.Assets.at("javascripts/typeahead.min.js")"></script>
 	</head>
 	<body>
 		<!-- Navbar -->
@@ -70,9 +73,8 @@
 		
 		<!-- Scripts at the end for faster page loading -->
 		<!-- Include all compiled plugins (below), or include individual files as needed -->
+		<script type="text/javascript" src="@routes.Assets.at("javascripts/main.js")"></script>
 		<script type="text/javascript" src="@routes.Assets.at("javascripts/search.js")"></script>
-		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/bootstrap-slider.js")"></script>
-		<script type="text/javascript" src="@routes.Assets.at("javascripts/typeahead.min.js")"></script>
+		<script type="text/javascript" src="@routes.Application.javascriptRoutes()"></script>
 	</body>
 </html>

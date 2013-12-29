@@ -1,141 +1,138 @@
-@(contacts: List[User], users: List[User], circles: List[Circle], activeCircle: org.bson.types.ObjectId, user: org.bson.types.ObjectId)
-@active(circleId: org.bson.types.ObjectId) = @{
-	circleId.equals(activeCircle)
-}
+@(user: org.bson.types.ObjectId)
 
 @main(user, "Circles") {
-	<div class="page-header">
-		<h1>My circles</h1>
-	</div>
-
-	@if(circles.isEmpty()) {
-		<p>You have no circles yet. Add one by clicking on the button below.</p>
-		<button data-toggle="modal" data-target="#circleForm" class="btn btn-default">
-			<span class="glyphicon glyphicon-plus-sign"></span> Add a new circle
-		</button>
-	} else {
-		<!-- Circle tabs -->
-		<ul id="circleTabs" class="nav nav-tabs">
-			@circles.map { circle =>
-				<li tab-id="@circle._id" class="circleTab @if(active(circle._id)){active}">
-					<a href="#@circle._id" data-toggle="tab"><span class="circleName">@circle.name</span></a>
-				</li>
-			}
-			<!-- Add new circle button -->
-			<li>
-				<button data-toggle="modal" data-target="#circleForm" class="btn btn-default">
-					<span class="glyphicon glyphicon-plus"></span>
-				</button>
-			</li>
-		</ul>
+	<div ng-app="circles" ng-controller="CirclesCtrl">
+		<div class="page-header">
+			<h1>My circles</h1>
+		</div>
 		
-		<!-- Circle content -->
-		<div id="circleContent" class="tab-content">
-			@circles.map { circle =>
-				<!-- views.html.elements.circle(contacts, users, circle, active(circle._id)) -->
-				<div id="@circle._id" class="circle tab-pane fade @if(active(circle._id)){in active}">
-					@if(circle.members.size() > 0) {
-						<ul class="list-group">
-							@circle.members.map { member =>
-								<li class="list-group-item member" data-cid="@circle._id" data-mid="@member">
-									@User.getName(member.asInstanceOf[org.bson.types.ObjectId])
-									<div class="pull-right">
-										<button class="btn btn-xs btn-danger removeMember">
-											<span class="glyphicon glyphicon-remove"></span>
-										</button>
-									</div>
-								</li>
-							}
-					   	</ul>
-					} else {
-						<p>This circle has no members yet.</p>
-					}
-				   	<button data-toggle="modal" data-target="#userForm@circle._id" class="btn btn-primary addUser">
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+	
+		<div ng-show="circles.length === 0">
+			<p>You have no circles yet. Add one by clicking on the button below.</p>
+			<button data-toggle="modal" data-target="#circleModal" class="btn btn-default">
+				<span class="glyphicon glyphicon-plus-sign"></span> Add a new circle
+			</button>
+		</div>
+		<div ng-show="circles.length > 0">
+			<!-- Circle tabs -->
+			<ul class="nav nav-tabs">
+				<li ng-class="{'active': circle.active}" ng-repeat="circle in circles">
+					<a href="javascript:;" ng-click="makeActive(circle)">{{circle.name}}</a>
+				</li>
+
+				<!-- Add new circle button -->
+				<li>
+					<button data-toggle="modal" data-target="#circleModal" class="btn btn-default">
+						<span class="glyphicon glyphicon-plus"></span>
+					</button>
+				</li>
+			</ul>
+			
+			<!-- Circle content -->
+			<div class="tab-content">
+				<div class="tab-pane fade" ng-class="{'active in': circle.active}" ng-repeat="circle in circles">
+					<p ng-show="circle.members.length === 0">This circle has no members yet.</p>
+					<ul class="list-group" ng-show="circle.members.length > 0">
+						<li class="list-group-item" ng-repeat="member in circle.members">
+							{{member}}
+							<div class="pull-right">
+								<button type="button" class="btn btn-xs btn-danger" ng-click="removeMember(circle, member)">
+									<span class="glyphicon glyphicon-remove"></span>
+								</button>
+							</div>
+						</li>
+				   	</ul>
+				   	<button data-toggle="modal" data-target="#userModal-{{circle._id}}" class="btn btn-primary" ng-click="loadContacts()">
 						<span class="glyphicon glyphicon-plus-sign"></span> Add user
 					</button>
-				    <button class="btn btn-danger deleteCircle">
+				    <button class="btn btn-danger" ng-click="deleteCircle(circle)">
 				    	<span class="glyphicon glyphicon-remove-sign"></span> Delete circle
 				    </button>
 				    
 				    <!-- Add users modal -->
-					@helper.form(routes.Circles.addUsers(circle._id.toString())) {
-						<div class="modal fade" id="userForm@circle._id" role="dialog" aria-labelledby="userFormLabel@circle._id" aria-hidden="true">
-							<div class="modal-dialog">
-								<div class="modal-content">
-									<div class="modal-header">
-										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-										<h4 class="modal-title" id="userFormLabel@circle._id">Add users to this circle</h4>
-									</div>
-									<div class="modal-body">
-										<ul class="nav nav-tabs">
-											<li class="active"><a href="#@circle._id-contacts" data-toggle="tab">Contacts</a></li>
-											<li><a href="#@circle._id-all" data-toggle="tab">All users</a></li>
-										</ul>
-										<div class="tab-content">
-											<div id="@circle._id-contacts" class="tab-pane fade active in">
-												<div class="contacts">
-													<!-- TODO: in JS -->
-													@defining(Circle.getMembers(circle._id)) { memberIds =>
-														@defining(contacts.filter(contact => !memberIds.contains(contact._id))) { users =>
-															@if(users.size() > 0) {
-																@users.map { user =>
-																	@views.html.elements.checkbox(user._id.toString()){@user.name}
-																}
-															} else {
-																<p>Either you haven't added anyone to your circles yet 
-																   or all your contacts are already in this circle.</p>
-															}
-														}
-													}
+					<div class="modal fade" id="userModal-{{circle._id}}" role="dialog" aria-labelledby="userModalLabel-{{circle._id}}" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title" id="userModalLabel-{{circle._id}}">Add users to circle '{{circle.name}}'</h4>
+								</div>
+								<div class="modal-body">
+									<ul class="nav nav-tabs">
+										<li class="active"><a href="#contacts-{{circle._id}}" data-toggle="tab">Contacts</a></li>
+										<li><a href="#all-{{circle._id}}" data-toggle="tab">All users</a></li>
+									</ul>
+									<div class="tab-content">
+										<div id="contacts-{{circle._id}}" class="tab-pane fade active in">
+											<p ng-show="loadingContacts && contacts.length === 0">Loading contacts...</p>
+											<p ng-show="!loadingContacts && contacts.length === 0">You have no users in your circles yet.</p>
+											<div ng-show="contacts.length > 0">
+												<div class="checkbox" ng-repeat="contact in filteredContacts = (contacts | filter:isntMember)">
+													<label>
+														<input type="checkbox" name="{{contact._id}}" ng-model="contact.checked">
+														{{contact.name}}
+													</label>
 												</div>
+												<p ng-show="filteredContacts.length === 0">No contacts can be added to this circle.</p>
 											</div>
-											<div id="@circle._id-all" class="tab-pane fade">
+										</div>
+										<div id="all-{{circle._id}}" class="tab-pane fade">
+											<form class="form-horizontal" ng-submit="searchUsers(circle)">
 												<div class="form-group">
-													<input type="text" class="userSearch form-control" name="userSearch" placeholder="Search for a user">
-													<!-- TODO: in JS -->
-													@defining(Circle.getMembers(circle._id)) { memberIds =>
-														@defining(users.filter(user => !memberIds.contains(user._id))) { usersForResult =>
-															@views.html.elements.usersearchresults(usersForResult)
-														}
-													}
+													<div class="col-xs-10">
+														<input type="text" class="form-control" placeholder="Search for a user" ng-model="userQuery[circle._id]" autofocus>
+													</div>
+													<div class="col-xs-2">
+														<button type="submit" class="btn btn-primary form-control">Search</button>
+													</div>
 												</div>
+											</form>
+											<div class="checkbox" ng-repeat="user in foundUsers | filter:isntMember">
+												<label>
+													<input type="checkbox" name="{{user._id}}" ng-model="user.checked">
+													{{user.name}}
+												</label>
 											</div>
 										</div>
 									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-										<button type="submit" class="btn btn-primary">Add</button>
-									</div>
-								</div> <!-- /.modal-content -->
-							</div> <!-- /.modal-dialog -->
-						</div> <!-- /.modal -->
-					}
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="addUsers(circle)">Add</button>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-			}
+			</div>
 		</div>
-	}
-	
-	<!-- New circle modal -->
-	@helper.form(routes.Circles.add) {
-		<div class="modal fade" id="circleForm" role="dialog" aria-labelledby="circleFormLabel" aria-hidden="true">
+		
+		<!-- New circle modal -->
+		<div class="modal fade" id="circleModal" role="dialog" aria-labelledby="circleModalLabel" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title" id="circleFormLabel">Create a new circle</h4>
+						<h4 class="modal-title" id="circleModalLabel">Create a new circle</h4>
 					</div>
-					<div class="modal-body">
-						<input type="text" class="form-control" placeholder="Name" name="name" autofocus>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-						<button type="submit" class="btn btn-primary">Create</button>
-					</div>
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
-	}
+					<form ng-submit="addCircle()">
+						<div class="modal-body">
+							<input type="text" class="form-control" placeholder="Name" ng-model="newCircleName" autofocus>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary">Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
 	
-	<!-- Load specific js -->
+	<!-- Load circles controller -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/circles.js")"></script>
 }

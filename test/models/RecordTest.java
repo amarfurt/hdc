@@ -150,7 +150,9 @@ public class RecordTest {
 		circle.shared.add(user0RecordIds[0]);
 		circle.shared.add(user0RecordIds[2]);
 		Circle.add(circle);
-		Circle.addMember(circle.owner, circle._id, userIds[1]);
+		Set<ObjectId> userIdSet = new HashSet<ObjectId>();
+		userIdSet.add(userIds[1]);
+		Circle.addMembers(circle.owner, circle._id, userIdSet);
 		assertEquals(1, circles.count());
 		Set<Record> foundRecords = Record.findVisible(userIds[1]);
 		assertEquals(3, foundRecords.size());

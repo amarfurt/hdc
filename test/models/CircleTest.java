@@ -8,6 +8,7 @@ import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
@@ -124,7 +125,9 @@ public class CircleTest {
 		Circle.add(circle);
 		assertEquals(1, circles.count());
 		assertEquals(0, ((BasicDBList) circles.findOne().get("members")).size());
-		Circle.addMember(circle.owner, circle._id, userIds[1]);
+		Set<ObjectId> userIdSet = new HashSet<ObjectId>();
+		userIdSet.add(userIds[1]);
+		Circle.addMembers(circle.owner, circle._id, userIdSet);
 		assertEquals(1, circles.count());
 		assertEquals(1, ((BasicDBList) circles.findOne().get("members")).size());
 	}
