@@ -33,6 +33,18 @@ import controllers.forms.SpaceForm;
 @Security.Authenticated(Secured.class)
 public class Spaces extends Controller {
 
+	public static Result fetch() {
+		ObjectId userId = new ObjectId(request().username());
+		List<Space> spaces;
+		try {
+			spaces = new ArrayList<Space>(Space.findOwnedBy(userId));
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+		Collections.sort(spaces);
+		return ok(Json.toJson(spaces));
+	}
+
 	public static Result index() {
 		return show(Form.form(SpaceForm.class), null);
 	}

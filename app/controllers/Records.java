@@ -12,34 +12,37 @@ import models.Circle;
 import models.ModelException;
 import models.Record;
 import models.Space;
-import models.User;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bson.types.ObjectId;
 
 import play.Play;
 import play.libs.Json;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
 import views.html.dialogs.createrecords;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 @Security.Authenticated(Secured.class)
 public class Records extends Controller {
 
-	public static Result index() {
+	public static Result fetch() {
 		ObjectId userId = new ObjectId(request().username());
-		List<App> apps;
 		List<Record> records;
 		try {
-			apps = new ArrayList<App>(User.findApps(userId));
 			records = new ArrayList<Record>(Record.findVisible(userId));
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
 		Collections.sort(records);
-		Collections.sort(apps);
-		return ok(views.html.records.render(records, apps, userId));
+		return ok(Json.toJson(records));
+	}
+
+	public static Result index() {
+		return ok(views.html.records.render(new ObjectId(request().username())));
 	}
 
 	public static Result create(String appIdString) {
@@ -54,7 +57,7 @@ public class Records extends Controller {
 		// create reply to address and encode it with Base64
 		String applicationServer = Play.application().configuration().getString("application.server");
 		String replyTo = "http://" + applicationServer
-				+ routes.Apps.createRecord(appIdString, request().username()).url();
+				+ routes.AppsAPI.createRecord(appIdString, request().username()).url();
 		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
 
 		// put together url to load in iframe
@@ -65,45 +68,32 @@ public class Records extends Controller {
 	}
 
 	/**
-	 * Find the spaces that contain the given record.
-	 */
-	public static Result findSpacesWith(String recordId) {
-		Set<ObjectId> spaceIds = Space.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
-		List<String> spaces = new ArrayList<String>();
-		for (ObjectId id : spaceIds) {
-			spaces.add(id.toString());
-		}
-
-		// TODO also fetch order/names of spaces for meaningful sorting?
-		Collections.sort(spaces);
-		return ok(Json.toJson(spaces));
-	}
-
-	/**
-	 * Find the circles the given record is shared with.
-	 */
-	public static Result findCirclesWith(String recordId) {
-		Set<ObjectId> circleIds = Circle.findWithRecord(new ObjectId(recordId), new ObjectId(request().username()));
-		List<String> circles = new ArrayList<String>();
-		for (ObjectId id : circleIds) {
-			circles.add(id.toString());
-		}
-
-		// TODO also fetch order/names of spaces for meaningful sorting?
-		Collections.sort(circles);
-		return ok(Json.toJson(circles));
-	}
-
-	/**
 	 * Updates the spaces the given record is in.
 	 */
-	public static Result updateSpaces(String recordId, List<String> spaces) {
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updateSpaces(String recordIdString) {
+		// validate json
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("No json found.");
+		} else if (!json.has("spaces")) {
+			return badRequest("Request parameter 'spaces' not found.");
+		}
+
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId recordId = new ObjectId(recordIdString);
+		if (!Record.exists(userId, recordId)) {
+			return badRequest("No record with this id exists.");
+		}
+
+		// update spaces
 		Set<ObjectId> spaceIds = new HashSet<ObjectId>();
-		for (String id : spaces) {
-			spaceIds.add(new ObjectId(id));
+		for (JsonNode spaceId : json.get("spaces")) {
+			spaceIds.add(new ObjectId(spaceId.asText()));
 		}
 		try {
-			Space.updateRecords(spaceIds, new ObjectId(recordId), new ObjectId(request().username()));
+			Space.updateRecords(spaceIds, recordId, userId);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -113,19 +103,36 @@ public class Records extends Controller {
 	/**
 	 * Updates the circles the given record is shared with.
 	 */
-	public static Result updateSharing(String record, List<String> circlesStarted, List<String> circlesStopped) {
-		ObjectId recordId = new ObjectId(record);
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result updateSharing(String recordIdString) {
+		// validate json
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("No json found.");
+		} else if (!json.has("started")) {
+			return badRequest("Request parameter 'started' not found.");
+		} else if (!json.has("stopped")) {
+			return badRequest("Request parameter 'stopped' not found.");
+		}
+
+		// validate request: record
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId recordId = new ObjectId(recordIdString);
+		if (!Record.exists(userId, recordId)) {
+			return badRequest("No record with this id exists.");
+		}
+
+		// extract circle ids from posted data
 		Set<ObjectId> circleIdsStarted = new HashSet<ObjectId>();
-		for (String id : circlesStarted) {
-			circleIdsStarted.add(new ObjectId(id));
+		for (JsonNode started : json.get("started")) {
+			circleIdsStarted.add(new ObjectId(started.asText()));
 		}
 		Set<ObjectId> circleIdsStopped = new HashSet<ObjectId>();
-		for (String id : circlesStopped) {
-			circleIdsStopped.add(new ObjectId(id));
+		for (JsonNode stopped : json.get("stopped")) {
+			circleIdsStopped.add(new ObjectId(stopped.asText()));
 		}
 
 		// validate circles
-		ObjectId userId = new ObjectId(request().username());
 		Iterator<ObjectId> iterator = circleIdsStarted.iterator();
 		while (iterator.hasNext()) {
 			if (!Circle.exists(userId, iterator.next())) {

@@ -9,13 +9,13 @@ POST    /welcome                    controllers.Application.authenticate()
 POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
 # Records
+GET     /fetch/records              controllers.Records.fetch()
 GET     /records                    controllers.Records.index()
 GET     /records/create/:appId      controllers.Records.create(appId: String)
-GET     /records/:id/spaces         controllers.Records.findSpacesWith(id: String)
-GET     /records/:id/circles        controllers.Records.findCirclesWith(id: String)
-POST    /records/:id/spaces/update  controllers.Records.updateSpaces(id: String, spaceIds: java.util.List[String])
-POST    /records/:id/circles/update controllers.Records.updateSharing(id: String, started: java.util.List[String], stopped: java.util.List[String])
+POST    /records/:id/spaces         controllers.Records.updateSpaces(id: String)
+POST    /records/:id/circles        controllers.Records.updateSharing(id: String)
 # Spaces
+GET     /fetch/spaces               controllers.Spaces.fetch()
 GET     /spaces                     controllers.Spaces.index()
 POST    /spaces                     controllers.Spaces.add()
 GET     /spaces/loading             controllers.Spaces.loading()
@@ -56,6 +56,8 @@ GET     /search/complete/:query     controllers.GlobalSearch.complete(query: Str
 GET     /search/:type/:id           controllers.GlobalSearch.show(type: String, id: String)
 # Users
 GET     /users/:id/name             controllers.Users.getName(id: String)
+# Apps
+GET     /fetch/apps                 controllers.Apps.fetch()
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
@@ -65,5 +67,5 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
 # Apps Public API
-OPTIONS /apps/:appId/records/create/:userId controllers.Apps.checkPreflight(appId: String, userId: String)
-POST    /apps/:appId/records/create/:userId controllers.Apps.createRecord(appId: String, userId: String)
+OPTIONS /apps/:appId/records/create/:userId controllers.AppsAPI.checkPreflight(appId: String, userId: String)
+POST    /apps/:appId/records/create/:userId controllers.AppsAPI.createRecord(appId: String, userId: String)

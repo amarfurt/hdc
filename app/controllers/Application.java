@@ -83,16 +83,18 @@ public class Application extends Controller {
 
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
-		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Records.findSpacesWith(),
-				controllers.routes.javascript.Records.findCirclesWith(),
-				controllers.routes.javascript.Records.updateSpaces(),
+		return ok(Routes.javascriptRouter("jsRoutes",
+				controllers.routes.javascript.Apps.fetch(),
+				controllers.routes.javascript.Records.fetch(), 
+				controllers.routes.javascript.Records.create(), controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(), controllers.routes.javascript.Circles.fetch(),
 				controllers.routes.javascript.Circles.add(), controllers.routes.javascript.Circles.rename(),
 				controllers.routes.javascript.Circles.delete(), controllers.routes.javascript.Circles.addUsers(),
 				controllers.routes.javascript.Circles.removeMember(),
 				controllers.routes.javascript.Circles.loadContacts(),
-				controllers.routes.javascript.Circles.searchUsers(), controllers.routes.javascript.Spaces.rename(),
-				controllers.routes.javascript.Spaces.delete(), controllers.routes.javascript.Spaces.searchRecords(),
+				controllers.routes.javascript.Circles.searchUsers(), controllers.routes.javascript.Spaces.fetch(),
+				controllers.routes.javascript.Spaces.rename(), controllers.routes.javascript.Spaces.delete(),
+				controllers.routes.javascript.Spaces.searchRecords(),
 				controllers.routes.javascript.Spaces.loadAllRecords(),
 				controllers.routes.javascript.Spaces.loadRecords(),
 				controllers.routes.javascript.Spaces.getVisualizationUrl(),
