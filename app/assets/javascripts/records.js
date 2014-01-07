@@ -9,6 +9,8 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.spaces = [];
 	$scope.loadingCircles = false;
 	$scope.circles = [];
+	$scope.filter = {};
+	$scope.select = {};
 	
 	// fetch apps
 	$http(jsRoutes.controllers.Apps.fetch()).
@@ -17,7 +19,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// fetch records
 	$http(jsRoutes.controllers.Records.fetch()).
-		success(function(data) { $scope.records = data; }).
+		success(function(data) { $scope.records = data; initFilters(); }).
 		error(function(err) { $scope.error = "Failed to load records: " + err; });
 	
 	// go to record creation dialog
@@ -146,6 +148,84 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 				});
 			}).
 			error(function(err) { $scope.error = "Failed to update circles: " + err; });
+	}
+	
+	// *** filters ***
+	// initialize filters
+	initFilters = function() {
+		// app and owner
+		if ($scope.records.length > 0) {
+			$scope.select.apps = _.uniq(_.map($scope.records, function(record) { return record.app; }));
+			$scope.select.owners = _.uniq(_.map($scope.records, function(record) { return record.owner; }));
+		}
+		
+		// date
+		$scope.filter.date = "any";
+		if ($scope.records.length > 0) {
+			var sortedRecords = _.sortBy($scope.records, "created");
+			var earliest = _.first(sortedRecords);
+			var latest = _.last(sortedRecords);
+			earliest = stringToDate(earliest.created);
+			latest = stringToDate(latest.created);
+		} else {
+			earliest = new Date();
+			latest = new Date();
+		}
+		day = 1000 * 60 * 60 * 24;
+		$("#dateFilter").slider({
+			min:earliest.getTime(), max:latest.getTime() + day, step:day,
+			value:[earliest.getTime(), latest.getTime() + day],
+			formater: function(date) { return dateToString(new Date(date)); }
+		}).
+		on("slideStop", function(event) {
+			var split = $("#dateFilter").val().split(",");
+			var fromDate = dateToString(new Date(Number(split[0])));
+			var toDate = dateToString(new Date(Number(split[1])));
+			$scope.filter.date = fromDate + " and " + toDate;
+			
+			// rerun the filters (is not automatically triggered)
+			$scope.$digest();
+		});
+	}
+	
+	// convert date in string format to JS date
+	stringToDate = function(dateString) {
+		var split = dateString.split(/[ -]/);
+		split = _.map(split, function(number) { return Number(number); });
+		return new Date(split[0], split[1] - 1, split[2]);
+	}
+	
+	// convert date to string
+	dateToString = function(date) {
+		var year = date.getFullYear();
+		var month = ((date.getMonth() < 9) ? "0" : "") + (date.getMonth() + 1);
+		var day = ((date.getDate() < 10) ? "0" : "") + date.getDate();
+		return year + "-" + month + "-" + day;
+	}
+	
+	// checks whether a record matches all filters
+	$scope.matchesFilters = function(record) {
+		if ($scope.filter.appId) {
+			if ($scope.filter.appId !== record.app) {
+				return false;
+			}
+		}
+		if ($scope.filter.ownerId) {
+			if ($scope.filter.ownerId !== record.owner) {
+				return false;
+			}
+		}
+		var date = $("#dateFilter").val();
+		if (date) {
+			var recordDate = Number(stringToDate(record.created));
+			var split = date.split(",");
+			var fromDate = Number(split[0]);
+			var toDate = Number(split[1]);
+			if (fromDate > recordDate || recordDate > toDate) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 }]);

@@ -31,7 +31,7 @@
 		<!-- Records -->
 		<p ng-show="records.length === 0">No available records found.</p>
 		<ul class="list-group" ng-show="records.length > 0">
-			<li class="list-group-item" ng-repeat="record in records">
+			<li class="list-group-item" ng-repeat="record in filteredRecords = (records | filter:matchesFilters)">
 				<span class="label label-info">{{record.creator}}</span>
 				<a href="javascript:;" ng-click="showDetails(record)">{{record.name}}</a>
 				<div class="pull-right">
@@ -44,6 +44,28 @@
 				</div>
 			</li>
 		</ul>
+		
+		<!-- Filters -->
+		<div ng-show="records.length > 0">
+			<form class="form-inline" role="form">
+				<div class="form-group col-lg-3">
+					<label for="appFilter" class="control-label">Created with: </label>
+					<select id="appFilter" class="form-control" ng-model="filter.appId" ng-options="app for app in select.apps">
+						<option value="">any</option>
+					</select>
+				</div>
+				<div class="form-group col-lg-3">
+					<label for="ownerFilter" class="control-label">Owned by: </label>
+					<select id="ownerFilter" class="form-control" ng-model="filter.ownerId" ng-options="owner for owner in select.owners">
+						<option value="">any</option>
+					</select>
+				</div>
+				<div class="form-group col-lg-6">
+					<label for="dateFilter" class="control-label">Created between: <span style="color:#707070">{{filter.date}}</span></label>
+					<input id="dateFilter" style="width:500px">
+				</div>
+			</form>
+		</div>
 		
 		<!-- Spaces modal -->
 		<div class="modal fade" id="spacesModal" role="dialog" aria-labelledby="spacesLabel" aria-hidden="true">

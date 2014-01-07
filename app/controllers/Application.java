@@ -83,10 +83,9 @@ public class Application extends Controller {
 
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
-		return ok(Routes.javascriptRouter("jsRoutes",
-				controllers.routes.javascript.Apps.fetch(),
-				controllers.routes.javascript.Records.fetch(), 
-				controllers.routes.javascript.Records.create(), controllers.routes.javascript.Records.updateSpaces(),
+		return ok(Routes.javascriptRouter("jsRoutes", controllers.routes.javascript.Apps.fetch(),
+				controllers.routes.javascript.Records.fetch(), controllers.routes.javascript.Records.create(),
+				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(), controllers.routes.javascript.Circles.fetch(),
 				controllers.routes.javascript.Circles.add(), controllers.routes.javascript.Circles.rename(),
 				controllers.routes.javascript.Circles.delete(), controllers.routes.javascript.Circles.addUsers(),
