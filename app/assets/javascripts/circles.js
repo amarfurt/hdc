@@ -9,6 +9,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.contacts = [];
 	$scope.foundUsers = [];
 	$scope.userQuery = {};
+	$scope.searching = false;
 	
 	// fetch circles and make first circle active
 	$http(jsRoutes.controllers.Circles.fetch()).
@@ -83,14 +84,19 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// search for users
 	$scope.searchUsers = function(circle) {
+		$scope.searching = true;
 		var query = $scope.userQuery[circle._id];
-		if (query && query.length > 0) {
+		if (query) {
 		$http(jsRoutes.controllers.Circles.searchUsers(query)).
 			success(function(users) {
 				$scope.error = null;
 				$scope.foundUsers = users;
+				$scope.searching = false;
 			}).
-			error(function(err) { $scope.error = "User search failed: " + err; });
+			error(function(err) {
+				$scope.error = "User search failed: " + err;
+				$scope.searching = false;
+			});
 		}
 	}
 	

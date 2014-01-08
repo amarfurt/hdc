@@ -127,7 +127,9 @@ public class SpaceTest {
 		Space.add(space);
 		assertEquals(1, spaces.count());
 		assertEquals(1, ((BasicDBList) spaces.findOne().get("records")).size());
-		Space.addRecord(space._id, recordIds[1]);
+		Set<ObjectId> recordIdSet = new HashSet<ObjectId>();
+		recordIdSet.add(recordIds[1]);
+		Space.addRecords(space._id, recordIdSet);
 		assertEquals(1, spaces.count());
 		assertEquals(2, ((BasicDBList) spaces.findOne().get("records")).size());
 	}

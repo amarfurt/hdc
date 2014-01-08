@@ -53,13 +53,6 @@ public class Space extends Model implements Comparable<Space> {
 		return (Integer) Database.getCollection(collection).findOne(query, projection).get("order");
 	}
 
-	public static ObjectId getVisualizationId(ObjectId spaceId, ObjectId userId) {
-		DBObject query = new BasicDBObject("_id", spaceId);
-		query.put("owner", userId);
-		DBObject projection = new BasicDBObject("visualization", 1);
-		return (ObjectId) Database.getCollection(collection).findOne(query, projection).get("visualization");
-	}
-
 	public static Set<ObjectId> getRecords(ObjectId spaceId) {
 		DBObject query = new BasicDBObject("_id", spaceId);
 		DBObject projection = new BasicDBObject("records", 1);
@@ -156,11 +149,12 @@ public class Space extends Model implements Comparable<Space> {
 	}
 
 	/**
-	 * Adds a new record to the space with the given id.
+	 * Adds a set of records to the given space.
 	 */
-	public static void addRecord(ObjectId spaceId, ObjectId recordId) throws ModelException {
+	public static void addRecords(ObjectId spaceId, Set<ObjectId> recordIds) throws ModelException {
 		DBObject query = new BasicDBObject("_id", spaceId);
-		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", recordId));
+		DBObject update = new BasicDBObject("$addToSet", new BasicDBObject("records", new BasicDBObject("$each",
+				recordIds.toArray())));
 		WriteResult result = Database.getCollection(collection).update(query, update);
 		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
 	}

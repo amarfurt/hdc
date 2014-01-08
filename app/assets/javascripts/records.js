@@ -178,13 +178,15 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 			formater: function(date) { return dateToString(new Date(date)); }
 		}).
 		on("slideStop", function(event) {
-			var split = $("#dateFilter").val().split(",");
-			var fromDate = dateToString(new Date(Number(split[0])));
-			var toDate = dateToString(new Date(Number(split[1])));
-			$scope.filter.date = fromDate + " and " + toDate;
-			
 			// rerun the filters (is not automatically triggered)
-			$scope.$digest();
+			$scope.$apply(function() {
+				var split = $("#dateFilter").val().split(",");
+				$scope.filter.fromDate = Number(split[0]);
+				$scope.filter.toDate = Number(split[1]);
+				var fromDate = dateToString(new Date($scope.filter.fromDate));
+				var toDate = dateToString(new Date($scope.filter.toDate));
+				$scope.filter.date = fromDate + " and " + toDate;
+			});
 		});
 	}
 	
@@ -215,13 +217,9 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 				return false;
 			}
 		}
-		var date = $("#dateFilter").val();
-		if (date) {
+		if ($scope.filter.fromDate && $scope.filter.toDate) {
 			var recordDate = Number(stringToDate(record.created));
-			var split = date.split(",");
-			var fromDate = Number(split[0]);
-			var toDate = Number(split[1]);
-			if (fromDate > recordDate || recordDate > toDate) {
+			if ($scope.filter.fromDate > recordDate || recordDate > $scope.filter.toDate) {
 				return false;
 			}
 		}

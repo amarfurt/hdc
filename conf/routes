@@ -10,6 +10,7 @@ POST    /welcome/registration       controllers.Application.register()
 GET     /logout                     controllers.Application.logout()
 # Records
 GET     /fetch/records              controllers.Records.fetch()
+POST    /get/records                controllers.Records.get()
 GET     /records                    controllers.Records.index()
 GET     /records/create/:appId      controllers.Records.create(appId: String)
 POST    /records/:id/spaces         controllers.Records.updateSpaces(id: String)
@@ -18,20 +19,15 @@ POST    /records/:id/circles        controllers.Records.updateSharing(id: String
 GET     /fetch/spaces               controllers.Spaces.fetch()
 GET     /spaces                     controllers.Spaces.index()
 POST    /spaces                     controllers.Spaces.add()
-GET     /spaces/loading             controllers.Spaces.loading()
-GET     /spaces/:id                 controllers.Spaces.show(id: String)
-PUT     /spaces/:id                 controllers.Spaces.rename(id: String)
+#PUT     /spaces/:id                 controllers.Spaces.rename(id: String)
 DELETE  /spaces/:id                 controllers.Spaces.delete(id: String)
-POST    /spaces/records/:id/add     controllers.Spaces.addRecords(id: String)
-GET     /spaces/records/search      controllers.Spaces.searchRecords(id: String, query: String)
-GET     /spaces/records/loadall     controllers.Spaces.loadAllRecords()
-GET     /spaces/records/load        controllers.Spaces.loadRecords(spaceId: String)
-GET     /spaces/:id/visualization   controllers.Spaces.getVisualizationUrl(id: String)
+POST    /spaces/:id/records         controllers.Spaces.addRecords(id: String)
+GET     /search/records/:query      controllers.Spaces.searchRecords(query: String)
 # Circles
 GET     /fetch/circles              controllers.Circles.fetch()
 GET     /circles                    controllers.Circles.index()
 POST    /circles                    controllers.Circles.add()
-PUT     /circles/:id                controllers.Circles.rename(id: String)
+#PUT     /circles/:id                controllers.Circles.rename(id: String)
 DELETE  /circles/:id                controllers.Circles.delete(id: String)
 POST    /circles/:id/users          controllers.Circles.addUsers(id: String)
 DELETE  /circles/:id/users/:userId  controllers.Circles.removeMember(id: String, userId: String)
@@ -58,6 +54,9 @@ GET     /search/:type/:id           controllers.GlobalSearch.show(type: String, 
 GET     /users/:id/name             controllers.Users.getName(id: String)
 # Apps
 GET     /fetch/apps                 controllers.Apps.fetch()
+# Visualizations
+GET     /fetch/visualizations       controllers.Visualizations.fetch()
+GET     /visualizations/:id/url     controllers.Visualizations.getUrl(id: String)
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()

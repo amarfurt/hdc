@@ -68,9 +68,9 @@
 									</ul>
 									<div class="tab-content">
 										<div id="contacts-{{circle._id}}" class="tab-pane fade active in">
-											<p ng-show="loadingContacts && contacts.length === 0">Loading contacts...</p>
+											<p ng-show="loadingContacts">Loading contacts...</p>
 											<p ng-show="!loadingContacts && contacts.length === 0">You have no users in your circles yet.</p>
-											<div ng-show="contacts.length > 0">
+											<div ng-show="!loadingContacts && contacts.length > 0">
 												<div class="checkbox" ng-repeat="contact in filteredContacts = (contacts | filter:isntMember)">
 													<label>
 														<input type="checkbox" name="{{contact._id}}" ng-model="contact.checked">
@@ -91,11 +91,16 @@
 													</div>
 												</div>
 											</form>
-											<div class="checkbox" ng-repeat="user in foundUsers | filter:isntMember">
-												<label>
-													<input type="checkbox" name="{{user._id}}" ng-model="user.checked">
-													{{user.name}}
-												</label>
+											<p ng-show="searching">Searching...</p>
+											<p ng-show="!searching && foundUsers.length === 0">No users matched your search.</p>
+											<div ng-show="!searching && foundUsers.length > 0">
+												<div class="checkbox" ng-repeat="user in filteredUsers = (foundUsers | filter:isntMember)">
+													<label>
+														<input type="checkbox" name="{{user._id}}" ng-model="user.checked">
+														{{user.name}}
+													</label>
+												</div>
+												<p ng-show="filteredUsers.length === 0">All found users are already members of this circle.</p>
 											</div>
 										</div>
 									</div>

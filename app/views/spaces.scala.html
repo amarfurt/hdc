@@ -1,172 +1,194 @@
-@(spaceForm: Form[forms.SpaceForm], records: List[Record], spaces: List[Space], activeSpace: org.bson.types.ObjectId, user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "Spaces") {
-	<div class="page-header">
-		<h1>My spaces</h1>
-	</div>
-	
-	@if(spaceForm.hasGlobalErrors) {
-		<div class="alert alert-danger alert-dismissable">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			@spaceForm.globalError.message
+	<div ng-app="spaces" ng-controller="SpacesCtrl">
+		<div class="page-header">
+			<h1>My spaces</h1>
 		</div>
-	}
-	
-	@if(spaces.isEmpty()) {
-		<p>You have no spaces yet. Add one by clicking on the button below.</p>
-		<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
-			<span class="glyphicon glyphicon-plus"></span> Add a new space
-		</button>
-	} else {
-		<!-- Space tabs -->
-		<ul id="spaceTabs" class="nav nav-tabs">
-			@spaces.map { space =>
-				<li class="spaceTab @if(space._id.equals(activeSpace)){active}" data-sid="@space._id">
-					<a href="#@space._id" data-toggle="tab"><span class="spaceName">@space.name</span></a>
-				</li>
-			}
-			<!-- Add new space button -->
-			<li>
-				<button data-toggle="modal" data-target="#spaceForm" class="btn btn-default">
-					<span class="glyphicon glyphicon-plus"></span>
-				</button>
-			</li>
-		</ul>
 		
-		<!-- Space content -->
-		<div id="spaceContent" class="tab-content">
-			@spaces.map { space =>
-				<div id="@space._id" class="space tab-pane fade @if(space._id.equals(activeSpace)){active in}">
-					<div class="spaceControls">
-						<button class="btn btn-primary showCompare" style="margin-bottom: 5px;">
-							<span class="glyphicon glyphicon-adjust"></span> Compare
-						</button>
-						<button class="btn btn-primary hideCompare hidden" style="margin-bottom: 5px;">
-							<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
-						</button>
-						<div class="pull-right">
-							<button data-toggle="modal" data-target="#recordForm-@space._id" class="btn btn-primary addRecord">
-								<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
-							</button>
-							<button class="btn btn-danger deleteSpace">
-								<span class="glyphicon glyphicon-remove-sign"></span> Delete this space
-							</button>
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+		
+		<!-- Spaces -->
+		<div ng-show="spaces.length === 0">
+			<p>You have no spaces yet. Add one by clicking on the button below.</p>
+			<button data-toggle="modal" data-target="#spaceModal" class="btn btn-default" ng-click="loadVisualizations()">
+				<span class="glyphicon glyphicon-plus"></span> Add a new space
+			</button>
+		</div>
+		<div ng-show="spaces.length > 0">
+			<!-- Space tabs -->
+			<ul class="nav nav-tabs">
+				<li ng-class="{'active': space.active}" ng-repeat="space in spaces">
+					<a href="javascript:;" ng-click="makeActive(space)">{{space.name}}</a>
+				</li>
+				
+				<!-- Add new space button -->
+				<li>
+					<button data-toggle="modal" data-target="#spaceModal" class="btn btn-default" ng-click="loadVisualizations()">
+						<span class="glyphicon glyphicon-plus"></span>
+					</button>
+				</li>
+			</ul>
+			<!-- Space content -->
+			<div class="tab-content">
+				<div class="tab-pane fade" ng-class="{'active in': space.active}" ng-repeat="space in spaces">
+					<div class="row">
+						<div ng-class="{'col-lg-6': space.compare}">
+							<!-- Visualization -->
+							<p ng-hide="space.trustedUrl">Loading space...</p>
+							<iframe id="iframe-{{space._id}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
+							
+							<!-- Filters -->
+							<div ng-show="space.baseRecords.length > 0">
+								<div class="row">
+									<div class="form-group col-lg-3">
+										<label for="appFilter-{{space._id}}" class="control-label">Created with: </label>
+										<select id="appFilter-{{space._id}}" class="form-control" ng-model="space.filters.appId" ng-options="app for app in space.select.apps">
+											<option value="">any</option>
+										</select>
+									</div>
+									<div class="form-group col-lg-3">
+										<label for="ownerFilter-{{space._id}}" class="control-label">Owned by: </label>
+										<select id="ownerFilter-{{space._id}}" class="form-control" ng-model="space.filters.ownerId" ng-options="owner for owner in space.select.owners">
+											<option value="">any</option>
+										</select>
+									</div>
+									<div class="form-group col-lg-6">
+										<label for="dateFilter-{{space._id}}" class="control-label">Created between: <span style="color:#707070">{{space.filters.date}}</span></label>
+										<input id="dateFilter-{{space._id}}" style="width:500px">
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6" ng-show="space.compare">
+							<!-- Visualization -->
+							<p ng-hide="space.copy.trustedUrl">Loading space...</p>
+							<iframe id="iframe-copy-{{space._id}}" height="420px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
+							
+							<!-- Filters -->
+							<div ng-show="space.copy.baseRecords.length > 0">
+								<div class="row">
+									<div class="form-group col-lg-3">
+										<label for="appFilter-copy-{{space._id}}" class="control-label">Created with: </label>
+										<select id="appFilter-copy-{{space._id}}" class="form-control" ng-model="space.copy.filters.appId" ng-options="app for app in space.copy.select.apps">
+											<option value="">any</option>
+										</select>
+									</div>
+									<div class="form-group col-lg-3">
+										<label for="ownerFilter-copy-{{space._id}}" class="control-label">Owned by: </label>
+										<select id="ownerFilter-copy-{{space._id}}" class="form-control" ng-model="space.copy.filters.ownerId" ng-options="owner for owner in space.copy.select.owners">
+											<option value="">any</option>
+										</select>
+									</div>
+									<div class="form-group col-lg-6">
+										<label for="dateFilter-copy-{{space._id}}" class="control-label">Created between: <span style="color:#707070">{{space.copy.filters.date}}</span></label>
+										<input id="dateFilter-copy-{{space._id}}" style="width:250px">
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
-					<div class="compare1">
-						<iframe id="iframe-@space._id" src="@controllers.routes.Spaces.loading" height="420px" width="100%"></iframe>
-						<div class="filters">
-							<form class="form-inline" role="form">
-								<div class="form-group col-lg-3">
-									<label for="filterCreator-@space._id" class="control-label">Created by: </label>
-									<select id="filterCreator-@space._id" class="form-control"></select>
-								</div>
-								<div class="form-group col-lg-3">
-									<label for="filterOwner-@space._id" class="control-label">Owned by: </label>
-									<select id="filterOwner-@space._id" class="form-control"></select>
-								</div>
-								<div class="form-group col-lg-6">
-									<label for="filterDate-@space._id" class="control-label">Created between: <span style="color:#707070" id="filterSliderRange-@space._id">any</span></label>
-									<input id="filterSlider-@space._id" style="width:500px" />
-								</div>
-							</form>
-						</div>					
-					</div>
-					<!-- Comparison view (hidden at the beginning) -->
-					<div class="compare2 col-lg-6 hidden">
-						<iframe id="iframe2-@space._id" src="@controllers.routes.Spaces.loading" height="420px" width="100%"></iframe>
-						<div class="filters">
-							<form class="form-inline" role="form">
-								<div class="form-group col-lg-3">
-									<label for="filterCreator2-@space._id" class="control-label">Created by: </label>
-									<select id="filterCreator2-@space._id" class="form-control"></select>
-								</div>
-								<div class="form-group col-lg-3">
-									<label for="filterOwner2-@space._id" class="control-label">Owned by: </label>
-									<select id="filterOwner2-@space._id" class="form-control"></select>
-								</div>
-								<div class="form-group col-lg-6">
-									<label for="filterDate2-@space._id" class="control-label">Created between: <span style="color:#707070" id="filterSlider2Range-@space._id">any</span></label>
-									<input id="filterSlider2-@space._id" style="width:250px" />
-								</div>
-							</form>
-						</div>		
-					</div>
+					
+					<!-- Space controls -->
+					<button class="btn btn-default" ng-hide="space.compare" ng-click="startCompare(space)">
+						<span class="glyphicon glyphicon-adjust"></span> Compare
+					</button>
+					<button class="btn btn-default" ng-show="space.compare" ng-click="endCompare(space)">
+						<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
+					</button>
+					<button data-toggle="modal" data-target="#recordModal-{{space._id}}" class="btn btn-primary">
+						<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
+					</button>
+					<button class="btn btn-danger" ng-click="deleteSpace(space)">
+						<span class="glyphicon glyphicon-remove-sign"></span> Delete this space
+					</button>
 					
 					<!-- Add records modal -->
-					@helper.form(routes.Spaces.addRecords(space._id.toString())) {
-						<div class="modal fade" id="recordForm-@space._id" role="dialog" aria-labelledby="label-@space._id" aria-hidden="true">
-							<div class="modal-dialog">
-								<div class="modal-content">
-									<div class="modal-header">
-										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-										<h4 class="modal-title" id="label-@space._id">Add records to this space</h4>
-									</div>
-									<div class="modal-body">
+					<div class="modal fade" id="recordModal-{{space._id}}" role="dialog" aria-labelledby="recordModalLabel-{{space._id}}" aria-hidden="true">
+						<div class="modal-dialog">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title" id="recordModalLabel-{{space._id}}">Add records to this space</h4>
+								</div>
+								<div class="modal-body">
+									<form class="form-horizontal" ng-submit="searchRecords(space)">
 										<div class="form-group">
-											<input type="text" class="recordSearch form-control" name="recordSearch" placeholder="Search in your records">
-											<!-- TODO: in JS -->
-											@defining(Space.getRecords(space._id)) { spaceRecords =>
-												@defining(records.filter(record => !spaceRecords.contains(record._id))) { recordsForResult =>
-													@views.html.elements.recordsearchresults(recordsForResult)
-												}
-											}
+											<div class="col-xs-10">
+												<input type="text" class="form-control" placeholder="Search in your records" ng-model="space.recordQuery" autofocus>
+											</div>
+											<div class="col-xs-2">
+												<button type="submit" class="btn btn-primary form-control">Search</button>
+											</div>
 										</div>
+									</form>
+									<p ng-show="searching">Searching...</p>
+									<p ng-show="!searching && foundRecords.length === 0">No records matched your search.</p>
+									<div ng-show="!searching && foundRecords.length > 0">
+										<div class="checkbox" ng-repeat="record in filteredRecords = (foundRecords | filter:isntInSpace)">
+											<label>
+												<input type="checkbox" name="{{record._id}}" ng-model="record.checked">
+												{{record.name}}
+											</label>
+										</div>
+										<p ng-show="filteredRecords.length === 0">All found records are already in this space.</p>
 									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-										<button type="submit" class="btn btn-primary">Add</button>
-									</div>
-								</div> <!-- /.modal-content -->
-							</div> <!-- /.modal-dialog -->
-						</div> <!-- /.modal -->
-					}
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-click="addRecords(space)">Add</button>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
-			}
+			</div>
 		</div>
-	}
-
-	<!-- New space modal -->
-	@helper.form(routes.Spaces.add, 'class -> "form-horizontal") {
-		<div class="modal fade" id="spaceForm" role="dialog" aria-labelledby="spaceFormLabel" aria-hidden="true">
+		
+		<!-- New space modal -->
+		<div class="modal fade" id="spaceModal" role="dialog" aria-labelledby="spaceModalLabel" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
 						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-						<h4 class="modal-title" id="spaceFormLabel">Create a new space</h4>
+						<h4 class="modal-title" id="spaceModalLabel">Create a new space</h4>
 					</div>
 					<div class="modal-body">
-						@defining(User.findVisualizations(user)) { visualizations =>
-							@if(visualizations.size() > 0) {
+						<p ng-show="loadingVisualizations">Loading visualizations...</p>
+						<div ng-show="!loadingVisualizations && visualizations.length === 0">
+							<p>You can display records in your spaces with visualizations.</p>
+							<p>Go to the <a href="@routes.Market.index()">Market</a> to install one.</p>
+						</div>
+						<div ng-show="!loadingVisualizations && visualizations.length > 0">
+							<form class="form-horizontal" ng-submit="addSpace()">
 								<div class="form-group">
 									<label for="newSpaceName" class="col-lg-2 control-label">Name</label>
 									<div class="col-lg-10">
-										<input type="text" id="newSpaceName" class="form-control" placeholder="Name" name="name" value="@spaceForm("name").value" autofocus>
+										<input type="text" id="newSpaceName" class="form-control" placeholder="Name" ng-model="add.name" autofocus>
 									</div>
 								</div>
 								<div class="form-group">
 									<label for="newSpaceVisualization" class="col-lg-2 control-label">Visualization</label>
 									<div class="col-lg-10">
-										<select name="visualization" id="newSpaceVisualization" class="form-control">
-										@visualizations.map { visualization =>
-											<option value="@visualization._id">@visualization.name</option>
-										}
+										<select id="newSpaceVisualization" class="form-control" ng-model="add.visualization" ng-options="v._id as v.name for v in visualizations">
+											<option value="">Choose a visualization</option>
 										</select>
 									</div>
 								</div>
-							} else {
-								<p>You have now visualizations installed yet. Go to the <a href="@routes.Market.index()">Market</a> to install one.</p>
-							}
-						}
+							</form>
+						</div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-						<button type="submit" class="btn btn-primary">Create</button>
+						<button type="button" class="btn btn-primary" ng-click="addSpace()">Create</button>
 					</div>
-				</div> <!-- /.modal-content -->
-			</div> <!-- /.modal-dialog -->
-		</div> <!-- /.modal -->
-	}
+				</div>
+			</div>
+		</div>
+	</div>
 
 	<!-- Load specific js -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>

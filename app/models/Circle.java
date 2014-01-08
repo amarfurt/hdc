@@ -250,7 +250,7 @@ public class Circle extends Model implements Comparable<Circle> {
 	}
 
 	/**
-	 * Adds a member to the given circle with the given id.
+	 * Adds a set of members to the given circle.
 	 */
 	public static void addMembers(ObjectId ownerId, ObjectId circleId, Set<ObjectId> userIds) throws ModelException {
 		DBObject query = new BasicDBObject("_id", circleId);

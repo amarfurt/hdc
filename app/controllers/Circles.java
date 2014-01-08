@@ -67,6 +67,7 @@ public class Circles extends Controller {
 		return ok(Json.toJson(newCircle));
 	}
 
+	@Deprecated
 	public static Result rename(String circleIdString) {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());

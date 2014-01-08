@@ -127,7 +127,9 @@ public class GlobalSearch extends Controller {
 	}
 
 	public static Result showSpace(ObjectId spaceId) {
-		return redirect(routes.Spaces.show(spaceId.toString()));
+		// TODO show space directly (or show details page?)
+		// return redirect(routes.Spaces.show(spaceId.toString()));
+		return redirect(routes.Spaces.index());
 	}
 
 	public static Result showUser(ObjectId userId) {

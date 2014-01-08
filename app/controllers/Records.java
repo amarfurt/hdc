@@ -41,6 +41,36 @@ public class Records extends Controller {
 		return ok(Json.toJson(records));
 	}
 
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result get() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("No json found.");
+		} else if (!json.has("records")) {
+			return badRequest("Request parameter 'records' not found.");
+		}
+		// TODO add fields selector
+		// else if (!json.has("fields")) {
+		// return badRequest("Request parameter 'fields' not found.");
+		// }
+
+		// get records
+		List<ObjectId> recordIds = new ArrayList<ObjectId>();
+		Iterator<JsonNode> iterator = json.get("records").iterator();
+		while (iterator.hasNext()) {
+			recordIds.add(new ObjectId(iterator.next().asText()));
+		}
+		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
+		Set<Record> records;
+		try {
+			records = Record.findAll(recordIds.toArray(recordIdArray));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok(Json.toJson(records));
+	}
+
 	public static Result index() {
 		return ok(views.html.records.render(new ObjectId(request().username())));
 	}
@@ -80,14 +110,9 @@ public class Records extends Controller {
 			return badRequest("Request parameter 'spaces' not found.");
 		}
 
-		// validate request
+		// update spaces
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		if (!Record.exists(userId, recordId)) {
-			return badRequest("No record with this id exists.");
-		}
-
-		// update spaces
 		Set<ObjectId> spaceIds = new HashSet<ObjectId>();
 		for (JsonNode spaceId : json.get("spaces")) {
 			spaceIds.add(new ObjectId(spaceId.asText()));
