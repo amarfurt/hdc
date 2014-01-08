@@ -18,6 +18,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
@@ -51,9 +52,10 @@ public class SpacesTest {
 		ObjectId visualizationId = new ObjectId();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.add(),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Test space", "visualization", visualizationId.toString())));
-		assertEquals(303, status(result));
+				fakeRequest().withSession("id", userId.toString()).withJsonBody(
+						Json.parse("{\"name\": \"Test space\", \"visualization\": \"" + visualizationId.toString()
+								+ "\"}")));
+		assertEquals(200, status(result));
 		DBObject foundSpace = Database.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
 		Space space = ModelConversion.mapToModel(Space.class, foundSpace.toMap());
 		assertNotNull(space);
@@ -62,47 +64,6 @@ public class SpacesTest {
 		assertEquals(visualizationId, space.visualization);
 		assertEquals(OrderOperations.getMax("spaces", space.owner), space.order);
 		assertEquals(0, space.records.size());
-	}
-
-	@Test
-	public void renameSpaceSuccess() {
-		DBCollection spaces = Database.getCollection("spaces");
-		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed test space"));
-		DBObject space = spaces.findOne(query);
-		ObjectId id = (ObjectId) space.get("_id");
-		ObjectId userId = (ObjectId) space.get("owner");
-		String spaceId = id.toString();
-		Result result = callAction(
-				controllers.routes.ref.Spaces.rename(spaceId),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Renamed test space")));
-		assertEquals(200, status(result));
-		BasicDBObject idQuery = new BasicDBObject("_id", id);
-		assertEquals("Renamed test space", spaces.findOne(idQuery).get("name"));
-		assertEquals(userId, spaces.findOne(idQuery).get("owner"));
-	}
-
-	@Test
-	public void renameSpaceForbidden() {
-		DBCollection spaces = Database.getCollection("spaces");
-		ObjectId userId = User.getId("test2@example.com");
-		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", userId));
-		query.put("name", new BasicDBObject("$ne", "Test space 2"));
-		DBObject space = spaces.findOne(query);
-		ObjectId id = (ObjectId) space.get("_id");
-		String spaceId = id.toString();
-		String originalName = (String) space.get("name");
-		ObjectId originalOwner = (ObjectId) space.get("owner");
-		Result result = callAction(
-				controllers.routes.ref.Spaces.rename(spaceId),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Test space 2")));
-		assertEquals(400, status(result));
-		assertEquals("No space with this id exists.", contentAsString(result));
-		BasicDBObject idQuery = new BasicDBObject("_id", id);
-		assertEquals(originalName, spaces.findOne(idQuery).get("name"));
-		assertEquals(originalOwner, spaces.findOne(idQuery).get("owner"));
 	}
 
 	@Test
@@ -130,7 +91,7 @@ public class SpacesTest {
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String spaceId = id.toString();
-		Result result = callAction(controllers.routes.ref.Spaces.rename(spaceId),
+		Result result = callAction(controllers.routes.ref.Spaces.delete(spaceId),
 				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(400, status(result));
 		assertEquals("No space with this id exists.", contentAsString(result));
@@ -154,9 +115,9 @@ public class SpacesTest {
 		String spaceId = id.toString();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.addRecords(spaceId),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of(recordId.toString(), "on")));
-		assertEquals(303, status(result));
+				fakeRequest().withSession("id", userId.toString()).withJsonBody(
+						Json.parse("{\"records\": [\"" + recordId.toString() + "\"]}")));
+		assertEquals(200, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
 		assertEquals(order, foundSpace.get("order"));
 		assertEquals(oldSize + 1, ((BasicDBList) foundSpace.get("records")).size());

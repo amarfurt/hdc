@@ -67,27 +67,6 @@ public class Circles extends Controller {
 		return ok(Json.toJson(newCircle));
 	}
 
-	@Deprecated
-	public static Result rename(String circleIdString) {
-		// validate request
-		ObjectId userId = new ObjectId(request().username());
-		ObjectId circleId = new ObjectId(circleIdString);
-		String newName = Form.form().bindFromRequest().get("newName");
-		if (!Circle.exists(userId, circleId)) {
-			return badRequest("No circle with this id exists.");
-		} else if (Circle.exists(userId, newName)) {
-			return badRequest("A circle with this name already exists.");
-		}
-
-		// rename circle
-		try {
-			Circle.rename(userId, circleId, newName);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		return ok();
-	}
-
 	public static Result delete(String circleIdString) {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());

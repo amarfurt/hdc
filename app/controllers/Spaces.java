@@ -14,7 +14,6 @@ import models.User;
 
 import org.bson.types.ObjectId;
 
-import play.data.Form;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -78,27 +77,6 @@ public class Spaces extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok(Json.toJson(newSpace));
-	}
-
-	@Deprecated
-	public static Result rename(String spaceIdString) {
-		// validate request
-		ObjectId userId = new ObjectId(request().username());
-		ObjectId spaceId = new ObjectId(spaceIdString);
-		String newName = Form.form().bindFromRequest().get("name");
-		if (!Space.exists(userId, spaceId)) {
-			return badRequest("No space with this id exists.");
-		} else if (Space.exists(userId, newName)) {
-			return badRequest("A space with this name already exists.");
-		}
-
-		// rename space
-		try {
-			Space.rename(userId, spaceId, newName);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		return ok();
 	}
 
 	public static Result delete(String spaceIdString) {

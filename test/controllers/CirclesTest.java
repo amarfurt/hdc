@@ -62,44 +62,6 @@ public class CirclesTest {
 	}
 
 	@Test
-	public void renameCircleSuccess() {
-		DBCollection circles = Database.getCollection("circles");
-		DBObject query = new BasicDBObject("name", new BasicDBObject("$ne", "Renamed circle"));
-		DBObject circle = circles.findOne(query);
-		ObjectId circleId = (ObjectId) circle.get("_id");
-		ObjectId userId = (ObjectId) circle.get("owner");
-		Result result = callAction(
-				controllers.routes.ref.Circles.rename(circleId.toString()),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("newName", "Renamed circle")));
-		assertEquals(200, status(result));
-		BasicDBObject idQuery = new BasicDBObject("_id", circleId);
-		assertEquals("Renamed circle", circles.findOne(idQuery).get("name"));
-		assertEquals(userId, circles.findOne(idQuery).get("owner"));
-	}
-
-	@Test
-	public void renameCircleForbidden() {
-		DBCollection circles = Database.getCollection("circles");
-		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", "test2@example.com"));
-		query.put("name", new BasicDBObject("$ne", "Test circle 2"));
-		DBObject circle = circles.findOne(query);
-		ObjectId circleId = (ObjectId) circle.get("_id");
-		String originalName = (String) circle.get("name");
-		ObjectId originalOwner = (ObjectId) circle.get("owner");
-		Result result = callAction(
-				controllers.routes.ref.Circles.rename(circleId.toString()),
-				fakeRequest().withSession("id", User.getId("test2@example.com").toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("newName", "Test circle 2")));
-		assertEquals(400, status(result));
-		assertEquals("No circle with this id exists.", contentAsString(result));
-		BasicDBObject idQuery = new BasicDBObject("_id", circleId);
-		assertEquals(originalName, circles.findOne(idQuery).get("name"));
-		assertEquals(originalOwner, circles.findOne(idQuery).get("owner"));
-	}
-
-	@Test
 	public void deleteCircleSuccess() {
 		DBCollection circles = Database.getCollection("circles");
 		DBObject circle = circles.findOne();
@@ -121,7 +83,7 @@ public class CirclesTest {
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		String circleId = id.toString();
-		Result result = callAction(controllers.routes.ref.Circles.rename(circleId),
+		Result result = callAction(controllers.routes.ref.Circles.delete(circleId),
 				fakeRequest().withSession("id", userId.toString()));
 		assertEquals(400, status(result));
 		assertEquals("No circle with this id exists.", contentAsString(result));
