@@ -1,29 +1,34 @@
-@(app: App, user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "Market") {
-
-	<div class="page-header">
-		<h1>Market <small>Apps</small></h1>
+	<div ng-app="details" ng-controller="AppCtrl">
+		<div class="page-header">
+			<h1>Market <small>Apps</small></h1>
+		</div>
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+		<div class="alert alert-success alert-dismissable" ng-show="success">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>You have successfully installed a new app. Go to your <a href="@routes.Records.index()">records</a> now to import records.</p>
+		</div>
+		
+		<p class="lead">{{app.name}}</p>
+		<div class="row">
+			<p class="col-xs-2">Created by:</p>
+			<p class="col-xs-10">{{app.creator}}</p>
+		</div>
+		<div class="row">
+			<p class="col-xs-2">Description:</p>
+			<p class="col-xs-10">{{app.description}}</p>
+		</div>
+		
+		<button type="button" class="btn btn-primary" ng-hide="app.installed" ng-click="install()">Install</button>
+		<button type="button" class="btn btn-default" ng-show="app.installed" ng-click="uninstall()">Uninstall</button>
 	</div>
 	
-	<div id="redirectNotice" class="alert alert-success alert-dismissable hidden">
-		<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-		You have successfully installed a new app. Go to your <a href="@routes.Spaces.index()">spaces</a> now to import records.
-	</div>
-	
-	<p class="lead">@app.name</p>
-	<div class="row">
-		<p class="col-xs-2">Created by:</p>
-		<p class="col-xs-10">@User.getName(app.creator)</p>
-	</div>
-	<div class="row">
-		<p class="col-xs-2">Description:</p>
-		<p class="col-xs-10">@app.description</p>
-	</div>
-	
-	<button type="button" id="installButton" app-id="@app._id" class="btn btn-primary @if(User.hasApp(user, app._id)){hidden}">Install</button>
-	<button type="button" id="uninstallButton" class="btn btn-default @if(!User.hasApp(user, app._id)){hidden}">Uninstall</button>
-	
-	<!-- Load specific js -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>
+	<!-- Load details controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/details.js")"></script>
 }

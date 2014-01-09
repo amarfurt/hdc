@@ -62,12 +62,13 @@ public class Records extends Controller {
 			recordIds.add(new ObjectId(iterator.next().asText()));
 		}
 		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
-		Set<Record> records;
+		List<Record> records;
 		try {
-			records = Record.findAll(recordIds.toArray(recordIdArray));
+			records = new ArrayList<Record>(Record.findAll(recordIds.toArray(recordIdArray)));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
+		Collections.sort(records);
 		return ok(Json.toJson(records));
 	}
 

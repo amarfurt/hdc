@@ -1,25 +1,41 @@
-@(results: Map[String, List[utils.search.SearchResult]], user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "Search Results") {
-	<div class="page-header">
-		<h1>Search results</h1>
+	<div ng-app="search" ng-controller="SearchCtrl">
+		<div class="page-header">
+			<h1>Search results</h1>
+		</div>
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+
+		<p ng-show="loading">Searching...</p>
+		<p ng-show="!loading && types.length === 0">No results matched your search.</p>
+		<div ng-show="!loading && types.length > 0">
+			<!-- Tabs for type of result -->
+			<ul class="nav nav-tabs">
+				<li ng-class="{'active': type === active}" ng-repeat="type in types">
+					<a href="javascript:;" ng-click="makeActive(type)">{{type}}</a>
+				</li>
+			</ul>
+			
+			<!-- Search results for current type -->
+			<div class="tab-content">
+				<div class="tab-pane fade" ng-class="{'active in': type === active}" ng-repeat="type in types">
+					<ul>
+						<li ng-repeat="result in results[type]">
+							<a href="javascript:;" ng-click="showDetails(type, result)">{{result.title}}</a>
+							<p ng-show="result.highlighted">{{result.highlighted}}</p>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
 	</div>
 	
-	@if(results.size() > 0) {
-		@results.keySet().map { resultType =>
-			<h2>@resultType.capitalize</h2>
-			<ul>
-			@results.get(resultType).map { result =>
-				<li>
-					<a href="@routes.GlobalSearch.show(resultType, result.id.toString())">@result.title</a>
-					@if(result.highlighted != null) {
-						<p>@Html(result.highlighted)</p>
-					}
-				</li>
-			}
-			</ul>
-		}
-	} else {
-		<p>No results found for your search.</p>
-	}
+	<!-- Load search controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/search.js")"></script>
+	
 }

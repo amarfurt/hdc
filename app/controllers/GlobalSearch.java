@@ -12,7 +12,6 @@ import models.Message;
 import models.ModelException;
 import models.Record;
 import models.User;
-import models.Visualization;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.text.WordUtils;
@@ -27,30 +26,29 @@ import play.mvc.Security;
 import utils.search.Search;
 import utils.search.SearchResult;
 import views.html.search;
-import views.html.details.app;
 import views.html.details.message;
 import views.html.details.record;
-import views.html.details.user;
-import views.html.details.visualization;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class GlobalSearch extends Controller {
+	
+	/**
+	 * Load site and give control to JS controller.
+	 */
+	public static Result index(String query) {
+		return ok(search.render(new ObjectId(request().username())));
+	}
 
 	/**
 	 * Search in all the user's accessible data.
 	 */
-	public static Result submit() {
-		String query = Form.form().bindFromRequest().get("globalSearch");
-		return redirect(routes.GlobalSearch.search(query));
-	}
-
 	public static Result search(String query) {
 		ObjectId userId = new ObjectId(request().username());
 		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
 		Map<String, List<SearchResult>> searchResults = Search.search(userId, visibleRecords, query);
-		return ok(search.render(searchResults, userId));
+		return ok(Json.toJson(searchResults));
 	}
 
 	/**
@@ -107,7 +105,7 @@ public class GlobalSearch extends Controller {
 			return internalServerError(e.getMessage());
 		}
 
-		// put together url to
+		// put together url to send to iframe (which then loads the record representation)
 		String externalServer = Play.application().configuration().getString("external.server");
 		String encodedData = new String(Base64.encodeBase64(recordToShow.data.getBytes()));
 		String detailsUrl = App.getDetails(recordToShow.app).replace(":record", encodedData);
@@ -133,13 +131,7 @@ public class GlobalSearch extends Controller {
 	}
 
 	public static Result showUser(ObjectId userId) {
-		User userToShow;
-		try {
-			userToShow = User.find(userId);
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-		return ok(user.render(userToShow, new ObjectId(request().username())));
+		return Users.details(userId.toString());
 	}
 
 	public static Result showCircle(ObjectId circleId) {
@@ -149,22 +141,10 @@ public class GlobalSearch extends Controller {
 	}
 
 	public static Result showApp(ObjectId appId) {
-		App appToShow;
-		try {
-			appToShow = App.find(appId);
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-		return ok(app.render(appToShow, new ObjectId(request().username())));
+		return Apps.details(appId.toString());
 	}
 
 	public static Result showVisualization(ObjectId visualizationId) {
-		Visualization visualizationToShow;
-		try {
-			visualizationToShow = Visualization.find(visualizationId);
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-		return ok(visualization.render(visualizationToShow, new ObjectId(request().username())));
+		return Visualizations.details(visualizationId.toString());
 	}
 }

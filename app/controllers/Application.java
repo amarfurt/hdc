@@ -87,8 +87,20 @@ public class Application extends Controller {
 				"jsRoutes",
 				// Apps
 				controllers.routes.javascript.Apps.fetch(),
+				controllers.routes.javascript.Apps.get(),
+				controllers.routes.javascript.Apps.getSpotlighted(),
+				controllers.routes.javascript.Apps.details(),
+				controllers.routes.javascript.Apps.install(),
+				controllers.routes.javascript.Apps.uninstall(),
+				controllers.routes.javascript.Apps.isInstalled(),
 				// Visualizations
 				controllers.routes.javascript.Visualizations.fetch(),
+				controllers.routes.javascript.Visualizations.get(),
+				controllers.routes.javascript.Visualizations.getSpotlighted(),
+				controllers.routes.javascript.Visualizations.details(),
+				controllers.routes.javascript.Visualizations.install(),
+				controllers.routes.javascript.Visualizations.uninstall(),
+				controllers.routes.javascript.Visualizations.isInstalled(),
 				controllers.routes.javascript.Visualizations.getUrl(),
 				// Records
 				controllers.routes.javascript.Records.fetch(),
@@ -105,18 +117,14 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.loadContacts(),
 				controllers.routes.javascript.Circles.searchUsers(),
 				// Spaces
-				controllers.routes.javascript.Spaces.fetch(),
-				controllers.routes.javascript.Spaces.add(),
-				controllers.routes.javascript.Spaces.delete(),
-				controllers.routes.javascript.Spaces.addRecords(),
+				controllers.routes.javascript.Spaces.fetch(), controllers.routes.javascript.Spaces.add(),
+				controllers.routes.javascript.Spaces.delete(), controllers.routes.javascript.Spaces.addRecords(),
 				controllers.routes.javascript.Spaces.searchRecords(),
-				// Market
-				controllers.routes.javascript.Market.installApp(), controllers.routes.javascript.Market.uninstallApp(),
-				controllers.routes.javascript.Market.installVisualization(),
-				controllers.routes.javascript.Market.uninstallVisualization(),
 				// Users
-				controllers.routes.javascript.Users.getName(),
+				controllers.routes.javascript.Users.get(),
+				controllers.routes.javascript.Users.details(),
 				// Global search
+				controllers.routes.javascript.GlobalSearch.search(),
 				controllers.routes.javascript.GlobalSearch.complete(),
 				controllers.routes.javascript.GlobalSearch.show()));
 	}
