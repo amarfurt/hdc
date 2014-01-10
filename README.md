@@ -24,6 +24,6 @@ Load a sample database
 
 From the project directory, issue the command:
 
-    mongorestore --drop --db healthbank dump/healthbank
+    mongorestore --drop --db healthdata dump/healthdata
 
-This drops your current healthbank database and loads a sample version.
+This drops your current healthdata database and loads a sample version.
