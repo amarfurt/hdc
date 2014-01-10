@@ -1,78 +1,104 @@
 package controllers;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import models.Message;
 import models.ModelException;
 import models.User;
 
 import org.bson.types.ObjectId;
 
 import play.Routes;
-import play.data.Form;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import views.html.index;
 import views.html.welcome;
-import controllers.forms.Registration;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.BasicDBList;
 
 public class Application extends Controller {
 
-	@Security.Authenticated(Secured.class)
-	public static Result index() {
-		ObjectId user = new ObjectId(request().username());
-		List<Message> messages;
+	public static Result welcome() {
+		return ok(welcome.render());
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result authenticate() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("No json found.");
+		} else if (!json.has("email")) {
+			return badRequest("Request parameter 'email' not found.");
+		} else if (!json.has("password")) {
+			return badRequest("Request parameter 'password' not found.");
+		}
+
+		// validate request
+		String email = json.get("email").asText();
+		String password = json.get("password").asText();
 		try {
-			messages = new ArrayList<Message>(Message.findSentTo(user));
+			if (!User.exists(email) || !User.authenticationValid(email, password)) {
+				return badRequest("Invalid user or password.");
+			}
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
-		Collections.sort(messages);
-		return ok(index.render(messages, user));
+
+		// user authenticated
+		session().clear();
+		session("id", User.getId(email).toString());
+		return ok(routes.Messages.index().url());
 	}
 
-	public static Result welcome() {
-		return ok(welcome.render(Form.form(User.class), Form.form(Registration.class)));
-	}
-
-	public static Result authenticate() {
-		Form<User> loginForm = Form.form(User.class).bindFromRequest();
-		if (loginForm.hasErrors()) {
-			return badRequest(welcome.render(loginForm, Form.form(Registration.class)));
-		} else {
-			session().clear();
-			session("id", User.getId(loginForm.get().email).toString());
-			return redirect(routes.Application.index());
-		}
-	}
-
+	@BodyParser.Of(BodyParser.Json.class)
 	public static Result register() {
-		Form<Registration> registrationForm = Form.form(Registration.class).bindFromRequest();
-		if (registrationForm.hasErrors()) {
-			return badRequest(welcome.render(Form.form(User.class), registrationForm));
-		} else {
-			Registration registration = registrationForm.get();
-			User newUser = new User();
-			newUser.email = registration.email;
-			newUser.name = registration.firstName + " " + registration.lastName;
-			newUser.password = registration.password;
-			try {
-				User.add(newUser);
-				session().clear();
-				session("id", newUser._id.toString());
-				return redirect(routes.Application.index());
-			} catch (ModelException e) {
-				return badRequest(e.getMessage());
-			}
+		// validate json
+		JsonNode json = request().body().asJson();
+		if (json == null) {
+			return badRequest("No json found.");
+		} else if (!json.has("email")) {
+			return badRequest("Request parameter 'email' not found.");
+		} else if (!json.has("firstName")) {
+			return badRequest("Request parameter 'firstName' not found.");
+		} else if (!json.has("lastName")) {
+			return badRequest("Request parameter 'lastName' not found.");
+		} else if (!json.has("password")) {
+			return badRequest("Request parameter 'password' not found.");
 		}
+
+		// validate request
+		String email = json.get("email").asText();
+		String firstName = json.get("firstName").asText();
+		String lastName = json.get("lastName").asText();
+		String password = json.get("password").asText();
+		if (User.exists(email)) {
+			return badRequest("A user with this email address already exists.");
+		}
+
+		// create the user
+		User newUser = new User();
+		newUser.email = email;
+		newUser.name = firstName + " " + lastName;
+		try {
+			newUser.password = User.encrypt(password);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+		newUser.visible = new BasicDBList();
+		newUser.apps = new BasicDBList();
+		newUser.visualizations = new BasicDBList();
+		try {
+			User.add(newUser);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		session().clear();
+		session("id", newUser._id.toString());
+		return ok(routes.Messages.index().url());
 	}
 
 	public static Result logout() {
 		session().clear();
-		flash("success", "You've been logged out.");
 		return redirect(routes.Application.welcome());
 	}
 
@@ -85,6 +111,9 @@ public class Application extends Controller {
 		response().setContentType("text/javascript");
 		return ok(Routes.javascriptRouter(
 				"jsRoutes",
+				// Application
+				controllers.routes.javascript.Application.authenticate(),
+				controllers.routes.javascript.Application.register(),
 				// Apps
 				controllers.routes.javascript.Apps.fetch(),
 				controllers.routes.javascript.Apps.get(),
@@ -102,9 +131,16 @@ public class Application extends Controller {
 				controllers.routes.javascript.Visualizations.uninstall(),
 				controllers.routes.javascript.Visualizations.isInstalled(),
 				controllers.routes.javascript.Visualizations.getUrl(),
+				// Messages
+				controllers.routes.javascript.Messages.fetch(),
+				controllers.routes.javascript.Messages.get(),
+				controllers.routes.javascript.Messages.index(),
+				controllers.routes.javascript.Messages.details(),
 				// Records
 				controllers.routes.javascript.Records.fetch(),
 				controllers.routes.javascript.Records.get(),
+				controllers.routes.javascript.Records.details(),
+				controllers.routes.javascript.Records.getDetailsUrl(),
 				controllers.routes.javascript.Records.create(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
@@ -118,15 +154,16 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.searchUsers(),
 				// Spaces
 				controllers.routes.javascript.Spaces.fetch(), controllers.routes.javascript.Spaces.add(),
-				controllers.routes.javascript.Spaces.delete(), controllers.routes.javascript.Spaces.addRecords(),
+				controllers.routes.javascript.Spaces.delete(),
+				controllers.routes.javascript.Spaces.addRecords(),
 				controllers.routes.javascript.Spaces.searchRecords(),
 				// Users
 				controllers.routes.javascript.Users.get(),
 				controllers.routes.javascript.Users.details(),
 				// Global search
+				controllers.routes.javascript.GlobalSearch.index(),
 				controllers.routes.javascript.GlobalSearch.search(),
-				controllers.routes.javascript.GlobalSearch.complete(),
-				controllers.routes.javascript.GlobalSearch.show()));
+				controllers.routes.javascript.GlobalSearch.complete()));
 	}
 
 }

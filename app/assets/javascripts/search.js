@@ -1,5 +1,5 @@
 var search = angular.module('search', []);
-search.controller('SearchCtrl', ['$scope', '$http', function($scope, $http) {
+search.controller('SearchCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
 	
 	// init
 	$scope.error = null;
@@ -8,7 +8,7 @@ search.controller('SearchCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.types = [];
 	$scope.active = null;
 	
-	// get search query (format: /serach/:query)
+	// get search query (format: /search/:query)
 	$scope.query = decodeURI(window.location.pathname.split("/")[2]);
 	
 	// start search
@@ -28,9 +28,19 @@ search.controller('SearchCtrl', ['$scope', '$http', function($scope, $http) {
 			$scope.loading = false;
 		});
 	
+	// show results of one type
 	$scope.makeActive = function(type) {
 		$scope.active = type;
-		
+	}
+	
+	// capitalize a word
+	$scope.capitalize = function(string) {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+	
+	// display as html
+	$scope.toHtml = function(html) {
+		return $sce.trustAsHtml(html);
 	}
 	
 }]);

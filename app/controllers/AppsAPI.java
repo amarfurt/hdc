@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 // Not secured, accessible from app server
 public class AppsAPI extends Controller {
 
-	public static Result checkPreflight(String appIdString, String userIdString) {
+	public static Result checkPreflight(String userIdString, String appIdString) {
 		// allow cross origin request from app server
 		String externalServer = Play.application().configuration().getString("external.server");
 		response().setHeader("Access-Control-Allow-Origin", "http://" + externalServer);
@@ -27,7 +27,7 @@ public class AppsAPI extends Controller {
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
-	public static Result createRecord(String appIdString, String userIdString) {
+	public static Result createRecord(String userIdString, String appIdString) {
 		// check whether the request is complete
 		JsonNode json = request().body().asJson();
 		if (json == null) {

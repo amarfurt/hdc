@@ -45,6 +45,10 @@ public class Circles extends Controller {
 		return ok(circles.render(new ObjectId(request().username())));
 	}
 
+	public static Result details(String circleIdString) {
+		return index();
+	}
+
 	public static Result add() {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());

@@ -1,31 +1,24 @@
-@(messages: List[Message], user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "News") {
-	<div class="page-header">
-		<h1>My messages</h1>
+	<div ng-app="messages" ng-controller="MessagesCtrl">
+		<div class="page-header">
+			<h1>My messages</h1>
+		</div>
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+			
+		<p ng-show="messages.length === 0">You have no messages yet.</p>
+		<ul class="list-group" ng-show="messages.length > 0">
+			<li class="list-group-item" ng-repeat="message in messages">
+				<a href="javascript:;" ng-click="showMessage(message)">{{message.sender}}: {{message.title}}</a>
+			</li> 
+		</ul>
 	</div>
-
-	@if(messages.isEmpty()) {
-		<p>You have no messages yet.</p>
-	} else {
-		@messages.groupBy(_.sender).map {
-		    case (sender, messages) => {
-	   			<div class="panel panel-default">
-	   				<div class="panel-heading">
-	   					<h3 class="panel-title">@User.getName(sender)</h3>
-	            	</div>
-	            	<div class="panel-body">
-	            		<ul id="messages">
-	            			@messages.map { message =>
-	            				<li message-id="@message._id">
-	            					<p><strong>@message.title</strong></p>
-	            					@message.content
-	            				</li>
-	            			}
-	            		</ul>
-	            	</div>
-				</div>
-			}
-		}
-	}
+	
+	<!-- Load messages controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/messages.js")"></script>
 }

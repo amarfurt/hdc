@@ -40,28 +40,17 @@ public class User extends Model implements Comparable<User> {
 	}
 
 	/**
-	 * Login validation. Returns a non-null value if validation fails.
+	 * Authenticate login data.
 	 */
-	public String validate() {
-		try {
-			if (email.isEmpty() || password.isEmpty()) {
-				return "Please provide an email address and a password.";
-			} else if (!User.exists(email) || !User.authenticationValid(email, password)) {
-				return "Invalid user or password.";
-			} else {
-				return null;
-			}
-		} catch (NoSuchAlgorithmException e) {
-			return "Server error: " + e.getMessage();
-		} catch (InvalidKeySpecException e) {
-			return "Server error: " + e.getMessage();
-		}
-	}
-
-	private static boolean authenticationValid(String email, String password) throws NoSuchAlgorithmException,
-			InvalidKeySpecException {
+	public static boolean authenticationValid(String email, String password) throws ModelException {
 		String storedPassword = getPassword(email);
-		return PasswordHash.validatePassword(password, storedPassword);
+		try {
+			return PasswordHash.validatePassword(password, storedPassword);
+		} catch (NoSuchAlgorithmException e) {
+			throw new ModelException(e);
+		} catch (InvalidKeySpecException e) {
+			throw new ModelException(e);
+		}
 	}
 
 	public static boolean exists(ObjectId userId) {
@@ -118,17 +107,17 @@ public class User extends Model implements Comparable<User> {
 		return users;
 	}
 
-	public static void add(User newUser) throws ModelException {
+	public static String encrypt(String password) throws ModelException {
 		try {
-			newUser.password = PasswordHash.createHash(newUser.password);
+			return PasswordHash.createHash(password);
 		} catch (NoSuchAlgorithmException e) {
 			throw new ModelException(e);
 		} catch (InvalidKeySpecException e) {
 			throw new ModelException(e);
 		}
-		newUser.visible = new BasicDBList();
-		newUser.apps = new BasicDBList();
-		newUser.visualizations = new BasicDBList();
+	}
+
+	public static void add(User newUser) throws ModelException {
 		DBObject insert;
 		try {
 			insert = new BasicDBObject(ModelConversion.modelToMap(newUser));

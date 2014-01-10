@@ -9,6 +9,7 @@ import org.bson.types.ObjectId;
 
 import utils.db.Database;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.DBCollection;
 
 public class CreateDBObjects {
@@ -21,7 +22,10 @@ public class CreateDBObjects {
 			User user = new User();
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
-			user.password = "password";
+			user.password = User.encrypt("password");
+			user.visible = new BasicDBList();
+			user.apps = new BasicDBList();
+			user.visualizations = new BasicDBList();
 			User.add(user);
 			userIds[i] = user._id;
 		}

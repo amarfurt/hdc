@@ -1,28 +1,41 @@
-@(message: Message, user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "News") {
-	<div class="page-header">
-		<h1>Message Details</h1>
+	<div ng-app="details" ng-controller="MessageCtrl">
+		<div class="page-header">
+			<h1>Message Details</h1>
+		</div>
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+		
+		<div class="row">
+			<p class="col-sm-2">Sent by:</p>
+			<p class="col-sm-10">{{message.sender}}</p>
+		</div>
+		<div class="row">
+			<p class="col-sm-2">Sent on:</p>
+			<p class="col-sm-10">{{message.created}}</p>
+			<!-- @* @utils.DateTimeUtils.getDate(message.created) 
+			at @utils.DateTimeUtils.getTime(message.created) *@ -->
+		</div>
+		<div class="row">
+			<p class="col-sm-2">Received by:</p>
+			<p class="col-sm-10">{{message.receiver}}</p>
+		</div>
+		<div class="row">
+			<p class="col-sm-2">Title:</p>
+			<p class="col-sm-10">{{message.title}}</p>
+		</div>
+		<div class="row">
+			<p class="col-sm-2">Content:</p>
+			<p class="col-sm-10">{{message.content}}</p>
+		</div>
 	</div>
 	
-	<div class="row">
-		<p class="col-sm-2">Sent by:</p>
-		<p class="col-sm-10">@User.getName(message.sender)</p>
-	</div>
-	<div class="row">
-		<p class="col-sm-2">Sent on:</p>
-		<p class="col-sm-10">@utils.DateTimeUtils.getDate(message.created) at @utils.DateTimeUtils.getTime(message.created)</p>
-	</div>
-	<div class="row">
-		<p class="col-sm-2">Received by:</p>
-		<p class="col-sm-10">@User.getName(message.receiver)</p>
-	</div>
-	<div class="row">
-		<p class="col-sm-2">Title:</p>
-		<p class="col-sm-10">@message.title</p>
-	</div>
-	<div class="row">
-		<p class="col-sm-2">Content:</p>
-		<p class="col-sm-10">@message.content</p>
-	</div>
+	<!-- Load details controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/details.js")"></script>
+	
 }

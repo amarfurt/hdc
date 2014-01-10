@@ -10,12 +10,17 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	$scope.searching = false;
 	var activeSpace = null; // for filters
 	
-	// fetch spaces and make first space active
+	// fetch spaces and make given space active (if one is given; first otherwise)
 	$http(jsRoutes.controllers.Spaces.fetch()).
 		success(function(data) {
 			$scope.spaces = data;
 			if ($scope.spaces.length > 0) {
-				$scope.makeActive($scope.spaces[0]);
+				var active = window.location.pathname.split("/")[2];
+				if (active) {
+					$scope.makeActive(_.find($scope.spaces, function(space) { return space._id === active; }));
+				} else {
+					$scope.makeActive($scope.spaces[0]);
+				}
 			}
 		}).
 		error(function(err) { $scope.error = "Failed to load spaces: " + err; });

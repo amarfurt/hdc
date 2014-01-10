@@ -29,7 +29,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// show record details
 	$scope.showDetails = function(record) {
-		window.location.href = jsRoutes.controllers.GlobalSearch.show("record", record._id).url;
+		window.location.href = jsRoutes.controllers.Records.details(record._id).url;
 	}
 	
 	// check whether the user is the owner of the record

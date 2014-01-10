@@ -8,15 +8,19 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.loadingContacts = false;
 	$scope.contacts = [];
 	$scope.foundUsers = [];
-	$scope.userQuery = {};
 	$scope.searching = false;
 	
-	// fetch circles and make first circle active
+	// fetch circles and make either given or first circle active
 	$http(jsRoutes.controllers.Circles.fetch()).
 		success(function(data) {
 			$scope.circles = data;
 			if ($scope.circles.length > 0) {
-				$scope.makeActive($scope.circles[0]);
+				var activeCircle = window.location.pathname.split("/")[2];
+				if (activeCircle) {
+					$scope.makeActive(_.find($scope.circles, function(circle) { return circle._id === activeCircle; }));
+				} else {
+					$scope.makeActive($scope.circles[0]);
+				}
 			}
 		}).
 		error(function(err) { $scope.error = "Failed to load circles: " + err; });
@@ -85,7 +89,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	// search for users
 	$scope.searchUsers = function(circle) {
 		$scope.searching = true;
-		var query = $scope.userQuery[circle._id];
+		var query = circle.userQuery;
 		if (query) {
 		$http(jsRoutes.controllers.Circles.searchUsers(query)).
 			success(function(users) {

@@ -22,6 +22,8 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import views.html.records;
+import views.html.details.record;
 import views.html.dialogs.createrecords;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,8 +74,27 @@ public class Records extends Controller {
 		return ok(Json.toJson(records));
 	}
 
+	public static Result details(String recordIdString) {
+		return ok(record.render(new ObjectId(request().username())));
+	}
+
+	public static Result getDetailsUrl(String recordIdString) {
+		Record record;
+		try {
+			record = Record.find(new ObjectId(recordIdString));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// put together url to send to iframe (which then loads the record representation)
+		String externalServer = Play.application().configuration().getString("external.server");
+		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
+		String detailsUrl = App.getDetails(record.app).replace(":record", encodedData);
+		return ok("http://" + externalServer + "/" + record.app.toString() + "/" + detailsUrl);
+	}
+
 	public static Result index() {
-		return ok(views.html.records.render(new ObjectId(request().username())));
+		return ok(records.render(new ObjectId(request().username())));
 	}
 
 	public static Result create(String appIdString) {

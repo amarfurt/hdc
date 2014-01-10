@@ -45,6 +45,10 @@ public class Spaces extends Controller {
 		return ok(spaces.render(new ObjectId(request().username())));
 	}
 
+	public static Result details(String spaceIdString) {
+		return index();
+	}
+
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result add() {
 		// validate json

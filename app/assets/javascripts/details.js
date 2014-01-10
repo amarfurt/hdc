@@ -1,5 +1,5 @@
 var details = angular.module('details', []);
-details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
+details.controller('RecordCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
 	// init
 	$scope.error = null;
 	$scope.record = {};
@@ -7,9 +7,18 @@ details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 	// parse record id (format: /record/:id) and load the record
 	var recordId = window.location.pathname.split("/")[2];
 	var data = {"records": [recordId]};
-	$http.post(jsRoutes.controllers.Records.get(), data).
-		success(function(data) { $scope.record = data; }).
+	$http.post(jsRoutes.controllers.Records.get().url, data).
+		success(function(data) {
+			$scope.record = _.first(data);
+			loadDetailsUrl();
+		}).
 		error(function(err) { $scope.error = "Failed to load record details: " + err; });
+	
+	loadDetailsUrl = function() {
+		$http(jsRoutes.controllers.Records.getDetailsUrl($scope.record._id)).
+			success(function(data) { $scope.record.url = $sce.trustAsResourceUrl(data);; }).
+			error(function(err) { $scope.error = "Cannot display record details: " + err; });
+	}
 	
 }]);
 details.controller('UserCtrl', ['$scope', '$http', function($scope, $http) {
@@ -26,6 +35,18 @@ details.controller('UserCtrl', ['$scope', '$http', function($scope, $http) {
 			$scope.user = _.first(data);
 		}).
 		error(function(err) { $scope.error = "Failed to load user details: " + err; });
+}]);
+details.controller('MessageCtrl', ['$scope', '$http', function($scope, $http) {
+	// init
+	$scope.error = null;
+	$scope.message = {};
+	
+	// parse message id (format: /messages/:id) and load the app
+	var messageId = window.location.pathname.split("/")[2];
+	var data = {"messages": [messageId]};
+	$http.post(jsRoutes.controllers.Messages.get().url, data).
+		success(function(data) { $scope.message = _.first(data); }).
+		error(function(err) { $scope.error = "Failed to load message details: " + err; });
 }]);
 details.controller('AppCtrl', ['$scope', '$http', function($scope, $http) {
 	// init

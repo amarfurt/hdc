@@ -17,7 +17,7 @@
 			<!-- Tabs for type of result -->
 			<ul class="nav nav-tabs">
 				<li ng-class="{'active': type === active}" ng-repeat="type in types">
-					<a href="javascript:;" ng-click="makeActive(type)">{{type}}</a>
+					<a href="javascript:;" ng-click="makeActive(type)">{{capitalize(type)}}s</a>
 				</li>
 			</ul>
 			
@@ -26,8 +26,8 @@
 				<div class="tab-pane fade" ng-class="{'active in': type === active}" ng-repeat="type in types">
 					<ul>
 						<li ng-repeat="result in results[type]">
-							<a href="javascript:;" ng-click="showDetails(type, result)">{{result.title}}</a>
-							<p ng-show="result.highlighted">{{result.highlighted}}</p>
+							<a href="/{{type}}s/{{result.id}}">{{result.title}}</a>
+							<p ng-show="result.highlighted" ng-bind-html="toHtml(result.highlighted)"></p>
 						</li>
 					</ul>
 				</div>
