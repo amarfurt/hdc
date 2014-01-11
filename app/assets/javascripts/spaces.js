@@ -255,7 +255,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		$scope.searching = true;
 		var query = space.recordQuery;
 		if (query) {
-		$http(jsRoutes.controllers.Spaces.searchRecords(query)).
+		$http(jsRoutes.controllers.Records.search(query)).
 			success(function(records) {
 				$scope.error = null;
 				$scope.foundRecords = records;

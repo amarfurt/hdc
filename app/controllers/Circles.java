@@ -18,9 +18,6 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.search.Search;
-import utils.search.Search.Type;
-import utils.search.SearchResult;
 import views.html.circles;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -148,31 +145,6 @@ public class Circles extends Controller {
 		}
 		Collections.sort(contacts);
 		return ok(Json.toJson(contacts));
-	}
-
-	/**
-	 * Search for users matching the given query.
-	 */
-	public static Result searchUsers(String query) {
-		// TODO use caching/incremental retrieval of results (scrolls)
-		List<SearchResult> searchResults = Search.searchPublic(Type.USER, query);
-		Set<ObjectId> userIds = new HashSet<ObjectId>();
-		for (SearchResult searchResult : searchResults) {
-			userIds.add(new ObjectId(searchResult.id));
-		}
-
-		// remove own entry, if present
-		userIds.remove(new ObjectId(request().username()));
-
-		// TODO get name for ids, not whole user objects
-		List<User> users = new ArrayList<User>();
-		try {
-			users.addAll(User.find(userIds));
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		Collections.sort(users);
-		return ok(Json.toJson(users));
 	}
 
 }

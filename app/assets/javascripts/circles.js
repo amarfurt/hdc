@@ -91,7 +91,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 		$scope.searching = true;
 		var query = circle.userQuery;
 		if (query) {
-		$http(jsRoutes.controllers.Circles.searchUsers(query)).
+		$http(jsRoutes.controllers.Users.search(query)).
 			success(function(users) {
 				$scope.error = null;
 				$scope.foundUsers = users;

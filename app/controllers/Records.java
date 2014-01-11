@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import models.App;
@@ -12,6 +13,7 @@ import models.Circle;
 import models.ModelException;
 import models.Record;
 import models.Space;
+import models.User;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bson.types.ObjectId;
@@ -22,6 +24,8 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.search.Search;
+import utils.search.SearchResult;
 import views.html.records;
 import views.html.details.record;
 import views.html.dialogs.createrecords;
@@ -30,6 +34,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 @Security.Authenticated(Secured.class)
 public class Records extends Controller {
+
+	public static Result index() {
+		return ok(records.render(new ObjectId(request().username())));
+	}
+
+	public static Result details(String recordIdString) {
+		return ok(record.render(new ObjectId(request().username())));
+	}
 
 	public static Result fetch() {
 		ObjectId userId = new ObjectId(request().username());
@@ -74,10 +86,6 @@ public class Records extends Controller {
 		return ok(Json.toJson(records));
 	}
 
-	public static Result details(String recordIdString) {
-		return ok(record.render(new ObjectId(request().username())));
-	}
-
 	public static Result getDetailsUrl(String recordIdString) {
 		Record record;
 		try {
@@ -91,10 +99,6 @@ public class Records extends Controller {
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = App.getDetails(record.app).replace(":record", encodedData);
 		return ok("http://" + externalServer + "/" + record.app.toString() + "/" + detailsUrl);
-	}
-
-	public static Result index() {
-		return ok(records.render(new ObjectId(request().username())));
 	}
 
 	public static Result create(String appIdString) {
@@ -117,6 +121,28 @@ public class Records extends Controller {
 		String createUrl = app.create.replace(":replyTo", encodedReplyTo);
 		String url = "http://" + externalServer + "/" + appIdString + "/" + createUrl;
 		return ok(createrecords.render(url, new ObjectId(request().username())));
+	}
+
+	public static Result search(String query) {
+		// TODO use caching/incremental retrieval of results (scrolls)
+		ObjectId userId = new ObjectId(request().username());
+		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
+		List<SearchResult> searchResults = Search.searchRecords(userId, visibleRecords, query);
+		Set<ObjectId> recordIds = new HashSet<ObjectId>();
+		for (SearchResult searchResult : searchResults) {
+			recordIds.add(new ObjectId(searchResult.id));
+		}
+
+		// TODO get only required fields, not whole record objects
+		List<Record> records = new ArrayList<Record>(recordIds.size());
+		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
+		try {
+			records.addAll(Record.findAll(recordIds.toArray(recordIdArray)));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		Collections.sort(records);
+		return ok(Json.toJson(records));
 	}
 
 	/**

@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import models.ModelException;
-import models.Record;
 import models.Space;
-import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -19,8 +16,6 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.search.Search;
-import utils.search.SearchResult;
 import views.html.spaces;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -128,31 +123,6 @@ public class Spaces extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok();
-	}
-
-	/**
-	 * Return a list of records which match the given query.
-	 */
-	public static Result searchRecords(String query) {
-		// TODO use caching/incremental retrieval of results (scrolls)
-		ObjectId userId = new ObjectId(request().username());
-		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
-		List<SearchResult> searchResults = Search.searchRecords(userId, visibleRecords, query);
-		Set<ObjectId> recordIds = new HashSet<ObjectId>();
-		for (SearchResult searchResult : searchResults) {
-			recordIds.add(new ObjectId(searchResult.id));
-		}
-
-		// TODO get only required fields, not whole record objects
-		List<Record> records = new ArrayList<Record>(recordIds.size());
-		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
-		try {
-			records.addAll(Record.findAll(recordIds.toArray(recordIdArray)));
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		Collections.sort(records);
-		return ok(Json.toJson(records));
 	}
 
 }

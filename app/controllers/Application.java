@@ -142,6 +142,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.details(),
 				controllers.routes.javascript.Records.getDetailsUrl(),
 				controllers.routes.javascript.Records.create(),
+				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
 				// Circles
@@ -151,15 +152,15 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.addUsers(),
 				controllers.routes.javascript.Circles.removeMember(),
 				controllers.routes.javascript.Circles.loadContacts(),
-				controllers.routes.javascript.Circles.searchUsers(),
 				// Spaces
-				controllers.routes.javascript.Spaces.fetch(), controllers.routes.javascript.Spaces.add(),
+				controllers.routes.javascript.Spaces.fetch(),
+				controllers.routes.javascript.Spaces.add(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.addRecords(),
-				controllers.routes.javascript.Spaces.searchRecords(),
 				// Users
 				controllers.routes.javascript.Users.get(),
 				controllers.routes.javascript.Users.details(),
+				controllers.routes.javascript.Users.search(),
 				// Global search
 				controllers.routes.javascript.GlobalSearch.index(),
 				controllers.routes.javascript.GlobalSearch.search(),
