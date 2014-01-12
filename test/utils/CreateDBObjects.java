@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import models.ModelException;
 import models.Record;
 import models.User;
+import models.Visualization;
 
 import org.bson.types.ObjectId;
 
@@ -59,6 +60,23 @@ public class CreateDBObjects {
 		}
 		assertEquals(originalCount + numRecords, records.count());
 		return recordIds;
+	}
+
+	public static ObjectId[] insertVisualizations(int numVisualizations) throws ModelException {
+		DBCollection visualizations = Database.getCollection("visualizations");
+		long originalCount = visualizations.count();
+		ObjectId[] visualizationIds = new ObjectId[numVisualizations];
+		for (int i = 0; i < numVisualizations; i++) {
+			Visualization visualization = new Visualization();
+			visualization.creator = new ObjectId();
+			visualization.name = "Test Visualization " + (i + 1);
+			visualization.description = "Test description";
+			visualization.url = "www.test.com";
+			Visualization.add(visualization);
+			visualizationIds[i] = visualization._id;
+		}
+		assertEquals(originalCount + numVisualizations, visualizations.count());
+		return visualizationIds;
 	}
 
 }
