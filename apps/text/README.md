@@ -1,4 +1,4 @@
-hdc-text-records
-================
+text
+====
 
-HDC app for text records.
+HDC app for creating plain text records (with a title and content).

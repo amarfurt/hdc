@@ -1,4 +1,4 @@
-hdc-record-list
-===============
+record-list
+===========
 
 HDC visualization displaying records in a list.
