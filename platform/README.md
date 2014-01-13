@@ -4,9 +4,13 @@ HDC Platform
 Starting the application
 ------------------------
 
-First, start MongoDB...
+First, start MongoDB (assuming the configuration file is stored in the data folder) ...
 
-    mongod --dbpath data/db/ --config data/mongod.conf &> mongo.out &
+    mongod --config data/mongod.conf
+
+..., the lighttpd web server (for apps and visualizations; config file in folder lighttpd) ...
+
+    lighttpd -f lighttpd/lighttpd.conf
 
 ... and ElasticSearch. Use the -f option for interactive mode.
 
