@@ -95,10 +95,10 @@ public class Records extends Controller {
 		}
 
 		// put together url to send to iframe (which then loads the record representation)
-		String externalServer = Play.application().configuration().getString("external.server");
+		String appServer = Play.application().configuration().getString("plugins.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = App.getDetails(record.app).replace(":record", encodedData);
-		return ok("http://" + externalServer + "/" + record.app.toString() + "/" + detailsUrl);
+		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
 	}
 
 	public static Result create(String appIdString) {
@@ -111,15 +111,15 @@ public class Records extends Controller {
 		}
 
 		// create reply to address and encode it with Base64
-		String applicationServer = Play.application().configuration().getString("application.server");
-		String replyTo = "http://" + applicationServer
-				+ routes.AppsAPI.createRecord(appIdString, request().username()).url();
+		String platformServer = Play.application().configuration().getString("platform.server");
+		String replyTo = "http://" + platformServer
+				+ routes.AppsAPI.createRecord(request().username(), appIdString).url();
 		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
 
 		// put together url to load in iframe
-		String externalServer = Play.application().configuration().getString("external.server");
+		String appServer = Play.application().configuration().getString("plugins.server");
 		String createUrl = app.create.replace(":replyTo", encodedReplyTo);
-		String url = "http://" + externalServer + "/" + appIdString + "/" + createUrl;
+		String url = "http://" + appServer + "/apps/" + appIdString + "/" + createUrl;
 		return ok(createrecords.render(url, new ObjectId(request().username())));
 	}
 

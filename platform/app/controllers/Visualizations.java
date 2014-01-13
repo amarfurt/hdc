@@ -85,8 +85,8 @@ public class Visualizations extends Controller {
 
 	public static Result getUrl(String visualizationIdString) {
 		ObjectId visualizationId = new ObjectId(visualizationIdString);
-		String externalServer = Play.application().configuration().getString("external.server");
-		String url = "http://" + externalServer + "/" + visualizationId + "/" + Visualization.getUrl(visualizationId);
+		String visualizationServer = Play.application().configuration().getString("plugins.server");
+		String url = "http://" + visualizationServer + "/visualizations/" + visualizationId + "/" + Visualization.getUrl(visualizationId);
 		return ok(url);
 	}
 
