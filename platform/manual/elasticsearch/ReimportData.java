@@ -26,7 +26,7 @@ import com.mongodb.DBObject;
 /**
  * Fetches the data from MongoDB and indexes it in ElasticSearch.
  */
-public class ImportData {
+public class ReimportData {
 
 	public static void main(String[] args) throws Exception {
 		System.out.print("Connecting...");
@@ -36,9 +36,17 @@ public class ImportData {
 
 		// connect to ElasticSearch
 		Search.connect();
+		System.out.println("done.");
+		
+		// dropping old content
+		System.out.print("Deleting existing ElasticSearch indices...");
+		Search.destroy();
+		Thread.sleep(1000);
+		System.out.println("done.");
+		
+		// initializing
+		System.out.print("Initializing...");
 		Search.initialize();
-
-		// waiting for previous operations to finish...
 		Thread.sleep(1000);
 		System.out.println("done.");
 
