@@ -12,7 +12,7 @@ controllers.controller('RunAggregatorCtrl', ['$scope', '$routeParams',
 		// parse Base64 encoded JSON records
 		var records = JSON.parse(atob($routeParams.records));
 		for (i = 0; i < records.length; i++) {
-			var data = records[i].data;
+			var data = JSON.parse(records[i]).data;
 			if (data) {
 				var distanceEnd = data.lastIndexOf("km");
 				var timeEnd = data.lastIndexOf("h");

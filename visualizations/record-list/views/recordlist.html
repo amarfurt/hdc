@@ -3,11 +3,22 @@
 		<p>Loading records...</p>
 	</div>
 	<div ng-hide="loading">
-		<ul class="list-group" ng-hide="records.length === 0">
-			<li class="list-group-item" ng-repeat="record in records">
-				{{record.name}}
-			</li>
-		</ul>
-		<p ng-show="records.length === 0">There are no records to display.</p>
+		<p ng-hide="records.length">There are no records to display.</p>
+		<div class="panel-group" ng-show="records.length">
+			<div class="panel panel-primary" ng-repeat="record in records">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a data-toggle="collapse" data-target="#collapse-{{record.id}}">
+							{{record.title}}
+						</a>
+					</h4>
+				</div>
+				<div id="collapse-{{record.id}}" class="panel-collapse collapse">
+					<div class="panel-body">
+						{{record.data}}
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>

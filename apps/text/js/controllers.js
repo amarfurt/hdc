@@ -38,13 +38,13 @@ textRecordControllers.controller('CreateCtrl', ['$scope', '$http', '$routeParams
 		$scope.submit = function() {
 			// construct json
 			var record = {
-				"data": { "title": $scope.title, "data": $scope.data },
+				"data": JSON.stringify({"title": $scope.title, "data": $scope.data}),
 				"name": $scope.title,
 				"description": $scope.data
 			};
 			
 			// submit to server
-			$http({ method: "POST", url: replyTo, data: record }).
+			$http.post(replyTo, record).
 				success(function() {
 					$scope.success = "Record created successfully.";
 					$scope.error = null;
@@ -66,9 +66,7 @@ textRecordControllers.controller('DetailsCtrl', ['$scope', '$routeParams',
 		$scope.loading = true;
 		
 		// parse Base64 encoded JSON record
-		var record = JSON.parse(atob($routeParams.record));
-		$scope.title = record.title;
-		$scope.data = record.data;
+		$scope.record = JSON.parse(atob($routeParams.record));
 		$scope.loading = false;
 		
 	}]);

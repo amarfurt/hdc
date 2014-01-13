@@ -25,7 +25,7 @@ public class Record extends Model implements Comparable<Record> {
 	public ObjectId owner; // person the record is about
 	public ObjectId creator; // user that imported the record
 	public String created; // date + time created
-	public String data; // arbitrary data (base64 encoded json string)
+	public String data; // arbitrary string data
 	public String name; // used to display a record and for autocompletion
 	public String description; // this will be indexed in the search cluster
 
@@ -90,8 +90,7 @@ public class Record extends Model implements Comparable<Record> {
 	}
 
 	/**
-	 * Find all records visible to the given user.
-	 * TODO Very expensive operation, load in chunks.
+	 * Find all records visible to the given user. TODO Very expensive operation, load in chunks.
 	 */
 	public static Set<Record> findVisible(ObjectId ownerId) throws ModelException {
 		Set<Record> records = findOwnedBy(ownerId);
