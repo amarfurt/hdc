@@ -1,0 +1,13 @@
+<div ng-controller="RecordListCtrl">
+	<div ng-show="loading">
+		<p>Loading records...</p>
+	</div>
+	<div ng-hide="loading">
+		<ul class="list-group" ng-hide="records.length === 0">
+			<li class="list-group-item" ng-repeat="record in records">
+				{{record.name}}
+			</li>
+		</ul>
+		<p ng-show="records.length === 0">There are no records to display.</p>
+	</div>
+</div>

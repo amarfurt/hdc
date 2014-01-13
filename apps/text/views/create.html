@@ -1,0 +1,32 @@
+<div ng-controller="CreateCtrl">
+	<div class="col-xs-10 col-xs-offset-2 page-header">
+		<h1>Create a new text record</h1>
+	</div>
+	<div class="col-xs-10 col-xs-offset-2">
+		<div class="alert alert-success alert-dismissable" ng-show="success">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			{{success}}
+		</div>
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+	</div>
+	<form class="form-horizontal">
+		<div class="form-group" ng-class="{'has-error': errors.title}">
+			<label for="title" class="col-xs-2 control-label">Title</label>
+			<div class="col-xs-10">
+				<input type="text" id="title" class="form-control" placeholder="Title" autofocus ng-model="title">
+			</div>
+		</div>
+		<div class="form-group" ng-class="{'has-error': errors.data}">
+			<label for="data" class="col-xs-2 control-label">Data</label>
+			<div class="col-xs-10">
+				<textarea rows="5" id="data" class="form-control" placeholder="Enter your record data here" ng-model="data"></textarea>
+			</div>
+		</div>
+		<div class="col-xs-10 col-xs-offset-2">
+			<a href="" class="btn btn-primary" ng-class="{disabled: loading}" ng-click="validate()">Create</a>
+		</div>
+	</form>
+</div>
