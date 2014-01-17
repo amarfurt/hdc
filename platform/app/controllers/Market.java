@@ -6,7 +6,6 @@ import models.Visualization;
 
 import org.bson.types.ObjectId;
 
-import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -28,11 +27,11 @@ public class Market extends Controller {
 	}
 
 	public static Result registerAppForm() {
-		return ok(registerapp.render(Form.form(App.class), new ObjectId(request().username())));
+		return ok(registerapp.render(new ObjectId(request().username())));
 	}
 
 	public static Result registerVisualizationForm() {
-		return ok(registervisualization.render(Form.form(Visualization.class), new ObjectId(request().username())));
+		return ok(registervisualization.render(new ObjectId(request().username())));
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

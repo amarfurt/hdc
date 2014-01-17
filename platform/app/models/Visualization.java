@@ -21,19 +21,6 @@ public class Visualization extends Plugin implements Comparable<Visualization> {
 		return this.name.compareTo(o.name);
 	}
 
-	/**
-	 * Validate form input data for registering a new visualization.
-	 */
-	@Deprecated
-	public String validate() {
-		// if (name.isEmpty() || description.isEmpty() || url.isEmpty()) {
-		// return "Please fill in all fields.";
-		// } else if (Visualization.exists(Application.getCurrentUserId(), name)) {
-		// return "A visualization with the same name already exists.";
-		// }
-		return null;
-	}
-
 	public static boolean exists(Map<String, ? extends Object> properties) {
 		return Model.exists(collection, properties);
 	}

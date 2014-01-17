@@ -49,6 +49,10 @@ public class Records extends Controller {
 		return ok(record.render(new ObjectId(request().username())));
 	}
 
+	public static Result createRecords(String appIdString) {
+		return ok(createrecords.render(new ObjectId(request().username())));
+	}
+
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result get() {
 		// validate json
@@ -101,7 +105,7 @@ public class Records extends Controller {
 		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
 	}
 
-	public static Result create(String appIdString) {
+	public static Result getCreateUrl(String appIdString) {
 		// get app
 		ObjectId appId = new ObjectId(appIdString);
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
@@ -123,7 +127,7 @@ public class Records extends Controller {
 		String appServer = Play.application().configuration().getString("plugins.server");
 		String createUrl = app.create.replace(":replyTo", encodedReplyTo);
 		String url = "http://" + appServer + "/apps/" + appIdString + "/" + createUrl;
-		return ok(createrecords.render(url, new ObjectId(request().username())));
+		return ok(url);
 	}
 
 	public static Result search(String query) {
