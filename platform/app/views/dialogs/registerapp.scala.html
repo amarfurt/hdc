@@ -1,45 +1,48 @@
-@(form: Form[App], user: org.bson.types.ObjectId)
+@(user: org.bson.types.ObjectId)
 
 @main(user, "Market") {
-	<div class="page-header">
-		<h1>Register a new app</h1>
+	<div ng-app="market" ng-controller="RegisterAppCtrl">
+		<div class="page-header">
+			<h1>Register a new app</h1>
+		</div>
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+		
+		<form class="form-horizontal" ng-submit="registerApp()">
+			<div class="form-group">
+				<label for="name" class="col-md-2 control-label">Name</label>
+				<div class="col-md-10">
+					<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="description" class="col-md-2 control-label">Description</label>
+				<div class="col-md-10">
+					<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="create" class="col-md-2 control-label">URL to create records</label>
+				<div class="col-md-10">
+					<input type="text" id="create" class="form-control" placeholder="URL (relative to project home)" ng-model="app.create">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="details" class="col-md-2 control-label">URL to detailed record view</label>
+				<div class="col-md-10">
+					<input type="text" id="details" class="form-control" placeholder="URL (relative to project home)" ng-model="app.details">
+				</div>
+			</div>
+			<div class="pull-right">
+				<button type="submit" class="btn btn-primary">Register</button>
+				<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+			</div>
+		</form>
 	</div>
 	
-	@if(form.hasGlobalErrors) {
-		<div class="alert alert-danger alert-dismissable">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			@form.globalError.message
-		</div>
-	}
-	
-	@helper.form(routes.Market.registerApp, 'class -> "form-horizontal") {
-		<div class="form-group">
-			<label for="name" class="col-md-2 control-label">Name</label>
-			<div class="col-md-10">
-				<input type="text" id="name" name="name" class="form-control" placeholder="Name" value="@form("name").value" autofocus>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="description" class="col-md-2 control-label">Description</label>
-			<div class="col-md-10">
-				<textarea rows="5" id="description" name="description" class="form-control" placeholder="Description" value="@form("description").value"></textarea>
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="create" class="col-md-2 control-label">URL to create records</label>
-			<div class="col-md-10">
-				<input type="text" id="create" name="create" class="form-control" placeholder="URL (relative to project home)" value="@form("create").value">
-			</div>
-		</div>
-		<div class="form-group">
-			<label for="details" class="col-md-2 control-label">URL to detailed record view</label>
-			<div class="col-md-10">
-				<input type="text" id="details" name="details" class="form-control" placeholder="URL (relative to project home)" value="@form("details").value">
-			</div>
-		</div>
-		<div class="pull-right">
-			<button type="submit" class="btn btn-primary">Register</button>
-			<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
-		</div>
-	}
+	<!-- Load market controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>
 }

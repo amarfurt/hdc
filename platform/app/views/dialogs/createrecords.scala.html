@@ -1,6 +1,12 @@
-@(url: String, userId: org.bson.types.ObjectId)
+@(userId: org.bson.types.ObjectId)
 
 @main(userId, "Create a new record") {
-	<a href="@routes.Records.index()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Back to records</a>
-	<iframe src="@url" height="420px" width="100%"></iframe>
+	<div ng-app="records" ng-controller="CreateRecordsCtrl">
+		<a href="@routes.Records.index()" class="btn btn-default"><span class="glyphicon glyphicon-arrow-left"></span> Back to records</a>
+		<iframe ng-src="url" height="420px" width="100%"></iframe>
+	</div>
+	
+	<!-- Load records controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/records.js")"></script>
+	
 }

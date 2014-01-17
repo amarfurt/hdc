@@ -29,3 +29,45 @@ market.controller('MarketCtrl', ['$scope', '$http', function($scope, $http) {
 	}
 	
 }]);
+market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http) {
+	
+	// init
+	$scope.error = null;
+	$scope.app = {};
+	
+	// register app
+	$scope.registerApp = function() {
+		if (!app.name || !app.description || !app.create || !app.details) {
+			$scope.error = "Please fill in all required fields";
+			return;
+		}
+		
+		// send the request
+		var data = {"name": app.name, "description": app.description, "create": app.create, "details": app.details};
+		$http.post(jsRoutes.controllers.Market.registerApp().url, data).
+			success(function(redirectUrl) { window.location.replace(redirectUrl); }).
+			error(function(err) { $scope.error = "Failed to register app: " + err; });
+	}
+	
+}]);
+market.controller('RegisterVisualizationCtrl', ['$scope', '$http', function($scope, $http) {
+	
+	// init
+	$scope.error = null;
+	$scope.visualization = {};
+	
+	// register visualization
+	$scope.registerVisualization = function() {
+		if (!visualization.name || !visualization.description || !visualization.url) {
+			$scope.error = "Please fill in all required fields";
+			return;
+		}
+		
+		// send the request
+		var data = {"name": visualization.name, "description": visualization.description, "url": visualization.url};
+		$http.post(jsRoutes.controllers.Market.registerVisualization().url, data).
+			success(function(redirectUrl) { window.location.replace(redirectUrl); }).
+			error(function(err) { $scope.error = "Failed to register visualization: " + err; });
+	}
+	
+}]);

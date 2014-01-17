@@ -227,3 +227,20 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	}
 	
 }]);
+records.controller('CreateRecordsCtrl', ['$scope', '$http', function($scope, $http) {
+	
+	// init
+	$scope.error = null;
+	
+	// get app id (format: /records/create/:appId)
+	var appId = window.location.pathname.split("/")[3];
+	
+	// get record creation url
+	$http(jsRoutes.controllers.Records.getCreateUrl(appId)).
+		success(function(url) {
+			$scope.error = null;
+			$scope.url = url;
+		}).
+		error(function(err) { $scope.error = "Failed to load record creation dialog: " + err; });
+	
+}]);
