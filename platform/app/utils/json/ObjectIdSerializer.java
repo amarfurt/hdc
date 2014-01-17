@@ -8,13 +8,14 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.mongodb.util.JSON;
 
 public class ObjectIdSerializer extends JsonSerializer<ObjectId> {
 
 	@Override
 	public void serialize(ObjectId id, JsonGenerator generator, SerializerProvider provider) throws IOException,
 			JsonProcessingException {
-		generator.writeString(id.toString());
+		generator.writeString(JSON.serialize(id));
 	}
 
 }
