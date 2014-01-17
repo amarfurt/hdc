@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import models.ModelException;
@@ -16,25 +17,18 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
+import utils.db.ObjectIdConversion;
+import utils.json.JsonExtraction;
+import utils.json.JsonValidation;
+import utils.json.JsonValidation.JsonValidationException;
 import views.html.spaces;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.BasicDBList;
 
 @Security.Authenticated(Secured.class)
 public class Spaces extends Controller {
-
-	public static Result fetch() {
-		ObjectId userId = new ObjectId(request().username());
-		List<Space> spaces;
-		try {
-			spaces = new ArrayList<Space>(Space.findOwnedBy(userId));
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-		Collections.sort(spaces);
-		return ok(Json.toJson(spaces));
-	}
 
 	public static Result index() {
 		return ok(spaces.render(new ObjectId(request().username())));
@@ -45,44 +39,66 @@ public class Spaces extends Controller {
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
+	public static Result get() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "properties", "fields");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// get spaces
+		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
+		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		List<Space> spaces;
+		try {
+			spaces = new ArrayList<Space>(Space.getAll(properties, fields));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		Collections.sort(spaces);
+		return ok(Json.toJson(spaces));
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
 	public static Result add() {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("name")) {
-			return badRequest("Request parameter 'name' not found.");
-		} else if (!json.has("visualization")) {
-			return badRequest("Request parameter 'visualization' not found.");
+		try {
+			JsonValidation.validate(json, "name", "visualization");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		String name = json.get("name").asText();
 		String visualizationIdString = json.get("visualization").asText();
-		if (Space.exists(userId, name)) {
+		if (Space.exists(new ChainedMap<String, Object>().put("owner", userId).put("name", name).get())) {
 			return badRequest("A space with this name already exists.");
 		}
 
-		// construct new space
-		Space newSpace = new Space();
-		newSpace.name = name;
-		newSpace.owner = new ObjectId(request().username());
-		newSpace.visualization = new ObjectId(visualizationIdString);
-		newSpace.records = new BasicDBList();
+		// create new space
+		Space space = new Space();
+		space._id = new ObjectId();
+		space.name = name;
+		space.owner = userId;
+		space.visualization = new ObjectId(visualizationIdString);
+		space.records = new HashSet<ObjectId>();
 		try {
-			Space.add(newSpace);
+			Space.add(space);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
-		return ok(Json.toJson(newSpace));
+		return ok(Json.toJson(space));
 	}
 
 	public static Result delete(String spaceIdString) {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId spaceId = new ObjectId(spaceIdString);
-		if (!Space.exists(userId, spaceId)) {
+		if (!Space.exists(new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId).get())) {
 			return badRequest("No space with this id exists.");
 		}
 
@@ -99,30 +115,31 @@ public class Spaces extends Controller {
 	public static Result addRecords(String spaceIdString) {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("records")) {
-			return badRequest("Request parameter 'records' not found.");
+		try {
+			JsonValidation.validate(json, "records");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// validate request
-		ObjectId recordId = new ObjectId(request().username());
+		ObjectId userId = new ObjectId(request().username());
 		ObjectId spaceId = new ObjectId(spaceIdString);
-		if (!Space.exists(recordId, spaceId)) {
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId)
+				.get();
+		if (!Space.exists(properties)) {
 			return badRequest("No space with this id exists.");
 		}
 
 		// add records to space (implicit: if not already present)
-		Set<ObjectId> recordIds = new HashSet<ObjectId>();
-		for (JsonNode record : json.get("records")) {
-			recordIds.add(new ObjectId(record.asText()));
-		}
+		Set<ObjectId> recordIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("records")));
+		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
-			Space.addRecords(spaceId, recordIds);
+			Space space = Space.get(properties, fields);
+			space.records.addAll(recordIds);
+			Space.set(space._id, "records", space.records);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
 		return ok();
 	}
-
 }

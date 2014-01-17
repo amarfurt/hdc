@@ -24,6 +24,12 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
+import utils.db.ObjectIdConversion;
+import utils.json.JsonExtraction;
+import utils.json.JsonValidation;
+import utils.json.JsonValidation.JsonValidationException;
 import utils.search.Search;
 import utils.search.SearchResult;
 import views.html.records;
@@ -43,42 +49,22 @@ public class Records extends Controller {
 		return ok(record.render(new ObjectId(request().username())));
 	}
 
-	public static Result fetch() {
-		ObjectId userId = new ObjectId(request().username());
-		List<Record> records;
-		try {
-			records = new ArrayList<Record>(Record.findVisible(userId));
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-		Collections.sort(records);
-		return ok(Json.toJson(records));
-	}
-
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result get() {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("records")) {
-			return badRequest("Request parameter 'records' not found.");
+		try {
+			JsonValidation.validate(json, "properties", "fields");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
-		// TODO add fields selector
-		// else if (!json.has("fields")) {
-		// return badRequest("Request parameter 'fields' not found.");
-		// }
 
 		// get records
-		List<ObjectId> recordIds = new ArrayList<ObjectId>();
-		Iterator<JsonNode> iterator = json.get("records").iterator();
-		while (iterator.hasNext()) {
-			recordIds.add(new ObjectId(iterator.next().asText()));
-		}
-		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
+		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
+		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
 		List<Record> records;
 		try {
-			records = new ArrayList<Record>(Record.findAll(recordIds.toArray(recordIdArray)));
+			records = new ArrayList<Record>(Record.getAll(properties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -87,9 +73,23 @@ public class Records extends Controller {
 	}
 
 	public static Result getDetailsUrl(String recordIdString) {
+		// get record
+		ObjectId recordId = new ObjectId(recordIdString);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", recordId).get();
+		Set<String> fields = new ChainedSet<String>().add("data").add("app").get();
 		Record record;
 		try {
-			record = Record.find(new ObjectId(recordIdString));
+			record = Record.get(properties, fields);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// get app
+		properties = new ChainedMap<String, ObjectId>().put("_id", record.app).get();
+		fields = new ChainedSet<String>().add("details").get();
+		App app;
+		try {
+			app = App.get(properties, fields);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -97,15 +97,18 @@ public class Records extends Controller {
 		// put together url to send to iframe (which then loads the record representation)
 		String appServer = Play.application().configuration().getString("plugins.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
-		String detailsUrl = App.getDetails(record.app).replace(":record", encodedData);
+		String detailsUrl = app.details.replace(":record", encodedData);
 		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
 	}
 
 	public static Result create(String appIdString) {
+		// get app
 		ObjectId appId = new ObjectId(appIdString);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
+		Set<String> fields = new ChainedSet<String>().add("create").get();
 		App app;
 		try {
-			app = App.find(appId);
+			app = App.get(properties, fields);
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
@@ -124,20 +127,32 @@ public class Records extends Controller {
 	}
 
 	public static Result search(String query) {
-		// TODO use caching/incremental retrieval of results (scrolls)
+		// get the visible records
 		ObjectId userId = new ObjectId(request().username());
-		Map<ObjectId, Set<ObjectId>> visibleRecords = User.getVisibleRecords(userId);
-		List<SearchResult> searchResults = Search.searchRecords(userId, visibleRecords, query);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("visible").get();
+		User user;
+		try {
+			user = User.get(properties, fields);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// TODO use caching/incremental retrieval of results (scrolls)
+		List<SearchResult> searchResults = Search.searchRecords(userId, user.visible, query);
 		Set<ObjectId> recordIds = new HashSet<ObjectId>();
 		for (SearchResult searchResult : searchResults) {
 			recordIds.add(new ObjectId(searchResult.id));
 		}
 
-		// TODO get only required fields, not whole record objects
-		List<Record> records = new ArrayList<Record>(recordIds.size());
-		ObjectId[] recordIdArray = new ObjectId[recordIds.size()];
+		// get records
+		Map<String, Set<ObjectId>> recordProperties = new ChainedMap<String, Set<ObjectId>>().put("_id", recordIds)
+				.get();
+		fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name").add("data")
+				.get();
+		List<Record> records;
 		try {
-			records.addAll(Record.findAll(recordIds.toArray(recordIdArray)));
+			records = new ArrayList<Record>(Record.getAll(recordProperties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -152,21 +167,29 @@ public class Records extends Controller {
 	public static Result updateSpaces(String recordIdString) {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("spaces")) {
-			return badRequest("Request parameter 'spaces' not found.");
+		try {
+			JsonValidation.validate(json, "spaces");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// update spaces
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		Set<ObjectId> spaceIds = new HashSet<ObjectId>();
-		for (JsonNode spaceId : json.get("spaces")) {
-			spaceIds.add(new ObjectId(spaceId.asText()));
-		}
+		Set<ObjectId> spaceIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("spaces")));
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
-			Space.updateRecords(spaceIds, recordId, userId);
+			Set<Space> spaces = Space.getAll(properties, fields);
+			for (Space space : spaces) {
+				if (spaceIds.contains(space._id) && !space.records.contains(recordId)) {
+					space.records.add(recordId);
+					Space.set(space._id, "records", space.records);
+				} else {
+					space.records.remove(recordId);
+					Space.set(space._id, "records", space.records);
+				}
+			}
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -180,53 +203,111 @@ public class Records extends Controller {
 	public static Result updateSharing(String recordIdString) {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("started")) {
-			return badRequest("Request parameter 'started' not found.");
-		} else if (!json.has("stopped")) {
-			return badRequest("Request parameter 'stopped' not found.");
+		try {
+			JsonValidation.validate(json, "started", "stopped");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// validate request: record
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		if (!Record.exists(userId, recordId)) {
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", recordId).put("owner", userId)
+				.get();
+		if (!Record.exists(properties)) {
 			return badRequest("No record with this id exists.");
 		}
 
 		// extract circle ids from posted data
-		Set<ObjectId> circleIdsStarted = new HashSet<ObjectId>();
-		for (JsonNode started : json.get("started")) {
-			circleIdsStarted.add(new ObjectId(started.asText()));
-		}
-		Set<ObjectId> circleIdsStopped = new HashSet<ObjectId>();
-		for (JsonNode stopped : json.get("stopped")) {
-			circleIdsStopped.add(new ObjectId(stopped.asText()));
-		}
+		Set<ObjectId> startedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("started")));
+		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("stopped")));
 
 		// validate circles
-		Iterator<ObjectId> iterator = circleIdsStarted.iterator();
+		Iterator<ObjectId> iterator = startedCircleIds.iterator();
 		while (iterator.hasNext()) {
-			if (!Circle.exists(userId, iterator.next())) {
+			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", iterator.next()).put("owner", userId)
+					.get())) {
 				iterator.remove();
 			}
 		}
-		iterator = circleIdsStopped.iterator();
+		iterator = stoppedCircleIds.iterator();
 		while (iterator.hasNext()) {
-			if (!Circle.exists(userId, iterator.next())) {
+			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", iterator.next()).put("owner", userId)
+					.get())) {
 				iterator.remove();
 			}
 		}
 
-		// update circles
+		// update circles (fetch all and update necessary circles)
+		properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("shared").add("members").get();
+		Set<ObjectId> startedUserIds = new HashSet<ObjectId>();
+		Set<ObjectId> stoppedUserIds = new HashSet<ObjectId>();
 		try {
-			Circle.startSharingWith(userId, recordId, circleIdsStarted);
-			Circle.stopSharingWith(userId, recordId, circleIdsStopped);
+			Set<Circle> circles = Circle.getAll(properties, fields);
+			for (Circle circle : circles) {
+				if (startedCircleIds.contains(circle._id)) {
+					circle.shared.add(recordId);
+					Circle.set(circle._id, "shared", circle.shared);
+					for (ObjectId memberId : circle.members) {
+						if (!isSharedWith(circles, recordId, memberId)) {
+							startedUserIds.add(memberId);
+						}
+					}
+				} else if (stoppedCircleIds.contains(circle._id)) {
+					circle.shared.remove(recordId);
+					Circle.set(circle._id, "shared", circle.shared);
+					for (ObjectId memberId : circle.members) {
+						if (!isSharedWith(circles, recordId, memberId)) {
+							stoppedUserIds.add(memberId);
+						}
+					}
+				}
+			}
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// also update visible records of users
+		fields = new ChainedSet<String>().add("visible." + userId.toString()).get();
+		try {
+			// users that can now see the record
+			Set<User> startedUsers = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", startedUserIds)
+					.get(), fields);
+			for (User startedUser : startedUsers) {
+				if (!startedUser.visible.containsKey(userId.toString())) {
+					User.set(startedUser._id, "visible." + userId.toString(), new ChainedSet<ObjectId>().add(recordId)
+							.get());
+				} else {
+					Set<ObjectId> visibleRecords = startedUser.visible.get(userId.toString());
+					visibleRecords.add(recordId);
+					User.set(startedUser._id, "visible." + userId.toString(), visibleRecords);
+				}
+			}
+
+			// users that can no longer see the record
+			Set<User> stoppedUsers = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", stoppedUserIds)
+					.get(), fields);
+			for (User stoppedUser : stoppedUsers) {
+				Set<ObjectId> visibleRecords = stoppedUser.visible.get(userId.toString());
+				visibleRecords.remove(recordId);
+				User.set(stoppedUser._id, "visible." + userId.toString(), visibleRecords);
+			}
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
 		return ok();
 	}
 
+	/**
+	 * Check whether the given record is shared with the given user in one of the circles.
+	 */
+	private static boolean isSharedWith(Set<Circle> circles, ObjectId recordId, ObjectId userId) {
+		for (Circle circle : circles) {
+			if (circle.members.contains(userId) && circle.shared.contains(recordId)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

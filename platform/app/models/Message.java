@@ -1,20 +1,13 @@
 package models;
 
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
 
-import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
-import utils.db.Database;
+import utils.collections.ChainedMap;
 import utils.search.Search;
 import utils.search.SearchException;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 public class Message extends Model implements Comparable<Message> {
 
@@ -32,48 +25,38 @@ public class Message extends Model implements Comparable<Message> {
 		return -this.created.compareTo(o.created);
 	}
 
-	public static Message find(ObjectId messageId) throws ModelException {
-		DBObject query = new BasicDBObject("_id", messageId);
-		DBObject result = Database.getCollection(collection).findOne(query);
-		try {
-			return ModelConversion.mapToModel(Message.class, result.toMap());
-		} catch (ConversionException e) {
-			throw new ModelException(e);
-		}
+	public static boolean exists(Map<String, ? extends Object> properties) {
+		return Model.exists(collection, properties);
 	}
 
-	public static Set<Message> findSentTo(ObjectId userId) throws ModelException {
-		Set<Message> messages = new HashSet<Message>();
-		DBObject query = new BasicDBObject("receiver", userId);
-		DBCursor result = Database.getCollection(collection).find(query);
-		while (result.hasNext()) {
-			DBObject cur = result.next();
-			try {
-				messages.add(ModelConversion.mapToModel(Message.class, cur.toMap()));
-			} catch (ConversionException e) {
-				throw new ModelException(e);
-			}
-		}
-		return messages;
+	public static Message get(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
+		return Model.get(Message.class, collection, properties, fields);
 	}
 
-	public static void add(Message newMessage) throws ModelException {
-		DBObject insert;
-		try {
-			insert = new BasicDBObject(ModelConversion.modelToMap(newMessage));
-		} catch (ConversionException e) {
-			throw new ModelException(e);
-		}
-		WriteResult result = Database.getCollection(collection).insert(insert);
-		newMessage._id = (ObjectId) insert.get("_id");
-		ModelException.throwIfPresent(result.getLastError().getErrorMessage());
+	public static Set<Message> getAll(Map<String, ? extends Object> properties, Set<String> fields)
+			throws ModelException {
+		return Model.getAll(Message.class, collection, properties, fields);
+	}
+
+	public static void set(ObjectId messageId, String field, Object value) throws ModelException {
+		Model.set(collection, messageId, field, value);
+	}
+
+	public static void add(Message message) throws ModelException {
+		Model.insert(collection, message);
 
 		// also add this circle to the user's search index
 		try {
-			Search.add(newMessage.receiver, "message", newMessage._id, newMessage.title, newMessage.content);
+			Search.add(message.receiver, "message", message._id, message.title, message.content);
 		} catch (SearchException e) {
 			throw new ModelException(e);
 		}
+	}
+
+	public static void delete(ObjectId receiverId, ObjectId messageId) throws ModelException {
+		// also remove from the search index
+		Search.delete(receiverId, "message", messageId);
+		Model.delete(collection, new ChainedMap<String, ObjectId>().put("_id", messageId).get());
 	}
 
 }

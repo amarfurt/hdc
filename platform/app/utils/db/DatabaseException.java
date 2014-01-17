@@ -8,4 +8,14 @@ public class DatabaseException extends Exception {
 		super(message);
 	}
 
+	public DatabaseException(Throwable cause) {
+		super(cause);
+	}
+
+	public static void throwIfPresent(String potentialError) throws DatabaseException {
+		if (potentialError != null) {
+			throw new DatabaseException(potentialError);
+		}
+	}
+
 }

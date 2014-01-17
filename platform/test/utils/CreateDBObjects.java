@@ -1,6 +1,11 @@
 package utils;
 
 import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import models.ModelException;
 import models.Record;
 import models.User;
@@ -10,7 +15,6 @@ import org.bson.types.ObjectId;
 
 import utils.db.Database;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.DBCollection;
 
 public class CreateDBObjects {
@@ -21,12 +25,13 @@ public class CreateDBObjects {
 		ObjectId[] userIds = new ObjectId[numUsers];
 		for (int i = 0; i < numUsers; i++) {
 			User user = new User();
+			user._id = new ObjectId();
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
 			user.password = User.encrypt("password");
-			user.visible = new BasicDBList();
-			user.apps = new BasicDBList();
-			user.visualizations = new BasicDBList();
+			user.visible = new HashMap<String, List<ObjectId>>();
+			user.apps = new ArrayList<ObjectId>();
+			user.visualizations = new ArrayList<ObjectId>();
 			User.add(user);
 			userIds[i] = user._id;
 		}
@@ -48,6 +53,7 @@ public class CreateDBObjects {
 		ObjectId[] recordIds = new ObjectId[numRecords];
 		for (int i = 0; i < numRecords; i++) {
 			Record record = new Record();
+			record._id = new ObjectId();
 			record.app = new ObjectId();
 			record.owner = owner;
 			record.creator = creator;
@@ -68,6 +74,7 @@ public class CreateDBObjects {
 		ObjectId[] visualizationIds = new ObjectId[numVisualizations];
 		for (int i = 0; i < numVisualizations; i++) {
 			Visualization visualization = new Visualization();
+			visualization._id = new ObjectId();
 			visualization.creator = new ObjectId();
 			visualization.name = "Test Visualization " + (i + 1);
 			visualization.description = "Test description";

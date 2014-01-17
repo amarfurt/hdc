@@ -1,8 +1,6 @@
-package utils;
+package utils.db;
 
 import org.bson.types.ObjectId;
-
-import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -31,31 +29,33 @@ public class OrderOperations {
 	 * Decrements all order fields from (and including) 'fromLimit' to (and including) 'toLimit' by one. If either one
 	 * is zero, only the other condition will be considered.
 	 */
-	public static String decrement(String collection, ObjectId userId, int fromLimit, int toLimit) {
-		// fromLimit is never greater than toLimit
-		if (toLimit != 0 && fromLimit > toLimit) {
-			int tmp = fromLimit;
-			fromLimit = toLimit;
-			toLimit = tmp;
-		}
-		return incOperation(collection, userId, fromLimit, toLimit, -1);
+	public static void decrement(String collection, ObjectId userId, int fromLimit, int toLimit)
+			throws DatabaseException {
+		int[] limits = getLimits(fromLimit, toLimit);
+		incOperation(collection, userId, limits[0], limits[1], -1);
 	}
 
 	/**
 	 * Increments all order fields from (and including) 'fromLimit' to (and including) 'toLimit' by one. If either one
 	 * is zero, only the other condition will be considered.
 	 */
-	public static String increment(String collection, ObjectId userId, int fromLimit, int toLimit) {
-		// fromLimit is never greater than toLimit
-		if (toLimit != 0 && fromLimit > toLimit) {
-			int tmp = fromLimit;
-			fromLimit = toLimit;
-			toLimit = tmp;
-		}
-		return incOperation(collection, userId, fromLimit, toLimit, 1);
+	public static void increment(String collection, ObjectId userId, int fromLimit, int toLimit)
+			throws DatabaseException {
+		int[] limits = getLimits(fromLimit, toLimit);
+		incOperation(collection, userId, limits[0], limits[1], 1);
 	}
 
-	private static String incOperation(String collection, ObjectId userId, int fromLimit, int toLimit, int increment) {
+	private static int[] getLimits(int fromLimit, int toLimit) {
+		// fromLimit is never greater than toLimit
+		if (toLimit != 0 && fromLimit > toLimit) {
+			return new int[] { toLimit, fromLimit };
+		} else {
+			return new int[] { fromLimit, toLimit };
+		}
+	}
+
+	private static void incOperation(String collection, ObjectId userId, int fromLimit, int toLimit, int increment)
+			throws DatabaseException {
 		DBObject query = new BasicDBObject("owner", userId);
 		if (fromLimit == 0) {
 			query.put("order", new BasicDBObject("$lte", toLimit));
@@ -69,7 +69,7 @@ public class OrderOperations {
 		DBObject update = new BasicDBObject("$inc", new BasicDBObject("order", increment));
 		DBCollection coll = Database.getCollection(collection);
 		WriteResult result = coll.updateMulti(query, update);
-		return result.getLastError().getErrorMessage();
+		DatabaseException.throwIfPresent(result.getLastError().getErrorMessage());
 	}
 
 }

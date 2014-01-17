@@ -22,7 +22,7 @@ import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
+import utils.db.DatabaseConversionException;
 import utils.db.Database;
 
 import com.google.common.collect.ImmutableMap;
@@ -46,7 +46,7 @@ public class CirclesTest {
 	}
 
 	@Test
-	public void addCircle() throws ConversionException {
+	public void addCircle() throws DatabaseConversionException {
 		ObjectId userId = User.getId("test1@example.com");
 		Result result = callAction(
 				controllers.routes.ref.Circles.add(),

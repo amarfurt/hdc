@@ -1,14 +1,18 @@
 package models;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.CreateDBObjects;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
 
 import com.mongodb.BasicDBList;
@@ -40,46 +46,17 @@ public class UserTest {
 	}
 
 	@Test
-	public void findSuccess() throws ModelException {
-		DBCollection users = Database.getCollection("users");
-		assertEquals(0, users.count());
-		User user = new User();
-		user.email = "test1@example.com";
-		user.name = "Test User";
-		user.password = "password";
-		User.add(user);
-		assertEquals(1, users.count());
-		User foundUser = User.find(user._id);
-		assertEquals("Test User", foundUser.name);
-	}
-
-	@Test
-	public void findFailure() throws ModelException {
-		DBCollection users = Database.getCollection("users");
-		assertEquals(0, users.count());
-		User user = new User();
-		user.email = "test1@example.com";
-		user.name = "Test User";
-		user.password = "password";
-		User.add(user);
-		assertEquals(1, users.count());
-		boolean exceptionCaught = false;
-		try {
-			User.find(new ObjectId());
-		} catch (NullPointerException e) {
-			exceptionCaught = true;
-		}
-		assertTrue(exceptionCaught);
-	}
-
-	@Test
 	public void add() throws ModelException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
+		user._id = new ObjectId();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = "password";
+		user.password = User.encrypt("password");
+		user.visible = new HashMap<String, List<ObjectId>>();
+		user.apps = new ArrayList<ObjectId>();
+		user.visualizations = new ArrayList<ObjectId>();
 		User.add(user);
 		assertEquals(1, users.count());
 		DBObject query = new BasicDBObject("_id", user._id);
@@ -94,6 +71,42 @@ public class UserTest {
 		assertEquals(1, users.count());
 		User.delete(userIds[0]);
 		assertEquals(0, users.count());
+	}
+
+	@Test
+	public void exists() throws ModelException {
+		DBCollection users = Database.getCollection("users");
+		assertEquals(0, users.count());
+		assertFalse(User.exists(new ChainedMap<String, ObjectId>().put("_id", new ObjectId()).get()));
+		ObjectId userId = CreateDBObjects.insertUsers(1)[0];
+		assertTrue(User.exists(new ChainedMap<String, ObjectId>().put("_id", userId).get()));
+	}
+
+	@Test
+	public void findSuccess() throws ModelException {
+		DBCollection users = Database.getCollection("users");
+		assertEquals(0, users.count());
+		ObjectId userId = CreateDBObjects.insertUsers(1)[0];
+		assertEquals(1, users.count());
+		User foundUser = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>()
+				.add("name").get());
+		assertEquals("Test User 1", foundUser.name);
+	}
+
+	@Test
+	public void findFailure() throws ModelException {
+		DBCollection users = Database.getCollection("users");
+		assertEquals(0, users.count());
+		CreateDBObjects.insertUsers(1);
+		assertEquals(1, users.count());
+		boolean exceptionCaught = false;
+		try {
+			User.get(new ChainedMap<String, ObjectId>().put("_id", new ObjectId()).get(),
+					new ChainedSet<String>().add("name").get());
+		} catch (NullPointerException e) {
+			exceptionCaught = true;
+		}
+		assertTrue(exceptionCaught);
 	}
 
 	@Test

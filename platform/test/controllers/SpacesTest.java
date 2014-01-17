@@ -22,9 +22,9 @@ import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
 import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
-import utils.OrderOperations;
+import utils.db.DatabaseConversionException;
 import utils.db.Database;
+import utils.db.OrderOperations;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -46,7 +46,7 @@ public class SpacesTest {
 	}
 
 	@Test
-	public void addSpace() throws ConversionException {
+	public void addSpace() throws DatabaseConversionException {
 		ObjectId userId = User.getId("test1@example.com");
 		ObjectId visualizationId = new ObjectId();
 		Result result = callAction(

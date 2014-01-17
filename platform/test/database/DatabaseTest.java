@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import utils.DateTimeUtils;
 import utils.ModelConversion;
-import utils.ModelConversion.ConversionException;
+import utils.db.DatabaseConversionException;
 import utils.db.Database;
 
 import com.mongodb.BasicDBList;
@@ -59,7 +59,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndSaveUser() throws ConversionException {
+	public void createAndSaveUser() throws DatabaseConversionException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
@@ -74,7 +74,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndRetrieveUser() throws ConversionException {
+	public void createAndRetrieveUser() throws DatabaseConversionException {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
@@ -89,7 +89,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndRetrieveMessage() throws ConversionException {
+	public void createAndRetrieveMessage() throws DatabaseConversionException {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		Message message = new Message();
@@ -106,7 +106,7 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndRetrieveCircle() throws ConversionException {
+	public void createAndRetrieveCircle() throws DatabaseConversionException {
 		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();

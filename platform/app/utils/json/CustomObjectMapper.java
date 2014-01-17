@@ -1,4 +1,4 @@
-package utils.db;
+package utils.json;
 
 import org.bson.types.ObjectId;
 

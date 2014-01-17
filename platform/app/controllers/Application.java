@@ -1,5 +1,10 @@
 package controllers;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import models.ModelException;
 import models.User;
 
@@ -10,10 +15,13 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
+import utils.json.JsonValidation;
+import utils.json.JsonValidation.JsonValidationException;
 import views.html.welcome;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.BasicDBList;
 
 public class Application extends Controller {
 
@@ -25,20 +33,25 @@ public class Application extends Controller {
 	public static Result authenticate() {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("email")) {
-			return badRequest("Request parameter 'email' not found.");
-		} else if (!json.has("password")) {
-			return badRequest("Request parameter 'password' not found.");
+		try {
+			JsonValidation.validate(json, "email", "password");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// validate request
 		String email = json.get("email").asText();
 		String password = json.get("password").asText();
+		Map<String, String> emailQuery = new ChainedMap<String, String>().put("email", email).get();
+		User user;
 		try {
-			if (!User.exists(email) || !User.authenticationValid(email, password)) {
+			if (!User.exists(emailQuery)) {
 				return badRequest("Invalid user or password.");
+			} else {
+				user = User.get(emailQuery, new ChainedSet<String>().add("_id").get());
+				if (!User.authenticationValid(password, user.password)) {
+					return badRequest("Invalid user or password");
+				}
 			}
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
@@ -46,7 +59,7 @@ public class Application extends Controller {
 
 		// user authenticated
 		session().clear();
-		session("id", User.getId(email).toString());
+		session("id", user._id.toString());
 		return ok(routes.Messages.index().url());
 	}
 
@@ -54,16 +67,10 @@ public class Application extends Controller {
 	public static Result register() {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("email")) {
-			return badRequest("Request parameter 'email' not found.");
-		} else if (!json.has("firstName")) {
-			return badRequest("Request parameter 'firstName' not found.");
-		} else if (!json.has("lastName")) {
-			return badRequest("Request parameter 'lastName' not found.");
-		} else if (!json.has("password")) {
-			return badRequest("Request parameter 'password' not found.");
+		try {
+			JsonValidation.validate(json, "email", "firstName", "lastName", "password");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// validate request
@@ -71,29 +78,30 @@ public class Application extends Controller {
 		String firstName = json.get("firstName").asText();
 		String lastName = json.get("lastName").asText();
 		String password = json.get("password").asText();
-		if (User.exists(email)) {
+		if (User.exists(new ChainedMap<String, String>().put("email", email).get())) {
 			return badRequest("A user with this email address already exists.");
 		}
 
 		// create the user
-		User newUser = new User();
-		newUser.email = email;
-		newUser.name = firstName + " " + lastName;
+		User user = new User();
+		user._id = new ObjectId();
+		user.email = email;
+		user.name = firstName + " " + lastName;
 		try {
-			newUser.password = User.encrypt(password);
+			user.password = User.encrypt(password);
 		} catch (ModelException e) {
 			return internalServerError(e.getMessage());
 		}
-		newUser.visible = new BasicDBList();
-		newUser.apps = new BasicDBList();
-		newUser.visualizations = new BasicDBList();
+		user.visible = new HashMap<String, Set<ObjectId>>();
+		user.apps = new HashSet<ObjectId>();
+		user.visualizations = new HashSet<ObjectId>();
 		try {
-			User.add(newUser);
+			User.add(user);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
 		session().clear();
-		session("id", newUser._id.toString());
+		session("id", user._id.toString());
 		return ok(routes.Messages.index().url());
 	}
 
@@ -115,51 +123,41 @@ public class Application extends Controller {
 				controllers.routes.javascript.Application.authenticate(),
 				controllers.routes.javascript.Application.register(),
 				// Apps
-				controllers.routes.javascript.Apps.fetch(),
-				controllers.routes.javascript.Apps.get(),
-				controllers.routes.javascript.Apps.getSpotlighted(),
 				controllers.routes.javascript.Apps.details(),
+				controllers.routes.javascript.Apps.get(),
 				controllers.routes.javascript.Apps.install(),
 				controllers.routes.javascript.Apps.uninstall(),
 				controllers.routes.javascript.Apps.isInstalled(),
 				// Visualizations
-				controllers.routes.javascript.Visualizations.fetch(),
-				controllers.routes.javascript.Visualizations.get(),
-				controllers.routes.javascript.Visualizations.getSpotlighted(),
 				controllers.routes.javascript.Visualizations.details(),
+				controllers.routes.javascript.Visualizations.get(),
 				controllers.routes.javascript.Visualizations.install(),
 				controllers.routes.javascript.Visualizations.uninstall(),
 				controllers.routes.javascript.Visualizations.isInstalled(),
-				controllers.routes.javascript.Visualizations.getUrl(),
 				// Messages
-				controllers.routes.javascript.Messages.fetch(),
-				controllers.routes.javascript.Messages.get(),
-				controllers.routes.javascript.Messages.index(),
 				controllers.routes.javascript.Messages.details(),
+				controllers.routes.javascript.Messages.get(),
 				// Records
-				controllers.routes.javascript.Records.fetch(),
-				controllers.routes.javascript.Records.get(),
 				controllers.routes.javascript.Records.details(),
+				controllers.routes.javascript.Records.get(),
 				controllers.routes.javascript.Records.getDetailsUrl(),
 				controllers.routes.javascript.Records.create(),
 				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
 				// Circles
-				controllers.routes.javascript.Circles.fetch(),
+				controllers.routes.javascript.Circles.get(),
 				controllers.routes.javascript.Circles.add(),
 				controllers.routes.javascript.Circles.delete(),
 				controllers.routes.javascript.Circles.addUsers(),
 				controllers.routes.javascript.Circles.removeMember(),
-				controllers.routes.javascript.Circles.loadContacts(),
 				// Spaces
-				controllers.routes.javascript.Spaces.fetch(),
+				controllers.routes.javascript.Spaces.get(),
 				controllers.routes.javascript.Spaces.add(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.addRecords(),
 				// Users
 				controllers.routes.javascript.Users.get(),
-				controllers.routes.javascript.Users.details(),
 				controllers.routes.javascript.Users.search(),
 				// Global search
 				controllers.routes.javascript.GlobalSearch.index(),

@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import play.libs.Json;
-import utils.db.CustomObjectMapper;
+import utils.json.CustomObjectMapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.BasicDBList;

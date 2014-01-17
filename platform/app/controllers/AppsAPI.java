@@ -10,6 +10,8 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.DateTimeUtils;
+import utils.json.JsonValidation;
+import utils.json.JsonValidation.JsonValidationException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -29,14 +31,10 @@ public class AppsAPI extends Controller {
 	public static Result createRecord(String userIdString, String appIdString) {
 		// check whether the request is complete
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("data")) {
-			return badRequest("No data found.");
-		} else if (!json.has("name")) {
-			return badRequest("No name found.");
-		} else if (!json.has("description")) {
-			return badRequest("No description found.");
+		try {
+			JsonValidation.validate(json, "data", "name", "description");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
 
 		// save new record with additional metadata

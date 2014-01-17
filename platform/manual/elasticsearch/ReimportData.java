@@ -15,6 +15,8 @@ import models.Space;
 
 import org.bson.types.ObjectId;
 
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
 import utils.search.Search;
 import utils.search.Search.Type;
@@ -37,13 +39,13 @@ public class ReimportData {
 		// connect to ElasticSearch
 		Search.connect();
 		System.out.println("done.");
-		
+
 		// dropping old content
 		System.out.print("Deleting existing ElasticSearch indices...");
 		Search.destroy();
 		Thread.sleep(1000);
 		System.out.println("done.");
-		
+
 		// initializing
 		System.out.print("Initializing...");
 		Search.initialize();
@@ -74,25 +76,30 @@ public class ReimportData {
 		for (ObjectId userId : users.keySet()) {
 			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
 			// messages
-			Set<Message> messages = Message.findSentTo(userId);
+			Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("receiver", userId).get();
+			Set<String> fields = new ChainedSet<String>().add("title").add("content").get();
+			Set<Message> messages = Message.getAll(properties, fields);
 			for (Message message : messages) {
 				Search.add(userId, "message", message._id, message.title, message.content);
 			}
 
 			// spaces
-			Set<Space> spaces = Space.findOwnedBy(userId);
+			properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+			fields = new ChainedSet<String>().add("name").get();
+			Set<Space> spaces = Space.getAll(properties, fields);
 			for (Space space : spaces) {
 				Search.add(userId, "space", space._id, space.name);
 			}
 
 			// circles
-			Set<Circle> circles = Circle.findOwnedBy(userId);
+			Set<Circle> circles = Circle.getAll(properties, fields);
 			for (Circle circle : circles) {
 				Search.add(userId, "circle", circle._id, circle.name);
 			}
 
 			// records
-			Set<Record> records = Record.findOwnedBy(userId);
+			fields.add("description");
+			Set<Record> records = Record.getAll(properties, fields);
 			for (Record record : records) {
 				Search.add(userId, "record", record._id, record.name, record.description);
 			}

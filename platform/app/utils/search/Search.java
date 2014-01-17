@@ -35,6 +35,7 @@ import org.elasticsearch.search.suggest.SuggestBuilder.SuggestionBuilder;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 
 import play.libs.Json;
+import utils.db.ObjectIdConversion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -360,7 +361,7 @@ public class Search {
 		return searchResults.get(getType(type));
 	}
 
-	public static List<SearchResult> searchRecords(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
+	public static List<SearchResult> searchRecords(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords,
 			String query) {
 		// return if not connected
 		if (client == null) {
@@ -393,7 +394,7 @@ public class Search {
 	/**
 	 * Search in all the user's data and all further visible records.
 	 */
-	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<ObjectId, Set<ObjectId>> visibleRecords,
+	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords,
 			String query) {
 		// return if not connected
 		if (client == null) {
@@ -447,20 +448,18 @@ public class Search {
 	 * 
 	 * @param visibleRecords Key: User id, Value: Set of record ids of records that are visible
 	 */
-	private static SearchRequestBuilder searchVisibleRecords(Map<ObjectId, Set<ObjectId>> visibleRecords, String query) {
+	private static SearchRequestBuilder searchVisibleRecords(Map<String, Set<ObjectId>> visibleRecords, String query) {
 		List<String> queriedIndices = new ArrayList<String>();
 		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
-		for (ObjectId curUserId : visibleRecords.keySet()) {
+		for (String curUserId : visibleRecords.keySet()) {
 			if (visibleRecords.get(curUserId).size() > 0) {
-				queriedIndices.add(curUserId.toString());
+				queriedIndices.add(curUserId);
 				visibleRecordIds.addAll(visibleRecords.get(curUserId));
 			}
 		}
-		String[] recordIds = new String[visibleRecordIds.size()];
-		int j = 0;
-		for (ObjectId recordId : visibleRecordIds) {
-			recordIds[j++] = recordId.toString();
-		}
+		Set<String> recordIdStrings = ObjectIdConversion.toStrings(visibleRecordIds);
+		String[] recordIds = new String[recordIdStrings.size()];
+		recordIdStrings.toArray(recordIds);
 		String[] indicesArray = new String[queriedIndices.size()];
 		SearchRequestBuilder builder = client.prepareSearch(queriedIndices.toArray(indicesArray))
 				.setQuery(QueryBuilders.multiMatchQuery(query, TITLE, CONTENT))

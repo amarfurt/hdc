@@ -3,8 +3,8 @@ package controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import models.ModelException;
@@ -17,6 +17,11 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
+import utils.json.JsonExtraction;
+import utils.json.JsonValidation;
+import utils.json.JsonValidation.JsonValidationException;
 import utils.search.Search;
 import utils.search.Search.Type;
 import utils.search.SearchResult;
@@ -35,27 +40,18 @@ public class Users extends Controller {
 	public static Result get() {
 		// validate json
 		JsonNode json = request().body().asJson();
-		if (json == null) {
-			return badRequest("No json found.");
-		} else if (!json.has("users")) {
-			return badRequest("Request parameter 'users' not found.");
+		try {
+			JsonValidation.validate(json, "properties", "fields");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
 		}
-		// TODO add fields selector
-		// else if (!json.has("fields")) {
-		// return badRequest("Request parameter 'fields' not found.");
-		// }
 
 		// get users
-		List<ObjectId> userIds = new ArrayList<ObjectId>();
-		Iterator<JsonNode> iterator = json.get("users").iterator();
-		while (iterator.hasNext()) {
-			userIds.add(new ObjectId(iterator.next().asText()));
-		}
-		List<User> users = new ArrayList<User>();
+		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
+		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		List<User> users;
 		try {
-			for (ObjectId userId : userIds) {
-				users.add(User.find(userId));
-			}
+			users = new ArrayList<User>(User.getAll(properties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -74,10 +70,12 @@ public class Users extends Controller {
 		// remove own entry, if present
 		userIds.remove(new ObjectId(request().username()));
 
-		// TODO get name for ids, not whole user objects
-		List<User> users = new ArrayList<User>();
+		// get name for ids
+		Map<String, Set<ObjectId>> properties = new ChainedMap<String, Set<ObjectId>>().put("_id", userIds).get();
+		Set<String> fields = new ChainedSet<String>().add("name").get();
+		List<User> users;
 		try {
-			users.addAll(User.find(userIds));
+			users = new ArrayList<User>(User.getAll(properties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}

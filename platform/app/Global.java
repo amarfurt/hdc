@@ -1,8 +1,8 @@
 import play.Application;
 import play.GlobalSettings;
 import play.libs.Json;
-import utils.db.CustomObjectMapper;
 import utils.db.Database;
+import utils.json.CustomObjectMapper;
 import utils.search.Search;
 
 public class Global extends GlobalSettings {
