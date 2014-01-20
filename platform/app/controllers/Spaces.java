@@ -50,7 +50,7 @@ public class Spaces extends Controller {
 
 		// get spaces
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<Space> spaces;
 		try {
 			spaces = new ArrayList<Space>(Space.getAll(properties, fields));
@@ -131,7 +131,7 @@ public class Spaces extends Controller {
 		}
 
 		// add records to space (implicit: if not already present)
-		Set<ObjectId> recordIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("records")));
+		Set<ObjectId> recordIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("records")));
 		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
 			Space space = Space.get(properties, fields);

@@ -48,7 +48,7 @@ public class Users extends Controller {
 
 		// get users
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<User> users;
 		try {
 			users = new ArrayList<User>(User.getAll(properties, fields));
@@ -57,6 +57,10 @@ public class Users extends Controller {
 		}
 		Collections.sort(users);
 		return ok(Json.toJson(users));
+	}
+
+	public static Result getCurrentUser() {
+		return ok(Json.toJson(new ObjectId(request().username())));
 	}
 
 	public static Result search(String query) {

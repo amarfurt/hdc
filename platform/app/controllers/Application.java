@@ -14,7 +14,6 @@ import play.Routes;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.Security;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonValidation;
@@ -110,11 +109,6 @@ public class Application extends Controller {
 		return redirect(routes.Application.welcome());
 	}
 
-	@Security.Authenticated(Secured.class)
-	public static ObjectId getCurrentUserId() {
-		return new ObjectId(request().username());
-	}
-
 	public static Result javascriptRoutes() {
 		response().setContentType("text/javascript");
 		return ok(Routes.javascriptRouter(
@@ -152,12 +146,12 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.addUsers(),
 				controllers.routes.javascript.Circles.removeMember(),
 				// Spaces
-				controllers.routes.javascript.Spaces.get(),
-				controllers.routes.javascript.Spaces.add(),
+				controllers.routes.javascript.Spaces.get(), controllers.routes.javascript.Spaces.add(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.addRecords(),
 				// Users
 				controllers.routes.javascript.Users.get(),
+				controllers.routes.javascript.Users.getCurrentUser(),
 				controllers.routes.javascript.Users.search(),
 				// Global search
 				controllers.routes.javascript.GlobalSearch.index(),

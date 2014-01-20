@@ -45,7 +45,7 @@ public class Apps extends Controller {
 
 		// get apps
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<App> apps;
 		try {
 			apps = new ArrayList<App>(App.getAll(properties, fields));

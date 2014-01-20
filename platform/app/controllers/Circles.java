@@ -51,7 +51,7 @@ public class Circles extends Controller {
 
 		// get circles
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<Circle> circles;
 		try {
 			circles = new ArrayList<Circle>(Circle.getAll(properties, fields));
@@ -82,8 +82,10 @@ public class Circles extends Controller {
 		// create new circle
 		Circle circle = new Circle();
 		circle._id = new ObjectId();
-		circle.name = name;
 		circle.owner = userId;
+		circle.name = name;
+		// TODO order
+		// circle.order = OrderOperations.getMax(collection, userId);
 		circle.members = new HashSet<ObjectId>();
 		circle.shared = new HashSet<ObjectId>();
 		try {
@@ -101,6 +103,8 @@ public class Circles extends Controller {
 		if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
 			return badRequest("No circle with this id exists.");
 		}
+
+		// TODO for all members: check which records to make invisible
 
 		// delete circle
 		try {
@@ -129,7 +133,7 @@ public class Circles extends Controller {
 		}
 
 		// add users to circle (implicit: if not already present)
-		Set<ObjectId> newMemberIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("users")));
+		Set<ObjectId> newMemberIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("users")));
 		Set<String> fields = new ChainedSet<String>().add("members").add("shared").get();
 		Set<ObjectId> sharedRecords;
 		try {

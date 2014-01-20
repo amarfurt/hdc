@@ -48,6 +48,7 @@ GET     /search/run/:query          controllers.GlobalSearch.search(query: Strin
 GET     /search/complete/:query     controllers.GlobalSearch.complete(query: String)
 # Users
 POST    /users/get                  controllers.Users.get()
+GET     /users/current              controllers.Users.getCurrentUser()
 GET     /users/:id                  controllers.Users.details(id: String)
 GET     /users/search/:query        controllers.Users.search(query: String)
 # Apps

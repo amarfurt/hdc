@@ -65,7 +65,7 @@ public class Records extends Controller {
 
 		// get records
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<Record> records;
 		try {
 			records = new ArrayList<Record>(Record.getAll(properties, fields));
@@ -180,7 +180,7 @@ public class Records extends Controller {
 		// update spaces
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		Set<ObjectId> spaceIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("spaces")));
+		Set<ObjectId> spaceIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("spaces")));
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
 		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
@@ -223,8 +223,8 @@ public class Records extends Controller {
 		}
 
 		// extract circle ids from posted data
-		Set<ObjectId> startedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("started")));
-		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractSet(json.get("stopped")));
+		Set<ObjectId> startedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("started")));
+		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("stopped")));
 
 		// validate circles
 		Iterator<ObjectId> iterator = startedCircleIds.iterator();

@@ -47,7 +47,7 @@ public class Messages extends Controller {
 
 		// get messages
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
-		Set<String> fields = JsonExtraction.extractSet(json.get("fields"));
+		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
 		List<Message> messages;
 		try {
 			messages = new ArrayList<Message>(Message.getAll(properties, fields));

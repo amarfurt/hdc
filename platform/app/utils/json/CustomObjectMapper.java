@@ -2,7 +2,6 @@ package utils.json;
 
 import org.bson.types.ObjectId;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 

@@ -11,13 +11,14 @@
 			<p>{{error}}</p>
 		</div>
 	
-		<div ng-show="circles.length === 0">
+		<p ng-show="loading">Loading circles...</p>
+		<div ng-show="!loading && circles.length === 0">
 			<p>You have no circles yet. Add one by clicking on the button below.</p>
 			<button data-toggle="modal" data-target="#circleModal" class="btn btn-default">
 				<span class="glyphicon glyphicon-plus-sign"></span> Add a new circle
 			</button>
 		</div>
-		<div ng-show="circles.length > 0">
+		<div ng-show="!loading && circles.length > 0">
 			<!-- Circle tabs -->
 			<ul class="nav nav-tabs">
 				<li ng-class="{'active': circle.active}" ng-repeat="circle in circles">
@@ -38,7 +39,7 @@
 					<p ng-show="circle.members.length === 0">This circle has no members yet.</p>
 					<ul class="list-group" ng-show="circle.members.length > 0">
 						<li class="list-group-item" ng-repeat="member in circle.members">
-							{{member}}
+							{{userNames[member.$oid]}}
 							<div class="pull-right">
 								<button type="button" class="btn btn-xs btn-danger" ng-click="removeMember(circle, member)">
 									<span class="glyphicon glyphicon-remove"></span>
@@ -46,7 +47,7 @@
 							</div>
 						</li>
 				   	</ul>
-				   	<button data-toggle="modal" data-target="#userModal-{{circle._id}}" class="btn btn-primary" ng-click="loadContacts()">
+				   	<button data-toggle="modal" data-target="#userModal-{{circle._id.$oid}}" class="btn btn-primary">
 						<span class="glyphicon glyphicon-plus-sign"></span> Add user
 					</button>
 				    <button class="btn btn-danger" ng-click="deleteCircle(circle)">
@@ -54,33 +55,32 @@
 				    </button>
 				    
 				    <!-- Add users modal -->
-					<div class="modal fade" id="userModal-{{circle._id}}" role="dialog" aria-labelledby="userModalLabel-{{circle._id}}" aria-hidden="true">
+					<div class="modal fade" id="userModal-{{circle._id.$oid}}" role="dialog" aria-labelledby="userModalLabel-{{circle._id.$oid}}" aria-hidden="true">
 						<div class="modal-dialog">
 							<div class="modal-content">
 								<div class="modal-header">
 									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-									<h4 class="modal-title" id="userModalLabel-{{circle._id}}">Add users to circle '{{circle.name}}'</h4>
+									<h4 class="modal-title" id="userModalLabel-{{circle._id.$oid}}">Add users to circle '{{circle.name}}'</h4>
 								</div>
 								<div class="modal-body">
 									<ul class="nav nav-tabs">
-										<li class="active"><a href="#contacts-{{circle._id}}" data-toggle="tab">Contacts</a></li>
-										<li><a href="#all-{{circle._id}}" data-toggle="tab">All users</a></li>
+										<li class="active"><a href="#contacts-{{circle._id.$oid}}" data-toggle="tab">Contacts</a></li>
+										<li><a href="#all-{{circle._id.$oid}}" data-toggle="tab">All users</a></li>
 									</ul>
 									<div class="tab-content">
-										<div id="contacts-{{circle._id}}" class="tab-pane fade active in">
-											<p ng-show="loadingContacts">Loading contacts...</p>
-											<p ng-show="!loadingContacts && contacts.length === 0">You have no users in your circles yet.</p>
-											<div ng-show="!loadingContacts && contacts.length > 0">
+										<div id="contacts-{{circle._id.$oid}}" class="tab-pane fade active in">
+											<p ng-show="contacts.length === 0">You have no users in your circles yet.</p>
+											<div ng-show="contacts.length > 0">
 												<div class="checkbox" ng-repeat="contact in filteredContacts = (contacts | filter:isntMember)">
 													<label>
-														<input type="checkbox" name="{{contact._id}}" ng-model="contact.checked">
+														<input type="checkbox" ng-model="contact.checked">
 														{{contact.name}}
 													</label>
 												</div>
 												<p ng-show="filteredContacts.length === 0">No contacts can be added to this circle.</p>
 											</div>
 										</div>
-										<div id="all-{{circle._id}}" class="tab-pane fade">
+										<div id="all-{{circle._id.$oid}}" class="tab-pane fade">
 											<form class="form-horizontal" ng-submit="searchUsers(circle)">
 												<div class="form-group">
 													<div class="col-xs-10">
@@ -96,7 +96,7 @@
 											<div ng-show="!searching && foundUsers.length > 0">
 												<div class="checkbox" ng-repeat="user in filteredUsers = (foundUsers | filter:isntMember)">
 													<label>
-														<input type="checkbox" name="{{user._id}}" ng-model="user.checked">
+														<input type="checkbox" ng-model="user.checked">
 														{{user.name}}
 													</label>
 												</div>
