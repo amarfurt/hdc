@@ -9,14 +9,13 @@ login.controller('LoginCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.login = function() {
 		// check user input
 		if (!$scope.login.email || !$scope.login.password) {
-			console.log("hey");
 			$scope.login.error = "Please provide an email address and a password.";
 			return;
 		}
 		
 		// send the request
 		var data = {"email": $scope.login.email, "password": $scope.login.password};
-		$http.post(jsRoutes.controllers.Application.authenticate().url, data).
+		$http.post(jsRoutes.controllers.Application.authenticate().url, JSON.stringify(data)).
 			success(function(url) { window.location.replace(url); }).
 			error(function(err) { $scope.login.error = err; });
 	}
@@ -33,7 +32,7 @@ login.controller('LoginCtrl', ['$scope', '$http', function($scope, $http) {
 		// send the request
 		var data = {"email": $scope.registration.email, "firstName": $scope.registration.firstName,
 				"lastName": $scope.registration.lastName, "password": $scope.registration.password};
-		$http.post(jsRoutes.controllers.Application.register().url, data).
+		$http.post(jsRoutes.controllers.Application.register().url, JSON.stringify(data)).
 			success(function(url) { window.location.replace(url); }).
 			error(function(err) { $scope.registration.error = err; });
 	}

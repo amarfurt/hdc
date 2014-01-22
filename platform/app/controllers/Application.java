@@ -47,7 +47,7 @@ public class Application extends Controller {
 			if (!User.exists(emailQuery)) {
 				return badRequest("Invalid user or password.");
 			} else {
-				user = User.get(emailQuery, new ChainedSet<String>().add("_id").get());
+				user = User.get(emailQuery, new ChainedSet<String>().add("password").get());
 				if (!User.authenticationValid(password, user.password)) {
 					return badRequest("Invalid user or password");
 				}
@@ -122,20 +122,23 @@ public class Application extends Controller {
 				controllers.routes.javascript.Apps.install(),
 				controllers.routes.javascript.Apps.uninstall(),
 				controllers.routes.javascript.Apps.isInstalled(),
+				controllers.routes.javascript.Apps.getCreateUrl(),
 				// Visualizations
 				controllers.routes.javascript.Visualizations.details(),
 				controllers.routes.javascript.Visualizations.get(),
 				controllers.routes.javascript.Visualizations.install(),
 				controllers.routes.javascript.Visualizations.uninstall(),
 				controllers.routes.javascript.Visualizations.isInstalled(),
+				controllers.routes.javascript.Visualizations.getUrl(),
 				// Messages
 				controllers.routes.javascript.Messages.details(),
 				controllers.routes.javascript.Messages.get(),
 				// Records
 				controllers.routes.javascript.Records.details(),
+				controllers.routes.javascript.Records.create(),
 				controllers.routes.javascript.Records.get(),
+				controllers.routes.javascript.Records.getVisibleRecords(),
 				controllers.routes.javascript.Records.getDetailsUrl(),
-				controllers.routes.javascript.Records.getCreateUrl(),
 				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
@@ -153,6 +156,9 @@ public class Application extends Controller {
 				controllers.routes.javascript.Users.get(),
 				controllers.routes.javascript.Users.getCurrentUser(),
 				controllers.routes.javascript.Users.search(),
+				// Market
+				controllers.routes.javascript.Market.registerApp(),
+				controllers.routes.javascript.Market.registerVisualization(),
 				// Global search
 				controllers.routes.javascript.GlobalSearch.index(),
 				controllers.routes.javascript.GlobalSearch.search(),

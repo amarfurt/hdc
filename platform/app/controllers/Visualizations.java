@@ -12,6 +12,7 @@ import models.Visualization;
 
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -91,6 +92,21 @@ public class Visualizations extends Controller {
 				.put("visualizations", visualizationId).get();
 		boolean isInstalled = User.exists(properties);
 		return ok(Json.toJson(isInstalled));
+	}
+
+	public static Result getUrl(String visualizationIdString) {
+		ObjectId visualizationId = new ObjectId(visualizationIdString);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", visualizationId).get();
+		Set<String> fields = new ChainedSet<String>().add("url").get();
+		Visualization visualization;
+		try {
+			visualization = Visualization.get(properties, fields);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		String visualizationServer = Play.application().configuration().getString("plugins.server");
+		String url = "http://" + visualizationServer + "/visualizations/" + visualizationId + "/" + visualization.url;
+		return ok(url);
 	}
 
 }

@@ -42,6 +42,7 @@ public class AppsAPI extends Controller {
 		String name = json.get("name").asText();
 		String description = json.get("description").asText();
 		Record record = new Record();
+		record._id = new ObjectId();
 		record.app = new ObjectId(appIdString);
 		record.owner = new ObjectId(userIdString);
 		record.creator = new ObjectId(userIdString);

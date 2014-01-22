@@ -58,6 +58,8 @@ public class JsonExtraction {
 			return extractMap(json);
 		} else if (json.isArray()) {
 			return extractSet(json);
+		} else if (json.isBoolean()) {
+			return json.asBoolean();
 		} else {
 			return json.asText();
 		}

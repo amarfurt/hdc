@@ -3,6 +3,9 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// init
 	$scope.error = null;
+	$scope.loadingApps = true;
+	$scope.loadingRecords = true;
+	$scope.userId = null;
 	$scope.apps = [];
 	$scope.records = [];
 	$scope.loadingSpaces = false;
@@ -12,29 +15,63 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.filter = {};
 	$scope.select = {};
 	
-	// fetch apps
-	$http(jsRoutes.controllers.Apps.fetch()).
-		success(function(data) { $scope.apps = data; }).
-		error(function(err) { $scope.error = "Failed to load apps: " + err; });
+	// get current user
+	$http(jsRoutes.controllers.Users.getCurrentUser()).
+		success(function(userId) {
+			$scope.userId = userId;
+			getApps(userId);
+			getRecords(userId);
+		});
 	
-	// fetch records
-	$http(jsRoutes.controllers.Records.fetch()).
-		success(function(data) { $scope.records = data; initFilters(); }).
-		error(function(err) { $scope.error = "Failed to load records: " + err; });
+	// get apps
+	getApps = function(userId) {
+		var properties = {"_id": userId};
+		var fields = ["apps"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+			success(function(users) {
+				getAppNames(users[0].apps);
+			}).
+			error(function(err) { $scope.error = "Failed to load apps: " + err; });
+	}
+	
+	// get name for app ids
+	getAppNames = function(appIds) {
+		var properties = {"_id": appIds};
+		var fields = ["name"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
+			success(function(apps) {
+				$scope.apps = apps;
+				$scope.loadingApps = false;
+			}).
+			error(function(err) { $scope.error = "Failed to load apps: " + err; });
+	}
+	
+	// get records
+	getRecords = function(userId) {
+		$http(jsRoutes.controllers.Records.getVisibleRecords()).
+			success(function(data) {
+				$scope.records = data;
+				initFilters();
+				$scope.loadingRecords = false;
+			}).
+			error(function(err) { $scope.error = "Failed to load records: " + err; });
+	}
 	
 	// go to record creation dialog
 	$scope.createRecord = function(app) {
-		window.location.href = jsRoutes.controllers.Records.create(app._id).url;
+		window.location.href = jsRoutes.controllers.Records.create(app._id.$oid).url;
 	}
 	
 	// show record details
 	$scope.showDetails = function(record) {
-		window.location.href = jsRoutes.controllers.Records.details(record._id).url;
+		window.location.href = jsRoutes.controllers.Records.details(record._id.$oid).url;
 	}
 	
 	// check whether the user is the owner of the record
-	$scope.isOwnerOf = function(userId, record) {
-		return userId === record.owner;
+	$scope.isOwnRecord = function(record) {
+		return $scope.userId.$oid === record.owner.$oid;
 	}
 	
 	// activate record (spaces or circles of this record are being looked at)
@@ -52,10 +89,13 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.loadSpaces = function() {
 		if ($scope.spaces.length === 0) {
 			$scope.loadingSpaces = true;
-			$http(jsRoutes.controllers.Spaces.fetch()).
-				success(function(data) {
+			var properties = {"owner": $scope.userId};
+			var fields = ["name", "records", "order"];
+			var data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Spaces.get().url, JSON.stringify(data)).
+				success(function(spaces) {
 					$scope.error = null;
-					$scope.spaces = data;
+					$scope.spaces = spaces;
 					$scope.loadingSpaces = false;
 					prepareSpaces();
 				}).
@@ -73,7 +113,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	prepareSpaces = function() {
 		_.each($scope.spaces, function(space) { space.checked = false; });
 		var activeRecord = getActiveRecord();
-		var spacesWithRecord = _.filter($scope.spaces, function(space) { return _.contains(space.records, activeRecord._id); });
+		var spacesWithRecord = _.filter($scope.spaces, function(space) { return containsRecord(space.records, activeRecord._id); });
 		_.each(spacesWithRecord, function(space) { space.checked = true; });
 	}
 	
@@ -81,10 +121,13 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.loadCircles = function() {
 		if ($scope.circles.length === 0) {
 			$scope.loadingCircles = true;
-			$http(jsRoutes.controllers.Circles.fetch()).
-				success(function(data) {
+			var properties = {"owner": $scope.userId};
+			var fields = ["name", "shared", "order"];
+			var data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Circles.get().url, JSON.stringify(data)).
+				success(function(circles) {
 					$scope.error = null;
-					$scope.circles = data;
+					$scope.circles = circles;
 					$scope.loadingCircles = false;
 					prepareCircles();
 				}).
@@ -102,8 +145,14 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	prepareCircles = function() {
 		_.each($scope.circles, function(circle) { circle.checked = false; });
 		var activeRecord = getActiveRecord();
-		var circlesWithRecord = _.filter($scope.circles, function(circle) { return _.contains(circle.shared, activeRecord._id); });
+		var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
 		_.each(circlesWithRecord, function(circle) { circle.checked = true; });
+	}
+	
+	// helper method for contains
+	containsRecord = function(recordIdList, recordId) {
+		var ids = _.map(recordIdList, function(element) { return element.$oid; });
+		return _.contains(ids, recordId.$oid);
 	}
 	
 	// update spaces for active record
@@ -112,38 +161,47 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 		var checkedSpaces = _.filter($scope.spaces, function(space) { return space.checked; });
 		var spaceIds = _.map(checkedSpaces, function(space) { return space._id; });
 		var data = {"spaces": spaceIds};
-		$http.post(jsRoutes.controllers.Records.updateSpaces(activeRecord._id).url, data).
+		$http.post(jsRoutes.controllers.Records.updateSpaces(activeRecord._id.$oid).url, JSON.stringify(data)).
 			success(function() {
 				$scope.error = null;
 				_.each($scope.spaces, function(space) {
-					var index = space.records.indexOf(activeRecord._id);
-					if (index > -1) {
-						space.records.splice(index, 1);
-					}
+					removeRecordIfPresent(space.records, activeRecord._id);
 				});
 				_.each(checkedSpaces, function(space) { space.records.push(activeRecord._id); });
 			}).
 			error(function(err) { $scope.error = "Failed to update spaces: " + err; });
 	}
 	
+	// helper method for remove (in cases where object equality doesn't work)
+	removeRecordIfPresent = function(recordIdList, recordId) {
+		_.each(recordIdList, function(element) {
+			if (element.$oid === recordId.$oid) {
+				recordIdList.splice(recordIdList.indexOf(element));
+			}
+		});
+	}
+	
 	// update circles for active record
 	$scope.updateCircles = function() {
 		var activeRecord = getActiveRecord();
-		var circlesWithRecord = _.filter($scope.circles, function(circle) { return _.contains(circle.shared, activeRecord._id); });
+		var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
 		var circlesChecked = _.filter($scope.circles, function(circle) { return circle.checked; });
-		var circleIdsWithRecord = _.map(circlesWithRecord, function(circle) { return circle._id; });
-		var circleIdsChecked = _.map(circlesChecked, function(circle) { return circle._id; });
-		var circleIdsStarted = _.difference(circleIdsChecked, circleIdsWithRecord);
-		var circleIdsStopped = _.difference(circleIdsWithRecord, circleIdsChecked);
+		var circleIdsWithRecord = _.map(circlesWithRecord, function(circle) { return circle._id.$oid; });
+		var circleIdsChecked = _.map(circlesChecked, function(circle) { return circle._id.$oid; });
+		var idsStarted = _.difference(circleIdsChecked, circleIdsWithRecord);
+		var idsStopped = _.difference(circleIdsWithRecord, circleIdsChecked);
+		// construct objectId objects again...
+		var circleIdsStarted = _.map(idsStarted, function(id) { return {"$oid": id}; });
+		var circleIdsStopped = _.map(idsStopped, function(id) { return {"$oid": id}; });
 		var data = {"started": circleIdsStarted, "stopped": circleIdsStopped};
-		$http.post(jsRoutes.controllers.Records.updateSharing(activeRecord._id).url, data).
+		$http.post(jsRoutes.controllers.Records.updateSharing(activeRecord._id.$oid).url, JSON.stringify(data)).
 			success(function() {
 				$scope.error = null;
 				_.each($scope.circles, function(circle) {
-					if (_.contains(circleIdsStarted, circle._id)) {
+					if (containsRecord(circleIdsStarted, circle._id)) {
 						circle.shared.push(activeRecord._id);
-					} else if (_.contains(circleIdsStopped, circle._id)) {
-						circle.shared.splice(circle.shared.indexOf(activeRecord._id), 1);
+					} else if (containsRecord(circleIdsStopped, circle._id)) {
+						removeRecordIfPresent(circle.shared, activeRecord._id);
 					}
 				});
 			}).
@@ -155,8 +213,18 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	initFilters = function() {
 		// app and owner
 		if ($scope.records.length > 0) {
-			$scope.select.apps = _.uniq(_.map($scope.records, function(record) { return record.app; }));
-			$scope.select.owners = _.uniq(_.map($scope.records, function(record) { return record.owner; }));
+			var appIds = _.uniq(_.map($scope.records, function(record) { return record.app.$oid; }));
+			var ownerIds = _.uniq(_.map($scope.records, function(record) { return record.owner.$oid; }));
+			// get the names
+			var properties = {"_id": _.map(appIds, function(id) { return {"$oid": id}; })};
+			var fields = ["name"];
+			var data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
+				success(function(apps) { $scope.select.apps = apps; });
+			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
+			data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+				success(function(users) { $scope.select.owners = users; });
 		}
 		
 		// date
@@ -208,12 +276,12 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	// checks whether a record matches all filters
 	$scope.matchesFilters = function(record) {
 		if ($scope.filter.appId) {
-			if ($scope.filter.appId !== record.app) {
+			if ($scope.filter.appId.$oid !== record.app.$oid) {
 				return false;
 			}
 		}
 		if ($scope.filter.ownerId) {
-			if ($scope.filter.ownerId !== record.owner) {
+			if ($scope.filter.ownerId.$oid !== record.owner.$oid) {
 				return false;
 			}
 		}
@@ -227,7 +295,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	}
 	
 }]);
-records.controller('CreateRecordsCtrl', ['$scope', '$http', function($scope, $http) {
+records.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
 	
 	// init
 	$scope.error = null;
@@ -236,10 +304,10 @@ records.controller('CreateRecordsCtrl', ['$scope', '$http', function($scope, $ht
 	var appId = window.location.pathname.split("/")[3];
 	
 	// get record creation url
-	$http(jsRoutes.controllers.Records.getCreateUrl(appId)).
+	$http(jsRoutes.controllers.Apps.getCreateUrl(appId)).
 		success(function(url) {
 			$scope.error = null;
-			$scope.url = url;
+			$scope.url = $sce.trustAsResourceUrl(url);
 		}).
 		error(function(err) { $scope.error = "Failed to load record creation dialog: " + err; });
 	

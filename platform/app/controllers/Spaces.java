@@ -131,7 +131,7 @@ public class Spaces extends Controller {
 		}
 
 		// add records to space (implicit: if not already present)
-		Set<ObjectId> recordIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("records")));
+		Set<ObjectId> recordIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("records")));
 		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
 			Space space = Space.get(properties, fields);

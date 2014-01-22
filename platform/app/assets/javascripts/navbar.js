@@ -1,6 +1,25 @@
 var navbar = angular.module('navbar', []);
 navbar.controller('NavbarCtrl', ['$scope', '$http', function($scope, $http) {
 	
+	// init
+	$scope.user = {};
+	
+	// get current user
+	$http(jsRoutes.controllers.Users.getCurrentUser()).
+		success(function(userId) {
+			$scope.user._id = userId;
+			getName(userId);
+		});
+	
+	// get user's name
+	getName = function(userId) {
+		var properties = {"_id": userId};
+		var fields = ["name"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+			success(function(users) { $scope.user.name = users[0].name; });
+	}
+	
 	// initialize global search with typeahead plugin
 	$("#globalSearch").typeahead({"name": "data", remote: {
 		"url": null,

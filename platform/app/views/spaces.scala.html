@@ -12,13 +12,14 @@
 		</div>
 		
 		<!-- Spaces -->
-		<div ng-show="spaces.length === 0">
+		<p ng-show="loading">Loading spaces...</p>
+		<div ng-show="!loading && spaces.length === 0">
 			<p>You have no spaces yet. Add one by clicking on the button below.</p>
 			<button data-toggle="modal" data-target="#spaceModal" class="btn btn-default" ng-click="loadVisualizations()">
 				<span class="glyphicon glyphicon-plus"></span> Add a new space
 			</button>
 		</div>
-		<div ng-show="spaces.length > 0">
+		<div ng-show="!loading && spaces.length > 0">
 			<!-- Space tabs -->
 			<ul class="nav nav-tabs">
 				<li ng-class="{'active': space.active}" ng-repeat="space in spaces">
@@ -39,26 +40,26 @@
 						<div ng-class="{'col-lg-6': space.compare}">
 							<!-- Visualization -->
 							<p ng-hide="space.trustedUrl">Loading space...</p>
-							<iframe id="iframe-{{space._id}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
+							<iframe id="iframe-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
 							
 							<!-- Filters -->
 							<div ng-show="space.baseRecords.length > 0">
 								<div class="row">
 									<div class="form-group col-lg-3">
-										<label for="appFilter-{{space._id}}" class="control-label">Created with: </label>
-										<select id="appFilter-{{space._id}}" class="form-control" ng-model="space.filters.appId" ng-options="app for app in space.select.apps">
+										<label for="appFilter-{{space._id.$oid}}" class="control-label">Created with: </label>
+										<select id="appFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.appId" ng-options="app._id as app.name for app in space.select.apps">
 											<option value="">any</option>
 										</select>
 									</div>
 									<div class="form-group col-lg-3">
-										<label for="ownerFilter-{{space._id}}" class="control-label">Owned by: </label>
-										<select id="ownerFilter-{{space._id}}" class="form-control" ng-model="space.filters.ownerId" ng-options="owner for owner in space.select.owners">
+										<label for="ownerFilter-{{space._id.$oid}}" class="control-label">Owned by: </label>
+										<select id="ownerFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.ownerId" ng-options="owner._id as owner.name for owner in space.select.owners">
 											<option value="">any</option>
 										</select>
 									</div>
 									<div class="form-group col-lg-6">
-										<label for="dateFilter-{{space._id}}" class="control-label">Created between: <span style="color:#707070">{{space.filters.date}}</span></label>
-										<input id="dateFilter-{{space._id}}" style="width:500px">
+										<label for="dateFilter-{{space._id.$oid}}" class="control-label">Created between: <span style="color:#707070">{{space.filters.date}}</span></label>
+										<input id="dateFilter-{{space._id.$oid}}" style="width:500px">
 									</div>
 								</div>
 							</div>
@@ -66,26 +67,26 @@
 						<div class="col-lg-6" ng-show="space.compare">
 							<!-- Visualization -->
 							<p ng-hide="space.copy.trustedUrl">Loading space...</p>
-							<iframe id="iframe-copy-{{space._id}}" height="420px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
+							<iframe id="iframe-copy-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
 							
 							<!-- Filters -->
 							<div ng-show="space.copy.baseRecords.length > 0">
 								<div class="row">
 									<div class="form-group col-lg-3">
-										<label for="appFilter-copy-{{space._id}}" class="control-label">Created with: </label>
-										<select id="appFilter-copy-{{space._id}}" class="form-control" ng-model="space.copy.filters.appId" ng-options="app for app in space.copy.select.apps">
+										<label for="appFilter-copy-{{space._id.$oid}}" class="control-label">Created with: </label>
+										<select id="appFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.appId" ng-options="app._id as app.name for app in space.copy.select.apps">
 											<option value="">any</option>
 										</select>
 									</div>
 									<div class="form-group col-lg-3">
-										<label for="ownerFilter-copy-{{space._id}}" class="control-label">Owned by: </label>
-										<select id="ownerFilter-copy-{{space._id}}" class="form-control" ng-model="space.copy.filters.ownerId" ng-options="owner for owner in space.copy.select.owners">
+										<label for="ownerFilter-copy-{{space._id.$oid}}" class="control-label">Owned by: </label>
+										<select id="ownerFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.ownerId" ng-options="owner._id as owner.name for owner in space.copy.select.owners">
 											<option value="">any</option>
 										</select>
 									</div>
 									<div class="form-group col-lg-6">
-										<label for="dateFilter-copy-{{space._id}}" class="control-label">Created between: <span style="color:#707070">{{space.copy.filters.date}}</span></label>
-										<input id="dateFilter-copy-{{space._id}}" style="width:250px">
+										<label for="dateFilter-copy-{{space._id.$oid}}" class="control-label">Created between: <span style="color:#707070">{{space.copy.filters.date}}</span></label>
+										<input id="dateFilter-copy-{{space._id.$oid}}" style="width:250px">
 									</div>
 								</div>
 							</div>
@@ -99,7 +100,7 @@
 					<button class="btn btn-default" ng-show="space.compare" ng-click="endCompare(space)">
 						<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
 					</button>
-					<button data-toggle="modal" data-target="#recordModal-{{space._id}}" class="btn btn-primary">
+					<button data-toggle="modal" data-target="#recordModal-{{space._id.$oid}}" class="btn btn-primary">
 						<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
 					</button>
 					<button class="btn btn-danger" ng-click="deleteSpace(space)">
@@ -107,12 +108,12 @@
 					</button>
 					
 					<!-- Add records modal -->
-					<div class="modal fade" id="recordModal-{{space._id}}" role="dialog" aria-labelledby="recordModalLabel-{{space._id}}" aria-hidden="true">
+					<div class="modal fade" id="recordModal-{{space._id.$oid}}" role="dialog" aria-labelledby="recordModalLabel-{{space._id.$oid}}" aria-hidden="true">
 						<div class="modal-dialog">
 							<div class="modal-content">
 								<div class="modal-header">
 									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-									<h4 class="modal-title" id="recordModalLabel-{{space._id}}">Add records to this space</h4>
+									<h4 class="modal-title" id="recordModalLabel-{{space._id.$oid}}">Add records to this space</h4>
 								</div>
 								<div class="modal-body">
 									<form class="form-horizontal" ng-submit="searchRecords(space)">
@@ -130,7 +131,7 @@
 									<div ng-show="!searching && foundRecords.length > 0">
 										<div class="checkbox" ng-repeat="record in filteredRecords = (foundRecords | filter:isntInSpace)">
 											<label>
-												<input type="checkbox" name="{{record._id}}" ng-model="record.checked">
+												<input type="checkbox" name="{{record._id.$oid}}" ng-model="record.checked">
 												{{record.name}}
 											</label>
 										</div>

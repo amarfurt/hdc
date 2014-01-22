@@ -13,9 +13,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// get current user
 	$http(jsRoutes.controllers.Users.getCurrentUser()).
-		success(function(userId) {
-			loadCircles(userId);
-		}).
+		success(function(userId) { loadCircles(userId); }).
 		error(function(err) {
 			$scope.error = "Failed to load current user: " + err;
 			$scope.loading = false;
@@ -24,7 +22,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 	// get circles and make either given or first circle active
 	loadCircles = function(userId) {
 		var properties = {"owner": userId};
-		var fields = ["name", "members"];
+		var fields = ["name", "members", "order"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Circles.get().url, JSON.stringify(data)).
 			success(function(circles) {
@@ -144,7 +142,7 @@ circles.controller('CirclesCtrl', ['$scope', '$http', function($scope, $http) {
 				$scope.foundUsers = [];
 				_.each($scope.contacts, function(contact) { contact.checked = false; });
 				_.each(userIds, function(userId) { circle.members.push(userId); });
-				_.each(usersToAdd, function(user) { userNames[user._id.$oid] = user.name; });
+				_.each(usersToAdd, function(user) { $scope.userNames[user._id.$oid] = user.name; });
 			}).
 			error(function(err) { $scope.error = "Failed to add users: " + err; });
 	}

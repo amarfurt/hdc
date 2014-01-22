@@ -3,6 +3,8 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	
 	// init
 	$scope.error = null;
+	$scope.userId = null;
+	$scope.loading = true;
 	$scope.spaces = [];
 	$scope.add = {};
 	$scope.loadingVisualizations = false;
@@ -10,20 +12,33 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	$scope.searching = false;
 	var activeSpace = null; // for filters
 	
-	// fetch spaces and make given space active (if one is given; first otherwise)
-	$http(jsRoutes.controllers.Spaces.fetch()).
-		success(function(data) {
-			$scope.spaces = data;
-			if ($scope.spaces.length > 0) {
-				var active = window.location.pathname.split("/")[2];
-				if (active) {
-					$scope.makeActive(_.find($scope.spaces, function(space) { return space._id === active; }));
-				} else {
-					$scope.makeActive($scope.spaces[0]);
+	// get current user
+	$http(jsRoutes.controllers.Users.getCurrentUser()).
+		success(function(userId) {
+			$scope.userId = userId;
+			getSpaces();
+		});
+	
+	// get spaces and make given space active (if one is given; first otherwise)
+	getSpaces = function(userId) {
+		var properties = {"owner": $scope.userId};
+		var fields = ["name", "records", "visualization", "order"]
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Spaces.get().url, JSON.stringify(data)).
+			success(function(spaces) {
+				$scope.spaces = spaces;
+				if ($scope.spaces.length > 0) {
+					var active = window.location.pathname.split("/")[2];
+					if (active) {
+						$scope.makeActive(_.find($scope.spaces, function(space) { return space._id.$oid === active; }));
+					} else {
+						$scope.makeActive($scope.spaces[0]);
+					}
+					$scope.loading = false;
 				}
-			}
-		}).
-		error(function(err) { $scope.error = "Failed to load spaces: " + err; });
+			}).
+			error(function(err) { $scope.error = "Failed to load spaces: " + err; });
+	}
 	
 	// make space tab active
 	$scope.makeActive = function(space) {
@@ -45,9 +60,8 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	
 	// load visualization url for given space
 	loadBaseUrl = function(space) {
-		$http(jsRoutes.controllers.Visualizations.getUrl(space.visualization)).
+		$http(jsRoutes.controllers.Visualizations.getUrl(space.visualization.$oid)).
 			success(function(url) {
-				$scope.error = null;
 				space.baseUrl = url;
 				loadBaseRecords(space); // chain because callback is async
 			}).
@@ -56,11 +70,13 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	
 	// load records for given space
 	loadBaseRecords = function(space) {
-		var data = {"records": space.records};
-		$http.post(jsRoutes.controllers.Records.get().url, data).
-			success(function(data) {
+		var properties = {"_id": space.records};
+		var fields = ["app", "owner", "created", "data"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
+			success(function(records) {
 				$scope.error = null;
-				space.baseRecords = data;
+				space.baseRecords = records;
 				spaceChanged(space); // chain because callback is async
 			}).
 			error(function(err) { $scope.error = "Failed to load records for space '" + space.name + "': " + err; });
@@ -79,7 +95,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		var filteredData = _.map(filteredRecords, function(record) { return record.data; });
 		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
 		space.trustedUrl = $sce.trustAsResourceUrl(completedUrl);
-		$("#iframe-" + space._id).attr("src", space.trustedUrl);
+		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
 	}
 	
 	// *** FILTERS ***
@@ -88,11 +104,21 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		// app and owner
 		space.select = {};
 		if (space.baseRecords.length > 0) {
-			space.select.apps = _.uniq(_.map(space.baseRecords, function(record) { return record.app; }));
-			space.select.owners = _.uniq(_.map(space.baseRecords, function(record) { return record.owner; }));
+			var appIds = _.uniq(_.map(space.baseRecords, function(record) { return record.app.$oid; }));
+			var ownerIds = _.uniq(_.map(space.baseRecords, function(record) { return record.owner.$oid; }));
+			// get the names
+			var properties = {"_id": _.map(appIds, function(id) { return {"$oid": id}; })};
+			var fields = ["name"];
+			var data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
+				success(function(apps) { space.select.apps = apps; });
+			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
+			data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+				success(function(users) { space.select.owners = users; });
 		}
-		$("#appFilter-" + space._id).on("change", function(event) { reloadSpace(space); });
-		$("#ownerFilter-" + space._id).on("change", function(event) { reloadSpace(space); });
+		$("#appFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
+		$("#ownerFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
 		
 		// date
 		space.filters = {};
@@ -109,14 +135,14 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		}
 		day = 1000 * 60 * 60 * 24;
 		// TODO slider does not take added records into account once it is created...
-		$("#dateFilter-" + space._id).slider({
+		$("#dateFilter-" + space._id.$oid).slider({
 			min:earliest.getTime(), max:latest.getTime() + day, step:day,
 			value:[earliest.getTime(), latest.getTime() + day],
 			formater: function(date) { return dateToString(new Date(date)); }
 		}).
 		slider("setValue", [earliest.getTime(), latest.getTime() + day]).
 		on("slideStop", function(event) {
-			var split = $("#dateFilter-" + space._id).val().split(",");
+			var split = $("#dateFilter-" + space._id.$oid).val().split(",");
 			space.filters.fromDate = Number(split[0]);
 			space.filters.toDate = Number(split[1]);
 			var fromDate = dateToString(new Date(space.filters.fromDate));
@@ -147,12 +173,12 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	matchesFilters = function(record) {
 		var space = activeSpace;
 		if (space.filters.appId) {
-			if (space.filters.appId !== record.app) {
+			if (space.filters.appId.$oid !== record.app.$oid) {
 				return false;
 			}
 		}
 		if (space.filters.ownerId) {
-			if (space.filters.ownerId !== record.owner) {
+			if (space.filters.ownerId.$oid !== record.owner.$oid) {
 				return false;
 			}
 		}
@@ -170,7 +196,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	$scope.startCompare = function(space) {
 		// copy relevant properties
 		space.copy = {};
-		space.copy._id = "copy-" + space._id;
+		space.copy._id = {"$oid": "copy-" + space._id.$oid};
 		space.copy.baseUrl = space.baseUrl;
 		space.copy.baseRecords = space.baseRecords;
 		
@@ -193,17 +219,32 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	$scope.loadVisualizations = function() {
 		if ($scope.visualizations.length === 0) {
 			$scope.loadingVisualizations = true;
-			$http(jsRoutes.controllers.Visualizations.fetch()).
-				success(function(data) {
-					$scope.error = null;
-					$scope.visualizations = data;
-					$scope.loadingVisualizations = false;
-				}).
+			var properties = {"_id": $scope.userId};
+			var fields = ["visualizations"];
+			var data = {"properties": properties, "fields": fields};
+			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+				success(function(users) { getVisualizations(users[0].visualizations); }).
 				error(function(err) {
 					$scope.error = "Failed to load visualizations: " + err;
 					$scope.loadingVisualizations = false;
 				});
 		}
+	}
+	
+	getVisualizations = function(ids) {
+		var properties = {"_id": ids};
+		var fields = ["name"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Visualizations.get().url, JSON.stringify(data)).
+			success(function(visualizations) {
+				$scope.error = null;
+				$scope.visualizations = visualizations;
+				$scope.loadingVisualizations = false;
+			}).
+			error(function(err) {
+				$scope.error = "Failed to load visualizations: " + err;
+				$scope.loadingVisualizations = false;
+			});
 	}
 	
 	// add a space
@@ -221,8 +262,8 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		}
 		
 		// send the request
-		var data = {"name": $scope.add.name, "visualization": $scope.add.visualization};
-		$http.post(jsRoutes.controllers.Spaces.add().url, data).
+		var data = {"name": $scope.add.name, "visualization": $scope.add.visualization.$oid};
+		$http.post(jsRoutes.controllers.Spaces.add().url, JSON.stringify(data)).
 			success(function(space) {
 				$scope.error = null;
 				$scope.add = {};
@@ -234,7 +275,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	
 	// delete a space
 	$scope.deleteSpace = function(space) {
-		$http(jsRoutes.controllers.Spaces["delete"](space._id)).
+		$http(jsRoutes.controllers.Spaces["delete"](space._id.$oid)).
 			success(function() {
 				$scope.error = null;
 				$scope.spaces.splice($scope.spaces.indexOf(space), 1);
@@ -248,7 +289,13 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	// check whether record is not already in active space
 	$scope.isntInSpace = function(record) {
 		var activeSpace = _.find($scope.spaces, function(space) { return space.active; });
-		return !_.contains(activeSpace.records, record._id);
+		return !containsRecord(activeSpace.records, record._id);
+	}
+	
+	// helper method for contains
+	containsRecord = function(recordIdList, recordId) {
+		var ids = _.map(recordIdList, function(element) { return element.$oid; });
+		return _.contains(ids, recordId.$oid);
 	}
 	
 	// search for records
@@ -276,9 +323,10 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		var recordIds = _.map(recordsToAdd, function(record) { return record._id; });
 		
 		var data = {"records": recordIds};
-		$http.post(jsRoutes.controllers.Spaces.addRecords(space._id).url, data).
+		$http.post(jsRoutes.controllers.Spaces.addRecords(space._id.$oid).url, JSON.stringify(data)).
 			success(function() {
 				$scope.error = null;
+				space.recordQuery = null;
 				$scope.foundRecords = [];
 				_.each(recordIds, function(recordId) { space.records.push(recordId); });
 				_.each(recordsToAdd, function(record) { space.baseRecords.push(record); });

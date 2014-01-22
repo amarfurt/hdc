@@ -14,9 +14,9 @@ GET     /messages/:id               controllers.Messages.details(id: String)
 # Records
 GET     /records                    controllers.Records.index()
 POST    /records/get                controllers.Records.get()
+GET     /records/visible            controllers.Records.getVisibleRecords()
 GET     /records/:id                controllers.Records.details(id: String)
-GET     /records/create/:appId      controllers.Records.createRecords(appId: String)
-GET     /records/create/:appId/url  controllers.Records.getCreateUrl(appId: String)
+GET     /records/create/:appId      controllers.Records.create(appId: String)
 GET     /records/search/:query      controllers.Records.search(query: String)
 GET     /records/:id/details        controllers.Records.getDetailsUrl(id: String)
 POST    /records/:id/spaces         controllers.Records.updateSpaces(id: String)
@@ -57,12 +57,14 @@ GET     /apps/:id                   controllers.Apps.details(id: String)
 PUT     /apps/:id                   controllers.Apps.install(id: String)
 DELETE  /apps/:id                   controllers.Apps.uninstall(id: String)
 GET     /apps/:id/installed         controllers.Apps.isInstalled(id: String)
+GET     /apps/:id/create            controllers.Apps.getCreateUrl(id: String)
 # Visualizations
 POST    /visualizations/get         controllers.Visualizations.get()
 GET     /visualizations/:id         controllers.Visualizations.details(id: String)
 PUT     /visualizations/:id         controllers.Visualizations.install(id: String)
 DELETE  /visualizations/:id         controllers.Visualizations.uninstall(id: String)
 GET     /visualizations/:id/installed controllers.Visualizations.isInstalled(id: String)
+GET     /visualizations/:id/url     controllers.Visualizations.getUrl(id: String)
 
 # JS Routes
 GET     /assets/javascripts/routes  controllers.Application.javascriptRoutes()
@@ -72,5 +74,5 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
 # Apps Public API
-OPTIONS /:userId/apps/:appId/records controllers.AppsAPI.checkPreflight(userId: String, appId: String)
-POST    /:userId/apps/:appId/records controllers.AppsAPI.createRecord(userId: String, appId: String)
+OPTIONS /:userId/apps/:appId        controllers.AppsAPI.checkPreflight(userId: String, appId: String)
+POST    /:userId/apps/:appId        controllers.AppsAPI.createRecord(userId: String, appId: String)

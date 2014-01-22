@@ -49,7 +49,7 @@ public class Records extends Controller {
 		return ok(record.render(new ObjectId(request().username())));
 	}
 
-	public static Result createRecords(String appIdString) {
+	public static Result create(String appIdString) {
 		return ok(createrecords.render(new ObjectId(request().username())));
 	}
 
@@ -71,6 +71,43 @@ public class Records extends Controller {
 			records = new ArrayList<Record>(Record.getAll(properties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
+		}
+		Collections.sort(records);
+		return ok(Json.toJson(records));
+	}
+
+	public static Result getVisibleRecords() {
+		// get own records
+		ObjectId userId = new ObjectId(request().username());
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name")
+				.get();
+		List<Record> records;
+		try {
+			records = new ArrayList<Record>(Record.getAll(properties, fields));
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+
+		// get visible records
+		properties = new ChainedMap<String, ObjectId>().put("_id", userId).get();
+		Set<String> visible = new ChainedSet<String>().add("visible").get();
+		User user;
+		try {
+			user = User.get(properties, visible);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
+		for (String userIdString : user.visible.keySet()) {
+			visibleRecordIds.addAll(user.visible.get(userIdString));
+		}
+		Map<String, Set<ObjectId>> visibleRecords = new ChainedMap<String, Set<ObjectId>>()
+				.put("_id", visibleRecordIds).get();
+		try {
+			records.addAll(Record.getAll(visibleRecords, fields));
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 		Collections.sort(records);
 		return ok(Json.toJson(records));
@@ -103,31 +140,6 @@ public class Records extends Controller {
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = app.details.replace(":record", encodedData);
 		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
-	}
-
-	public static Result getCreateUrl(String appIdString) {
-		// get app
-		ObjectId appId = new ObjectId(appIdString);
-		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
-		Set<String> fields = new ChainedSet<String>().add("create").get();
-		App app;
-		try {
-			app = App.get(properties, fields);
-		} catch (ModelException e) {
-			return internalServerError(e.getMessage());
-		}
-
-		// create reply to address and encode it with Base64
-		String platformServer = Play.application().configuration().getString("platform.server");
-		String replyTo = "http://" + platformServer
-				+ routes.AppsAPI.createRecord(request().username(), appIdString).url();
-		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
-
-		// put together url to load in iframe
-		String appServer = Play.application().configuration().getString("plugins.server");
-		String createUrl = app.create.replace(":replyTo", encodedReplyTo);
-		String url = "http://" + appServer + "/apps/" + appIdString + "/" + createUrl;
-		return ok(url);
 	}
 
 	public static Result search(String query) {
@@ -180,7 +192,7 @@ public class Records extends Controller {
 		// update spaces
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		Set<ObjectId> spaceIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("spaces")));
+		Set<ObjectId> spaceIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("spaces")));
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
 		Set<String> fields = new ChainedSet<String>().add("records").get();
 		try {
@@ -223,8 +235,10 @@ public class Records extends Controller {
 		}
 
 		// extract circle ids from posted data
-		Set<ObjectId> startedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("started")));
-		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.toObjectIds(JsonExtraction.extractStringSet(json.get("stopped")));
+		Set<ObjectId> startedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json
+				.get("started")));
+		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json
+				.get("stopped")));
 
 		// validate circles
 		Iterator<ObjectId> iterator = startedCircleIds.iterator();
@@ -251,13 +265,13 @@ public class Records extends Controller {
 			Set<Circle> circles = Circle.getAll(properties, fields);
 			for (Circle circle : circles) {
 				if (startedCircleIds.contains(circle._id)) {
-					circle.shared.add(recordId);
-					Circle.set(circle._id, "shared", circle.shared);
 					for (ObjectId memberId : circle.members) {
 						if (!isSharedWith(circles, recordId, memberId)) {
 							startedUserIds.add(memberId);
 						}
 					}
+					circle.shared.add(recordId);
+					Circle.set(circle._id, "shared", circle.shared);
 				} else if (stoppedCircleIds.contains(circle._id)) {
 					circle.shared.remove(recordId);
 					Circle.set(circle._id, "shared", circle.shared);

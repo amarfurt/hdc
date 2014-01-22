@@ -5,11 +5,12 @@
 		<!-- Header -->
 		<div class="page-header">
 			<div class="pull-right">
-				<div ng-show="apps.length === 0">
+				<p ng-show="loadingApps">Loading apps...</p>
+				<div ng-show="!loadingApps && apps.length === 0">
 					<p>You can create or import records with apps.</p>
 					<p>Go to the <a href="@routes.Market.index()">Market</a> to install one.</p>
 				</div>
-				<div class="btn-group" ng-show="apps.length > 0">
+				<div class="btn-group" ng-show="!loadingApps && apps.length > 0">
 					<button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
 						<span class="glyphicon glyphicon-plus"></span> Create or import a new record
 					</button>
@@ -29,16 +30,17 @@
 		</div>
 		
 		<!-- Records -->
-		<p ng-show="records.length === 0">No available records found.</p>
-		<ul class="list-group" ng-show="records.length > 0">
+		<p ng-show="loadingRecords">Loading records...</p>
+		<p ng-show="!loadingRecords && records.length === 0">No available records found.</p>
+		<ul class="list-group" ng-show="!loadingRecords && records.length > 0">
 			<li class="list-group-item" ng-repeat="record in filteredRecords = (records | filter:matchesFilters)">
-				<span class="label label-info">{{record.creator}}</span>
+				<span class="label label-info">{{record.created}}</span>
 				<a href="javascript:;" ng-click="showDetails(record)">{{record.name}}</a>
 				<div class="pull-right">
 					<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary" ng-click="activate(record); loadSpaces()">
 						<span class="glyphicon glyphicon-picture"></span> Show
 					</button>
-					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary" ng-class="{'disabled': !isOwnerOf('@user', record)}" ng-click="activate(record); loadCircles()">
+					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary" ng-class="{'disabled': !isOwnRecord(record)}" ng-click="activate(record); loadCircles()">
 						<span class="glyphicon glyphicon-share"></span> Share
 					</button>
 				</div>
@@ -47,16 +49,16 @@
 		
 		<!-- Filters -->
 		<div ng-show="records.length > 0">
-			<form class="form-inline" role="form">
+			<div class="row">
 				<div class="form-group col-lg-3">
 					<label for="appFilter" class="control-label">Created with: </label>
-					<select id="appFilter" class="form-control" ng-model="filter.appId" ng-options="app for app in select.apps">
+					<select id="appFilter" class="form-control" ng-model="filter.appId" ng-options="app._id as app.name for app in select.apps">
 						<option value="">any</option>
 					</select>
 				</div>
 				<div class="form-group col-lg-3">
 					<label for="ownerFilter" class="control-label">Owned by: </label>
-					<select id="ownerFilter" class="form-control" ng-model="filter.ownerId" ng-options="owner for owner in select.owners">
+					<select id="ownerFilter" class="form-control" ng-model="filter.ownerId" ng-options="owner._id as owner.name for owner in select.owners">
 						<option value="">any</option>
 					</select>
 				</div>
@@ -64,7 +66,7 @@
 					<label for="dateFilter" class="control-label">Created between: <span style="color:#707070">{{filter.date}}</span></label>
 					<input id="dateFilter" style="width:500px">
 				</div>
-			</form>
+			</div>
 		</div>
 		
 		<!-- Spaces modal -->
@@ -81,7 +83,7 @@
 						<div ng-show="spaces.length > 0">
 							<div class="checkbox" ng-repeat="space in spaces">
 								<label>
-									<input type="checkbox" name="{{space._id}}" ng-model="space.checked">
+									<input type="checkbox" name="{{space._id.$oid}}" ng-model="space.checked">
 									{{space.name}}
 								</label>
 							</div>
@@ -109,7 +111,7 @@
 						<div ng-show="circles.length > 0">
 							<div class="checkbox" ng-repeat="circle in circles">
 								<label>
-									<input type="checkbox" name="{{circle._id}}" ng-model="circle.checked">
+									<input type="checkbox" name="{{circle._id.$oid}}" ng-model="circle.checked">
 									{{circle.name}}
 								</label>
 							</div>
