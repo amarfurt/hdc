@@ -9,7 +9,6 @@ import java.util.Set;
 
 import models.Circle;
 import models.ModelException;
-import models.User;
 
 import org.bson.types.ObjectId;
 
@@ -103,11 +102,25 @@ public class Circles extends Controller {
 			return badRequest("No circle with this id exists.");
 		}
 
-		// TODO for all members: check which records to make invisible
+		// get the circle's members and shared records
+		Circle circle;
+		try {
+			circle = Circle.get(new ChainedMap<String, ObjectId>().put("_id", circleId).get(), new ChainedSet<String>()
+					.add("members").add("shared").get());
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
 
 		// delete circle
 		try {
 			Circle.delete(userId, circleId);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// make the records of the deleted circle invisible to its former members
+		try {
+			Users.makeInvisible(userId, circle.shared, circle.members);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -134,30 +147,18 @@ public class Circles extends Controller {
 		// add users to circle (implicit: if not already present)
 		Set<ObjectId> newMemberIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("users")));
 		Set<String> fields = new ChainedSet<String>().add("members").add("shared").get();
-		Set<ObjectId> sharedRecords;
+		Circle circle;
 		try {
-			Circle circle = Circle.get(new ChainedMap<String, ObjectId>().put("_id", circleId).get(), fields);
+			circle = Circle.get(new ChainedMap<String, ObjectId>().put("_id", circleId).get(), fields);
 			circle.members.addAll(newMemberIds);
 			Circle.set(circle._id, "members", circle.members);
-			sharedRecords = circle.shared;
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
 
 		// also make records of this circle visible
-		Map<String, Set<ObjectId>> properties = new ChainedMap<String, Set<ObjectId>>().put("_id", newMemberIds).get();
-		fields = new ChainedSet<String>().add("visible." + userId.toString()).get();
 		try {
-			Set<User> newMembers = User.getAll(properties, fields);
-			for (User newMember : newMembers) {
-				if (!newMember.visible.containsKey(userId.toString())) {
-					User.set(newMember._id, "visible." + userId.toString(), sharedRecords);
-				} else {
-					Set<ObjectId> visibleRecords = newMember.visible.get(userId.toString());
-					visibleRecords.addAll(sharedRecords);
-					User.set(newMember._id, "visible." + userId.toString(), visibleRecords);
-				}
-			}
+			Users.makeVisible(userId, circle.shared, newMemberIds);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -179,21 +180,9 @@ public class Circles extends Controller {
 			Circle circle = Circle.get(new ChainedMap<String, ObjectId>().put("_id", circleId).get(), fields);
 			circle.members.remove(memberId);
 			Circle.set(circle._id, "members", circle.members);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
 
-		// also remove records from visible records that are no longer shared with the member
-		// get all circles this user is a member of
-		fields = new ChainedSet<String>().add("shared").get();
-		try {
-			Set<Circle> circles = Circle.getAll(new ChainedMap<String, ObjectId>().put("members", memberId).get(),
-					fields);
-			HashSet<ObjectId> stillShared = new HashSet<ObjectId>();
-			for (Circle circle : circles) {
-				stillShared.addAll(circle.shared);
-			}
-			User.set(memberId, "visible." + userId.toString(), stillShared);
+			// also remove records from visible records that are no longer shared with the member
+			Users.makeInvisible(userId, circle.shared, new ChainedSet<ObjectId>().add(memberId).get());
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}

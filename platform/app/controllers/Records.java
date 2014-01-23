@@ -3,7 +3,6 @@ package controllers;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -228,9 +227,7 @@ public class Records extends Controller {
 		// validate request: record
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", recordId).put("owner", userId)
-				.get();
-		if (!Record.exists(properties)) {
+		if (!Record.exists(new ChainedMap<String, ObjectId>().put("_id", recordId).put("owner", userId).get())) {
 			return badRequest("No record with this id exists.");
 		}
 
@@ -240,92 +237,37 @@ public class Records extends Controller {
 		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json
 				.get("stopped")));
 
-		// validate circles
-		Iterator<ObjectId> iterator = startedCircleIds.iterator();
-		while (iterator.hasNext()) {
-			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", iterator.next()).put("owner", userId)
-					.get())) {
-				iterator.remove();
-			}
-		}
-		iterator = stoppedCircleIds.iterator();
-		while (iterator.hasNext()) {
-			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", iterator.next()).put("owner", userId)
-					.get())) {
-				iterator.remove();
-			}
-		}
-
-		// update circles (fetch all and update necessary circles)
-		properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		// get all circles
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
 		Set<String> fields = new ChainedSet<String>().add("shared").add("members").get();
-		Set<ObjectId> startedUserIds = new HashSet<ObjectId>();
-		Set<ObjectId> stoppedUserIds = new HashSet<ObjectId>();
 		try {
 			Set<Circle> circles = Circle.getAll(properties, fields);
+
+			// update 'shared' field of circles
+			Set<ObjectId> startedMembers = new HashSet<ObjectId>();
 			for (Circle circle : circles) {
 				if (startedCircleIds.contains(circle._id)) {
-					for (ObjectId memberId : circle.members) {
-						if (!isSharedWith(circles, recordId, memberId)) {
-							startedUserIds.add(memberId);
-						}
-					}
 					circle.shared.add(recordId);
 					Circle.set(circle._id, "shared", circle.shared);
-				} else if (stoppedCircleIds.contains(circle._id)) {
+					startedMembers.addAll(circle.members);
+				}
+			}
+			Set<ObjectId> stoppedMembers = new HashSet<ObjectId>();
+			for (Circle circle : circles) {
+				if (stoppedCircleIds.contains(circle._id)) {
 					circle.shared.remove(recordId);
 					Circle.set(circle._id, "shared", circle.shared);
-					for (ObjectId memberId : circle.members) {
-						if (!isSharedWith(circles, recordId, memberId)) {
-							stoppedUserIds.add(memberId);
-						}
-					}
-				}
-			}
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-
-		// also update visible records of users
-		fields = new ChainedSet<String>().add("visible." + userId.toString()).get();
-		try {
-			// users that can now see the record
-			Set<User> startedUsers = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", startedUserIds)
-					.get(), fields);
-			for (User startedUser : startedUsers) {
-				if (!startedUser.visible.containsKey(userId.toString())) {
-					User.set(startedUser._id, "visible." + userId.toString(), new ChainedSet<ObjectId>().add(recordId)
-							.get());
-				} else {
-					Set<ObjectId> visibleRecords = startedUser.visible.get(userId.toString());
-					visibleRecords.add(recordId);
-					User.set(startedUser._id, "visible." + userId.toString(), visibleRecords);
+					stoppedMembers.addAll(circle.members);
 				}
 			}
 
-			// users that can no longer see the record
-			Set<User> stoppedUsers = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", stoppedUserIds)
-					.get(), fields);
-			for (User stoppedUser : stoppedUsers) {
-				Set<ObjectId> visibleRecords = stoppedUser.visible.get(userId.toString());
-				visibleRecords.remove(recordId);
-				User.set(stoppedUser._id, "visible." + userId.toString(), visibleRecords);
-			}
+			// make record visible to started and invisible to stopped members
+			Set<ObjectId> recordIds = new ChainedSet<ObjectId>().add(recordId).get();
+			Users.makeVisible(userId, recordIds, startedMembers);
+			Users.makeInvisible(userId, recordIds, stoppedMembers, circles);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
 		return ok();
-	}
-
-	/**
-	 * Check whether the given record is shared with the given user in one of the circles.
-	 */
-	private static boolean isSharedWith(Set<Circle> circles, ObjectId recordId, ObjectId userId) {
-		for (Circle circle : circles) {
-			if (circle.members.contains(userId) && circle.shared.contains(recordId)) {
-				return true;
-			}
-		}
-		return false;
 	}
 }
