@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Spaces extends Controller {
 
 	public static Result index() {
-		return ok(spaces.render(new ObjectId(request().username())));
+		return ok(spaces.render());
 	}
 
 	public static Result details(String spaceIdString) {

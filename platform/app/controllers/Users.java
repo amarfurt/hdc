@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Users extends Controller {
 
 	public static Result details(String userIdString) {
-		return ok(user.render(new ObjectId(request().username())));
+		return ok(user.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

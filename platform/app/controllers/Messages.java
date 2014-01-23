@@ -8,9 +8,6 @@ import java.util.Set;
 
 import models.Message;
 import models.ModelException;
-
-import org.bson.types.ObjectId;
-
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -28,11 +25,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Messages extends Controller {
 
 	public static Result index() {
-		return ok(index.render(new ObjectId(request().username())));
+		return ok(index.render());
 	}
 
 	public static Result details(String messageIdString) {
-		return ok(message.render(new ObjectId(request().username())));
+		return ok(message.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

@@ -32,7 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Apps extends Controller {
 
 	public static Result details(String appIdString) {
-		return ok(app.render(new ObjectId(request().username())));
+		return ok(app.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

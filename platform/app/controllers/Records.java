@@ -41,15 +41,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Records extends Controller {
 
 	public static Result index() {
-		return ok(records.render(new ObjectId(request().username())));
+		return ok(records.render());
 	}
 
 	public static Result details(String recordIdString) {
-		return ok(record.render(new ObjectId(request().username())));
+		return ok(record.render());
 	}
 
 	public static Result create(String appIdString) {
-		return ok(createrecords.render(new ObjectId(request().username())));
+		return ok(createrecords.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

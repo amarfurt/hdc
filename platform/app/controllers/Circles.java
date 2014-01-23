@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Circles extends Controller {
 
 	public static Result index() {
-		return ok(circles.render(new ObjectId(request().username())));
+		return ok(circles.render());
 	}
 
 	public static Result details(String circleIdString) {

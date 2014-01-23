@@ -23,15 +23,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Market extends Controller {
 
 	public static Result index() {
-		return ok(market.render(new ObjectId(request().username())));
+		return ok(market.render());
 	}
 
 	public static Result registerAppForm() {
-		return ok(registerapp.render(new ObjectId(request().username())));
+		return ok(registerapp.render());
 	}
 
 	public static Result registerVisualizationForm() {
-		return ok(registervisualization.render(new ObjectId(request().username())));
+		return ok(registervisualization.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

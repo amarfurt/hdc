@@ -29,7 +29,7 @@ public class GlobalSearch extends Controller {
 	 * Load site and give control to JS controller.
 	 */
 	public static Result index(String query) {
-		return ok(search.render(new ObjectId(request().username())));
+		return ok(search.render());
 	}
 
 	/**

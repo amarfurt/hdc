@@ -31,7 +31,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Visualizations extends Controller {
 
 	public static Result details(String visualizationIdString) {
-		return ok(visualization.render(new ObjectId(request().username())));
+		return ok(visualization.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
