@@ -82,8 +82,9 @@ public class Spaces extends Controller {
 		// create new space
 		Space space = new Space();
 		space._id = new ObjectId();
-		space.name = name;
 		space.owner = userId;
+		space.name = name;
+		space.order = Space.getMaxOrder(userId) + 1;
 		space.visualization = new ObjectId(visualizationIdString);
 		space.records = new HashSet<ObjectId>();
 		try {

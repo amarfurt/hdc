@@ -84,8 +84,7 @@ public class Circles extends Controller {
 		circle._id = new ObjectId();
 		circle.owner = userId;
 		circle.name = name;
-		// TODO order
-		// circle.order = OrderOperations.getMax(collection, userId);
+		circle.order = Circle.getMaxOrder(userId) + 1;
 		circle.members = new HashSet<ObjectId>();
 		circle.shared = new HashSet<ObjectId>();
 		try {

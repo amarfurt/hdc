@@ -72,4 +72,8 @@ public class Circle extends Model implements Comparable<Circle> {
 		Model.delete(collection, properties);
 	}
 
+	public static int getMaxOrder(ObjectId ownerId) {
+		return OrderOperations.getMax(collection, ownerId);
+	}
+
 }

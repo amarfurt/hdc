@@ -71,4 +71,8 @@ public class Space extends Model implements Comparable<Space> {
 		Model.delete(collection, properties);
 	}
 
+	public static int getMaxOrder(ObjectId ownerId) {
+		return OrderOperations.getMax(collection, ownerId);
+	}
+
 }
