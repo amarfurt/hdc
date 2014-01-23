@@ -14,9 +14,9 @@ search.controller('SearchCtrl', ['$scope', '$http', '$sce', function($scope, $ht
 	// start search
 	$scope.loading = true;
 	$http(jsRoutes.controllers.GlobalSearch.search($scope.query)).
-		success(function(data) {
+		success(function(results) {
 			$scope.error = null;
-			$scope.results = data;
+			$scope.results = results;
 			$scope.types = Object.keys($scope.results);
 			if ($scope.types.length > 0) {
 				$scope.makeActive($scope.types[0]);

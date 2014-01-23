@@ -34,10 +34,13 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 					} else {
 						$scope.makeActive($scope.spaces[0]);
 					}
-					$scope.loading = false;
 				}
+				$scope.loading = false;
 			}).
-			error(function(err) { $scope.error = "Failed to load spaces: " + err; });
+			error(function(err) {
+				$scope.error = "Failed to load spaces: " + err;
+				$scope.loading = false;
+			});
 	}
 	
 	// make space tab active
