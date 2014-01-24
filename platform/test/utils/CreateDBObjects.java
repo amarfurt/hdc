@@ -57,7 +57,7 @@ public class CreateDBObjects {
 			record.app = new ObjectId();
 			record.owner = owner;
 			record.creator = creator;
-			record.created = DateTimeUtils.getNow();
+			record.created = DateTimeUtils.now();
 			record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
 			record.name = "Test record";
 			record.description = "Test data.";

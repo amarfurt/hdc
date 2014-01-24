@@ -133,6 +133,7 @@ public class Application extends Controller {
 				// Messages
 				controllers.routes.javascript.Messages.details(),
 				controllers.routes.javascript.Messages.get(),
+				controllers.routes.javascript.Messages.send(),
 				// Records
 				controllers.routes.javascript.Records.details(),
 				controllers.routes.javascript.Records.create(),

@@ -10,7 +10,7 @@ public class DateTimeUtils {
 	private static final String DATE = "EEE, MMM d, yyyy";
 	private static final String TIME = "HH:mm:ss";
 
-	public static String getNow() {
+	public static String now() {
 		return new SimpleDateFormat(COMPLETE).format(new Date());
 	}
 

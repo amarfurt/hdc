@@ -10,6 +10,8 @@ GET     /logout                     controllers.Application.logout()
 # Messages
 GET     /                           controllers.Messages.index()
 POST    /messages/get               controllers.Messages.get()
+GET     /messages/create            controllers.Messages.create()
+POST    /messages/send              controllers.Messages.send()
 GET     /messages/:id               controllers.Messages.details(id: String)
 # Records
 GET     /records                    controllers.Records.index()

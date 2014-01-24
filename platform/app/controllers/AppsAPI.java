@@ -46,7 +46,7 @@ public class AppsAPI extends Controller {
 		record.app = new ObjectId(appIdString);
 		record.owner = new ObjectId(userIdString);
 		record.creator = new ObjectId(userIdString);
-		record.created = DateTimeUtils.getNow();
+		record.created = DateTimeUtils.now();
 		record.data = data;
 		record.name = name;
 		record.description = description;

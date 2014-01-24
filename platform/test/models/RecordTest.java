@@ -42,7 +42,7 @@ public class RecordTest {
 		record.app = new ObjectId();
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
-		record.created = DateTimeUtils.getNow();
+		record.created = DateTimeUtils.now();
 		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
 		record.name = "Test record";
 		record.description = "Test data.";
@@ -61,7 +61,7 @@ public class RecordTest {
 		record.app = new ObjectId();
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
-		record.created = DateTimeUtils.getNow();
+		record.created = DateTimeUtils.now();
 		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
 		record.name = "Test record";
 		record.description = "Test data.";
@@ -80,7 +80,7 @@ public class RecordTest {
 		record.app = new ObjectId();
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
-		record.created = DateTimeUtils.getNow();
+		record.created = DateTimeUtils.now();
 		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
 		record.name = "Test record";
 		record.description = "Test data.";
@@ -101,7 +101,7 @@ public class RecordTest {
 		record.app = new ObjectId();
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
-		record.created = DateTimeUtils.getNow();
+		record.created = DateTimeUtils.now();
 		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
 		record.name = "Test record";
 		record.description = "Test data.";

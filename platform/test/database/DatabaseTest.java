@@ -107,7 +107,7 @@ public class DatabaseTest {
 		message._id = new ObjectId();
 		message.sender = new ObjectId();
 		message.receiver = new ObjectId();
-		message.created = DateTimeUtils.getNow();
+		message.created = DateTimeUtils.now();
 		message.title = "Test";
 		message.content = "This is a test message.";
 		messages.insert(DatabaseConversion.toDBObject(message));
