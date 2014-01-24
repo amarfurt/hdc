@@ -21,9 +21,11 @@ import org.junit.Test;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
-import utils.ModelConversion;
-import utils.db.DatabaseConversionException;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
+import utils.db.DatabaseConversion;
+import utils.db.DatabaseConversionException;
 import utils.db.OrderOperations;
 
 import com.mongodb.BasicDBList;
@@ -46,20 +48,21 @@ public class SpacesTest {
 	}
 
 	@Test
-	public void addSpace() throws DatabaseConversionException {
-		ObjectId userId = User.getId("test1@example.com");
+	public void addSpace() throws DatabaseConversionException, Exception {
+		User user = User.get(new ChainedMap<String, String>().put("email", "test1@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		ObjectId visualizationId = new ObjectId();
 		Result result = callAction(
 				controllers.routes.ref.Spaces.add(),
-				fakeRequest().withSession("id", userId.toString()).withJsonBody(
+				fakeRequest().withSession("id", user._id.toString()).withJsonBody(
 						Json.parse("{\"name\": \"Test space\", \"visualization\": \"" + visualizationId.toString()
 								+ "\"}")));
 		assertEquals(200, status(result));
 		DBObject foundSpace = Database.getCollection("spaces").findOne(new BasicDBObject("name", "Test space"));
-		Space space = ModelConversion.mapToModel(Space.class, foundSpace.toMap());
+		Space space = DatabaseConversion.toModel(Space.class, foundSpace);
 		assertNotNull(space);
 		assertEquals("Test space", space.name);
-		assertEquals(userId, space.owner);
+		assertEquals(user._id, space.owner);
 		assertEquals(visualizationId, space.visualization);
 		assertEquals(OrderOperations.getMax("spaces", space.owner), space.order);
 		assertEquals(0, space.records.size());
@@ -81,17 +84,18 @@ public class SpacesTest {
 	}
 
 	@Test
-	public void deleteSpaceForbidden() {
+	public void deleteSpaceForbidden() throws Exception {
 		DBCollection spaces = Database.getCollection("spaces");
 		long originalCount = spaces.count();
-		ObjectId userId = User.getId("test2@example.com");
+		User user = User.get(new ChainedMap<String, String>().put("email", "test2@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", userId));
+		query.put("owner", new BasicDBObject("$ne", user._id));
 		DBObject space = spaces.findOne(query);
 		ObjectId id = (ObjectId) space.get("_id");
 		String spaceId = id.toString();
 		Result result = callAction(controllers.routes.ref.Spaces.delete(spaceId),
-				fakeRequest().withSession("id", userId.toString()));
+				fakeRequest().withSession("id", user._id.toString()));
 		assertEquals(400, status(result));
 		assertEquals("No space with this id exists.", contentAsString(result));
 		assertNotNull(spaces.findOne(new BasicDBObject("_id", id)));
@@ -115,11 +119,10 @@ public class SpacesTest {
 		Result result = callAction(
 				controllers.routes.ref.Spaces.addRecords(spaceId),
 				fakeRequest().withSession("id", userId.toString()).withJsonBody(
-						Json.parse("{\"records\": [\"" + recordId.toString() + "\"]}")));
+						Json.parse("{\"records\": [{\"$oid\": \"" + recordId.toString() + "\"}]}")));
 		assertEquals(200, status(result));
 		DBObject foundSpace = spaces.findOne(new BasicDBObject("_id", id));
 		assertEquals(order, foundSpace.get("order"));
 		assertEquals(oldSize + 1, ((BasicDBList) foundSpace.get("records")).size());
 	}
-
 }

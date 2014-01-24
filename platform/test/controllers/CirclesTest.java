@@ -21,11 +21,11 @@ import org.junit.Test;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
-import utils.ModelConversion;
-import utils.db.DatabaseConversionException;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
+import utils.db.DatabaseConversion;
 
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
@@ -46,18 +46,19 @@ public class CirclesTest {
 	}
 
 	@Test
-	public void addCircle() throws DatabaseConversionException {
-		ObjectId userId = User.getId("test1@example.com");
+	public void addCircle() throws Exception {
+		User user = User.get(new ChainedMap<String, String>().put("email", "test1@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		Result result = callAction(
 				controllers.routes.ref.Circles.add(),
-				fakeRequest().withSession("id", userId.toString()).withFormUrlEncodedBody(
-						ImmutableMap.of("name", "Test circle")));
+				fakeRequest().withSession("id", user._id.toString()).withJsonBody(
+						Json.parse("{\"name\": \"Test circle\"}")));
 		assertEquals(200, status(result));
 		DBObject foundCircle = Database.getCollection("circles").findOne(new BasicDBObject("name", "Test circle"));
-		Circle circle = ModelConversion.mapToModel(Circle.class, foundCircle.toMap());
+		Circle circle = DatabaseConversion.toModel(Circle.class, foundCircle);
 		assertNotNull(circle);
 		assertEquals("Test circle", circle.name);
-		assertEquals(userId, circle.owner);
+		assertEquals(user._id, circle.owner);
 		assertEquals(0, circle.members.size());
 	}
 
@@ -75,16 +76,17 @@ public class CirclesTest {
 	}
 
 	@Test
-	public void deleteCircleForbidden() {
+	public void deleteCircleForbidden() throws Exception {
 		DBCollection circles = Database.getCollection("circles");
-		ObjectId userId = User.getId("test2@example.com");
+		User user = User.get(new ChainedMap<String, String>().put("email", "test2@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		DBObject query = new BasicDBObject();
-		query.put("owner", new BasicDBObject("$ne", userId));
+		query.put("owner", new BasicDBObject("$ne", user._id));
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		String circleId = id.toString();
 		Result result = callAction(controllers.routes.ref.Circles.delete(circleId),
-				fakeRequest().withSession("id", userId.toString()));
+				fakeRequest().withSession("id", user._id.toString()));
 		assertEquals(400, status(result));
 		assertEquals("No circle with this id exists.", contentAsString(result));
 		assertNotNull(circles.findOne(new BasicDBObject("_id", id)));
@@ -92,11 +94,12 @@ public class CirclesTest {
 
 	// forbidden requests are blocked by this controller, no longer testing this
 	@Test
-	public void addUser() {
+	public void addUser() throws Exception {
 		DBCollection circles = Database.getCollection("circles");
-		ObjectId userId = User.getId("test3@example.com");
+		User user = User.get(new ChainedMap<String, String>().put("email", "test3@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		DBObject query = new BasicDBObject();
-		query.put("members", new BasicDBObject("$nin", new ObjectId[] { userId }));
+		query.put("members", new BasicDBObject("$nin", new ObjectId[] { user._id }));
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		ObjectId ownerId = (ObjectId) circle.get("owner");
@@ -106,24 +109,25 @@ public class CirclesTest {
 		Result result = callAction(
 				controllers.routes.ref.Circles.addUsers(circleId),
 				fakeRequest().withSession("id", ownerId.toString()).withJsonBody(
-						Json.parse("{\"users\": [\"" + userId.toString() + "\"]}")));
+						Json.parse("{\"users\": [{\"$oid\": \"" + user._id.toString() + "\"}]}")));
 		assertEquals(200, status(result));
 		assertEquals(oldSize + 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());
 	}
 
 	@Test
-	public void removeMember() {
+	public void removeMember() throws Exception {
 		DBCollection circles = Database.getCollection("circles");
-		ObjectId userId = User.getId("test2@example.com");
+		User user = User.get(new ChainedMap<String, String>().put("email", "test2@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		DBObject query = new BasicDBObject();
-		query.put("members", new BasicDBObject("$in", new ObjectId[] { userId }));
+		query.put("members", new BasicDBObject("$in", new ObjectId[] { user._id }));
 		DBObject circle = circles.findOne(query);
 		ObjectId id = (ObjectId) circle.get("_id");
 		ObjectId ownerId = (ObjectId) circle.get("owner");
 		BasicDBList members = (BasicDBList) circle.get("members");
 		int oldSize = members.size();
 		String circleId = id.toString();
-		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId, userId.toString()),
+		Result result = callAction(controllers.routes.ref.Circles.removeMember(circleId, user._id.toString()),
 				fakeRequest().withSession("id", ownerId.toString()));
 		assertEquals(200, status(result));
 		assertEquals(oldSize - 1, ((BasicDBList) circles.findOne(new BasicDBObject("_id", id)).get("members")).size());

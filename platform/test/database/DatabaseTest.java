@@ -6,6 +6,11 @@ import static org.junit.Assert.assertTrue;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import models.Circle;
 import models.Message;
 import models.User;
@@ -16,11 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.DateTimeUtils;
-import utils.ModelConversion;
-import utils.db.DatabaseConversionException;
 import utils.db.Database;
+import utils.db.DatabaseConversion;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -59,14 +62,18 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndSaveUser() throws DatabaseConversionException {
+	public void createAndSaveUser() throws Exception {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
+		user._id = new ObjectId();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = "secret";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
+		user.password = User.encrypt("password");
+		user.visible = new HashMap<String, Set<ObjectId>>();
+		user.apps = new HashSet<ObjectId>();
+		user.visualizations = new HashSet<ObjectId>();
+		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
 		assertTrue(foundObject.containsField("name"));
@@ -74,52 +81,60 @@ public class DatabaseTest {
 	}
 
 	@Test
-	public void createAndRetrieveUser() throws DatabaseConversionException {
+	public void createAndRetrieveUser() throws Exception {
 		DBCollection users = Database.getCollection("users");
 		assertEquals(0, users.count());
 		User user = new User();
+		user._id = new ObjectId();
 		user.email = "test1@example.com";
 		user.name = "Test User";
-		user.password = "secret";
-		users.insert(new BasicDBObject(ModelConversion.modelToMap(user)));
+		user.password = User.encrypt("password");
+		user.visible = new HashMap<String, Set<ObjectId>>();
+		user.apps = new HashSet<ObjectId>();
+		user.visualizations = new HashSet<ObjectId>();
+		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
-		User retrievedUser = ModelConversion.mapToModel(User.class, foundObject.toMap());
+		User retrievedUser = DatabaseConversion.toModel(User.class, foundObject);
 		assertEquals("Test User", retrievedUser.name);
 	}
 
 	@Test
-	public void createAndRetrieveMessage() throws DatabaseConversionException {
+	public void createAndRetrieveMessage() throws Exception {
 		DBCollection messages = Database.getCollection("messages");
 		assertEquals(0, messages.count());
 		Message message = new Message();
+		message._id = new ObjectId();
 		message.sender = new ObjectId();
 		message.receiver = new ObjectId();
 		message.created = DateTimeUtils.getNow();
 		message.title = "Test";
 		message.content = "This is a test message.";
-		messages.insert(new BasicDBObject(ModelConversion.modelToMap(message)));
+		messages.insert(DatabaseConversion.toDBObject(message));
 		assertEquals(1, messages.count());
 		DBObject foundObject = messages.findOne();
-		Message retrievedMessage = ModelConversion.mapToModel(Message.class, foundObject.toMap());
+		Message retrievedMessage = DatabaseConversion.toModel(Message.class, foundObject);
 		assertEquals("Test", retrievedMessage.title);
 	}
 
 	@Test
-	public void createAndRetrieveCircle() throws DatabaseConversionException {
+	public void createAndRetrieveCircle() throws Exception {
 		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
-		circle.name = "Family";
+		circle._id = new ObjectId();
 		circle.owner = new ObjectId();
-		circle.members = new BasicDBList();
-		circle.members.add("test2@example.com");
-		circle.members.add("test3@example.com");
-		circle.members.add("test4@example.com");
-		circles.insert(new BasicDBObject(ModelConversion.modelToMap(circle)));
+		circle.name = "Family";
+		circle.order = 1;
+		circle.members = new HashSet<ObjectId>();
+		circle.members.add(new ObjectId());
+		circle.members.add(new ObjectId());
+		circle.members.add(new ObjectId());
+		circle.shared = new HashSet<ObjectId>();
+		circles.insert(DatabaseConversion.toDBObject(circle));
 		assertEquals(1, circles.count());
 		DBObject foundObject = circles.findOne();
-		Circle retrievedCircle = ModelConversion.mapToModel(Circle.class, foundObject.toMap());
+		Circle retrievedCircle = DatabaseConversion.toModel(Circle.class, foundObject);
 		assertEquals("Family", retrievedCircle.name);
 	}
 

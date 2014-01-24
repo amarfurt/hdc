@@ -1,7 +1,6 @@
 package utils;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
@@ -77,10 +76,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void incrementGreaterThan() {
+	public void incrementGreaterThan() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.increment("order", userIds[0], 4, 0));
+		OrderOperations.increment("order", userIds[0], 4, 0);
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(6, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 3)).get("order"));
@@ -89,10 +88,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void incrementBetween() {
+	public void incrementBetween() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.increment("order", userIds[0], 3, 4));
+		OrderOperations.increment("order", userIds[0], 3, 4);
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 3)).get("order"));
@@ -101,10 +100,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void incrementFromGreaterTo() {
+	public void incrementFromGreaterTo() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.increment("order", userIds[0], 4, 1));
+		OrderOperations.increment("order", userIds[0], 4, 1);
 		assertEquals(2, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(5, collection.findOne(new BasicDBObject("_id", 3)).get("order"));
@@ -113,10 +112,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void decrementGreaterThan() {
+	public void decrementGreaterThan() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.decrement("order", userIds[0], 0, 5));
+		OrderOperations.decrement("order", userIds[0], 0, 5);
 		assertEquals(0, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(3, collection.findOne(new BasicDBObject("_id", 3)).get("order"));
@@ -125,10 +124,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void decrementBetween() {
+	public void decrementBetween() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.decrement("order", userIds[0], 2, 5));
+		OrderOperations.decrement("order", userIds[0], 2, 5);
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(3, collection.findOne(new BasicDBObject("_id", 3)).get("order"));
@@ -137,10 +136,10 @@ public class OrderOperationsTest {
 	}
 
 	@Test
-	public void decrementFromGreaterTo() {
+	public void decrementFromGreaterTo() throws Exception {
 		ObjectId[] userIds = insertTestValues();
 		DBCollection collection = Database.getCollection("order");
-		assertNull(OrderOperations.decrement("order", userIds[0], 5, 3));
+		OrderOperations.decrement("order", userIds[0], 5, 3);
 		assertEquals(1, collection.findOne(new BasicDBObject("_id", 1)).get("order"));
 		assertEquals(4, collection.findOne(new BasicDBObject("_id", 2)).get("order"));
 		assertEquals(3, collection.findOne(new BasicDBObject("_id", 3)).get("order"));

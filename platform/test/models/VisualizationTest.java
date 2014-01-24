@@ -36,9 +36,11 @@ public class VisualizationTest {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
+		visualization._id = new ObjectId();
 		visualization.creator = new ObjectId();
 		visualization.name = "Test visualization";
 		visualization.description = "Test description";
+		visualization.spotlighted = true;
 		visualization.url = "www.test.url";
 		Visualization.add(visualization);
 		assertEquals(1, visualizations.count());
@@ -51,13 +53,15 @@ public class VisualizationTest {
 		DBCollection visualizations = Database.getCollection(collection);
 		assertEquals(0, visualizations.count());
 		Visualization visualization = new Visualization();
+		visualization._id = new ObjectId();
 		visualization.creator = new ObjectId();
 		visualization.name = "Test visualization";
 		visualization.description = "Test description";
+		visualization.spotlighted = true;
 		visualization.url = "www.test.url";
 		Visualization.add(visualization);
 		assertEquals(1, visualizations.count());
-		Visualization.delete(visualization.creator, visualization._id);
+		Visualization.delete(visualization._id);
 		assertEquals(0, visualizations.count());
 	}
 }

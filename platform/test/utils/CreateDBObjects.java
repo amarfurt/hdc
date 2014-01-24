@@ -2,9 +2,9 @@ package utils;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import models.ModelException;
 import models.Record;
@@ -29,9 +29,9 @@ public class CreateDBObjects {
 			user.email = "test" + (i + 1) + "@example.com";
 			user.name = "Test User " + (i + 1);
 			user.password = User.encrypt("password");
-			user.visible = new HashMap<String, List<ObjectId>>();
-			user.apps = new ArrayList<ObjectId>();
-			user.visualizations = new ArrayList<ObjectId>();
+			user.visible = new HashMap<String, Set<ObjectId>>();
+			user.apps = new HashSet<ObjectId>();
+			user.visualizations = new HashSet<ObjectId>();
 			User.add(user);
 			userIds[i] = user._id;
 		}

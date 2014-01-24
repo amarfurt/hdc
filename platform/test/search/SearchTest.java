@@ -99,8 +99,8 @@ public class SearchTest {
 	public void searchEmptyIndex() throws SearchException {
 		ObjectId userId1 = addUser();
 		ObjectId userId2 = addUser();
-		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
-		visibleRecords.put(userId2, new HashSet<ObjectId>());
+		Map<String, Set<ObjectId>> visibleRecords = new HashMap<String, Set<ObjectId>>();
+		visibleRecords.put(userId2.toString(), new HashSet<ObjectId>());
 		String query = "title";
 		Map<String, List<SearchResult>> result = Search.search(userId1, visibleRecords, query);
 		assertEquals(0, result.size());
@@ -115,7 +115,7 @@ public class SearchTest {
 		SearchTestHelper.refreshIndex();
 		assertEquals(1, SearchTestHelper.count(userId.toString(), "record"));
 		String query = "title";
-		HashMap<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		HashMap<String, Set<ObjectId>> visibleRecords = new HashMap<String, Set<ObjectId>>();
 		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));
@@ -135,10 +135,10 @@ public class SearchTest {
 		SearchTestHelper.refreshIndex();
 		assertEquals(1, SearchTestHelper.count(userId1.toString(), "record"));
 		String query = "title";
-		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		Map<String, Set<ObjectId>> visibleRecords = new HashMap<String, Set<ObjectId>>();
 		Set<ObjectId> visibleRecordIds = new HashSet<ObjectId>();
 		visibleRecordIds.add(recordId);
-		visibleRecords.put(userId1, visibleRecordIds);
+		visibleRecords.put(userId1.toString(), visibleRecordIds);
 		Map<String, List<SearchResult>> result = Search.search(userId2, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));
@@ -163,7 +163,7 @@ public class SearchTest {
 		SearchTestHelper.refreshIndex();
 		assertEquals(3, SearchTestHelper.count(userId.toString(), "record"));
 		String query = "title 2";
-		Map<ObjectId, Set<ObjectId>> visibleRecords = new HashMap<ObjectId, Set<ObjectId>>();
+		Map<String, Set<ObjectId>> visibleRecords = new HashMap<String, Set<ObjectId>>();
 		Map<String, List<SearchResult>> result = Search.search(userId, visibleRecords, query);
 		assertEquals(1, result.size());
 		assertTrue(result.containsKey("record"));

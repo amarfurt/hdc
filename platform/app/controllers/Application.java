@@ -49,7 +49,7 @@ public class Application extends Controller {
 			} else {
 				user = User.get(emailQuery, new ChainedSet<String>().add("password").get());
 				if (!User.authenticationValid(password, user.password)) {
-					return badRequest("Invalid user or password");
+					return badRequest("Invalid user or password.");
 				}
 			}
 		} catch (ModelException e) {

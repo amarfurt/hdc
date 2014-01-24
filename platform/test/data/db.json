@@ -5,7 +5,7 @@
 		"email" : "test1@example.com",
 		"name" : "Test User 1",
 		"password" : "1000:8325165e85492ff15e59c525a5f66088df4847d8d5fe2536:4d0959338760205bddd3098ad7681259ad1f1a3334473bbc",
-		"visible": [ ],
+		"visible": { },
 		"apps": [
 			{ "$oid" : "5255500630040546a0ddc674" }
 		],
@@ -18,7 +18,7 @@
 		"email" : "test2@example.com",
 		"name" : "Test User 2",
 		"password" : "1000:6203f51737eebf6052f2d93fae1844d3400a2c731cb7cdba:0806ec1604e33b0d09fc51c2320eebb85ff93d334bd81975",
-		"visible": [ ], 
+		"visible": { }, 
 		"apps": [ ],
 		"visualizations": [ ]
 	},
@@ -27,7 +27,7 @@
 		"email" : "test3@example.com",
 		"name" : "Test User 3",
 		"password" : "1000:c9baf5689c8e7f5842de0bf3f1bc7c4c2fa0dff8d95425e8:3677f28113a374471c0c86aad602d3ef4ed6628111c18798",
-		"visible": [ ], 
+		"visible": { }, 
 		"apps": [ ],
 		"visualizations": [ ]
 	},
@@ -36,7 +36,7 @@
 		"email" : "test4@example.com",
 		"name" : "Test User 4",
 		"password" : "1000:cb0a03eddf8846e0da1152ece93a1dc7c1e1909388c003c5:d019303e8b826faf2a2d76290b66ae6fa444577b478a6572",
-		"visible": [ ], 
+		"visible": { }, 
 		"apps": [ ],
 		"visualizations": [ ]
 	},
@@ -45,7 +45,7 @@
 		"email" : "developers@hdc.ch",
 		"name" : "Health Data Cooperative Developers",
 		"password" : "1000:a0a1208dac2cf31c2d8fad26cbc9ac6fcf5284c4bc5f2e16:730b689e672c7b120322139ead1c20d3c0376cbb8d5920ac",
-		"visible": [ ], 
+		"visible": { }, 
 		"apps": [ ],
 		"visualizations": [ ]
 	}
@@ -89,6 +89,7 @@
 	],
 	"records" : [
 	{
+		"app": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "5255500630040546a0ddc673" },
 		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 11:53:21",
@@ -96,6 +97,7 @@
 		"description": "Ran 11.53km in 1.35h on 2010-01-01"
 	},
 	{
+		"app": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "5255500630040546a0ddc672" },
 		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 12:53:21",
@@ -103,6 +105,7 @@
 		"description": "Ran 12.53km in 1.35h on 2010-01-01"
 	},
 	{
+		"app": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "5255500630040546a0ddc671" },
 		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 13:53:21",
@@ -110,6 +113,7 @@
 		"description": "Dentist record."
 	},
 	{
+		"app": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "5255500630040546a0ddc671" },
 		"owner": { "$oid" : "5255500630040546a0ddc670" },
 		"created": "2010-01-01 14:53:21",
@@ -117,6 +121,7 @@
 		"description": "X-ray image."
 	},
 	{
+		"app": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "5255500630040546a0ddc672" },
 		"owner": { "$oid" : "5255500630040546a0ddc671" },
 		"created": "2010-01-01 12:53:21",
@@ -192,7 +197,10 @@
 		"_id": { "$oid" : "5255500630040546a0ddc674" },
 		"creator": { "$oid" : "525d0d84e4b097a840bcae9a" },
 		"name": "Runtastic",
-		"description": "Shows statistics of its owners running performances."
+		"description": "Shows statistics of its owners running performances.",
+		"create": "",
+		"details": "",
+		"spotlighted": true
 	}
 	],
 	"visualizations": [
@@ -201,7 +209,8 @@
 		"creator": { "$oid" : "525d0d84e4b097a840bcae9a" },
 		"name": "Record List",
 		"description": "Default record list implementation.",
-		"url": "/visualizations/recordlist"
+		"url": "/visualizations/recordlist",
+		"spotlighted": true
 	}
 	]
 }

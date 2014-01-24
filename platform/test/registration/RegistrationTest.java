@@ -20,6 +20,8 @@ import org.junit.Test;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
 
 import com.mongodb.BasicDBObject;
@@ -41,7 +43,7 @@ public class RegistrationTest {
 	}
 
 	@Test
-	public void register() {
+	public void register() throws Exception {
 		String newEmail = "new@example.com";
 		DBCollection users = Database.getCollection("users");
 		DBObject query = new BasicDBObject("email", newEmail);
@@ -53,7 +55,9 @@ public class RegistrationTest {
 						Json.parse("{\"email\": \"" + newEmail
 								+ "\", \"firstName\": \"First\", \"lastName\": \"Last\", \"password\": \"secret\"}")));
 		assertEquals(200, status(result));
-		assertEquals(User.getId(newEmail).toString(), session(result).get("id"));
+		User user = User.get(new ChainedMap<String, String>().put("email", newEmail).get(), new ChainedSet<String>()
+				.add("_id").get());
+		assertEquals(user._id.toString(), session(result).get("id"));
 		assertEquals(oldSize + 1, users.count());
 	}
 

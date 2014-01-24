@@ -1,8 +1,11 @@
 package utils;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.junit.Before;
@@ -12,7 +15,6 @@ import play.libs.Json;
 import utils.json.CustomObjectMapper;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.BasicDBList;
 
 public class ObjectIdSerializerTest {
 
@@ -25,8 +27,9 @@ public class ObjectIdSerializerTest {
 	@Test
 	public void serializeObjectId() {
 		ObjectId id = new ObjectId();
-		JsonNode json = Json.toJson(id);
-		assertEquals(id.toString(), json.asText());
+		// model series of operations when getting a request from JS
+		JsonNode json = Json.parse(Json.stringify(Json.toJson(id)));
+		assertEquals(id.toString(), json.get("$oid").asText());
 	}
 
 	@Test
@@ -35,27 +38,28 @@ public class ObjectIdSerializerTest {
 		TestModel model = new TestModel();
 		model.id = new ObjectId();
 		model.name = "Test model";
-		model.friends = new BasicDBList();
+		model.friends = new HashSet<ObjectId>();
 		ObjectId[] friendIds = { new ObjectId(), new ObjectId(), new ObjectId() };
 		for (ObjectId friendId : friendIds) {
 			model.friends.add(friendId);
 		}
 
 		// serialize
-		JsonNode json = Json.toJson(model);
-		assertEquals(model.id.toString(), json.get("id").asText());
+		JsonNode json = Json.parse(Json.stringify(Json.toJson(model)));
+		;
+		assertEquals(model.id.toString(), json.get("id").get("$oid").asText());
 		assertEquals(model.name, json.get("name").asText());
 		assertEquals(model.friends.size(), json.get("friends").size());
 		Iterator<JsonNode> iterator = json.get("friends").iterator();
 		for (int i = 0; i < model.friends.size(); i++) {
-			assertEquals(model.friends.get(i).toString(), iterator.next().asText());
+			assertTrue(model.friends.contains(new ObjectId(iterator.next().get("$oid").asText())));
 		}
 	}
 
 	public static class TestModel {
 		public ObjectId id;
 		public String name;
-		public BasicDBList friends;
+		public Set<ObjectId> friends;
 	}
 
 }

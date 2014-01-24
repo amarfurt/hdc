@@ -21,6 +21,8 @@ import org.junit.Test;
 import play.libs.Json;
 import play.mvc.Result;
 import utils.LoadData;
+import utils.collections.ChainedMap;
+import utils.collections.ChainedSet;
 import utils.db.Database;
 
 public class LoginTest {
@@ -38,12 +40,14 @@ public class LoginTest {
 	}
 
 	@Test
-	public void authenticateSuccess() {
+	public void authenticateSuccess() throws Exception {
 		Result result = callAction(controllers.routes.ref.Application.authenticate(),
 				fakeRequest().withJsonBody(Json.parse("{\"email\": \"test1@example.com\", \"password\": \"secret\"}")));
 		assertEquals(200, status(result));
 		assertNotNull(session(result).get("id"));
-		assertEquals(User.getId("test1@example.com").toString(), session(result).get("id"));
+		User user = User.get(new ChainedMap<String, String>().put("email", "test1@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
+		assertEquals(user._id.toString(), session(result).get("id"));
 	}
 
 	@Test
@@ -67,9 +71,11 @@ public class LoginTest {
 	}
 
 	@Test
-	public void authenticated() {
+	public void authenticated() throws Exception {
+		User user = User.get(new ChainedMap<String, String>().put("email", "test1@example.com").get(),
+				new ChainedSet<String>().add("_id").get());
 		Result result = callAction(controllers.routes.ref.Messages.index(),
-				fakeRequest().withSession("id", User.getId("test1@example.com").toString()));
+				fakeRequest().withSession("id", user._id.toString()));
 		assertEquals(200, status(result));
 	}
 
