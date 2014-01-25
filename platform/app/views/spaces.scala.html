@@ -1,6 +1,11 @@
 @main("Spaces") {
 	<div ng-app="spaces" ng-controller="SpacesCtrl">
 		<div class="page-header">
+			<div class="pull-right">
+				<button data-toggle="modal" data-target="#spaceModal" class="btn btn-primary" ng-click="loadVisualizations()">
+					<span class="glyphicon glyphicon-plus"></span> Add a new space
+				</button>
+			</div>
 			<h1>My spaces</h1>
 		</div>
 		
@@ -12,23 +17,14 @@
 		<!-- Spaces -->
 		<p ng-show="loading">Loading spaces...</p>
 		<div ng-show="!loading && spaces.length === 0">
-			<p>You have no spaces yet. Add one by clicking on the button below.</p>
-			<button data-toggle="modal" data-target="#spaceModal" class="btn btn-default" ng-click="loadVisualizations()">
-				<span class="glyphicon glyphicon-plus"></span> Add a new space
-			</button>
+			<p>You have no spaces yet.</p>
+			<p>Add one by clicking on the button on the top right.</p>
 		</div>
 		<div ng-show="!loading && spaces.length > 0">
 			<!-- Space tabs -->
 			<ul class="nav nav-tabs">
 				<li ng-class="{'active': space.active}" ng-repeat="space in spaces">
 					<a href="javascript:;" ng-click="makeActive(space)">{{space.name}}</a>
-				</li>
-				
-				<!-- Add new space button -->
-				<li>
-					<button data-toggle="modal" data-target="#spaceModal" class="btn btn-default" ng-click="loadVisualizations()">
-						<span class="glyphicon glyphicon-plus"></span>
-					</button>
 				</li>
 			</ul>
 			<!-- Space content -->
