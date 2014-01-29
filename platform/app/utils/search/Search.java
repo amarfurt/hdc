@@ -253,7 +253,6 @@ public class Search {
 		for (Suggestion<? extends Entry<? extends Option>> suggestion : response.getSuggest()) {
 			for (Entry<? extends Option> entry : suggestion) {
 				for (Option option : entry) {
-					String type = null;
 					CompletionResult completionResult = new CompletionResult();
 					try {
 						// proper payload support might be introduced in version 1.0.0
@@ -263,7 +262,7 @@ public class Search {
 						if (json.has("payload")) {
 							JsonNode payload = json.get("payload");
 							if (payload.has("type")) {
-								type = payload.get("type").asText();
+								completionResult.type = payload.get("type").asText();
 							}
 							if (payload.has("id")) {
 								completionResult.id = payload.get("id").asText();
@@ -278,7 +277,7 @@ public class Search {
 					for (String token : completionResult.value.split("[ ,\\.]+")) {
 						completionResult.tokens.add(token);
 					}
-					addToListInMap(results, type, completionResult);
+					addToListInMap(results, completionResult.type, completionResult);
 				}
 			}
 		}
