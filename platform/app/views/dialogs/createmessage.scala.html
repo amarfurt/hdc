@@ -23,9 +23,19 @@
 		
 		<form class="form-horizontal">
 			<div class="form-group">
-				<label for="to" class="col-md-2 control-label">To</label>
+				<label for="receivers" class="col-md-2 control-label">To</label>
 				<div class="col-md-10">
-					<input type="text" id="to" class="form-control" placeholder="Receiver" ng-model="message.receiver" autofocus>
+					<p ng-hide="message.receivers.length">No receivers selected yet.</p>
+					<div ng-show="message.receivers.length">
+						<button type="button" class="btn btn-default btn-sm" ng-repeat="receiver in message.receivers" ng-click="remove(receiver)">
+							{{receiver.value}} &times;
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<div class="col-md-offset-2 col-md-10">
+					<input type="text" id="query" class="form-control" placeholder="Search for a user" ng-model="message.query" autofocus>
 				</div>
 			</div>
 			<div class="form-group">
@@ -42,7 +52,7 @@
 			</div>
 			<div class="pull-right">
 				<button type="button" class="btn btn-primary" ng-click="sendMessage()">Send</button>
-				<a href="@routes.Messages.index()" class="btn btn-default">Cancel</a>
+				<a href="@routes.Messages.index()" class="btn btn-default">Discard</a>
 			</div>
 		</form>
 	</div>

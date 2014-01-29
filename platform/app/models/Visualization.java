@@ -43,7 +43,7 @@ public class Visualization extends Plugin implements Comparable<Visualization> {
 
 		// add to search index
 		try {
-			Search.addPublic(Type.VISUALIZATION, visualization._id, visualization.name, visualization.description);
+			Search.add(Type.VISUALIZATION, visualization._id, visualization.name, visualization.description);
 		} catch (SearchException e) {
 			throw new ModelException(e);
 		}
@@ -51,7 +51,7 @@ public class Visualization extends Plugin implements Comparable<Visualization> {
 
 	public static void delete(ObjectId visualizationId) throws ModelException {
 		// remove from search index
-		Search.deletePublic(Type.VISUALIZATION, visualizationId);
+		Search.delete(Type.VISUALIZATION, visualizationId);
 
 		// TODO only hide or remove from all users (including deleting their spaces associated with it)?
 		Model.delete(collection, new ChainedMap<String, ObjectId>().put("_id", visualizationId).get());

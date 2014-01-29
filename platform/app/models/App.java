@@ -43,7 +43,7 @@ public class App extends Plugin implements Comparable<App> {
 
 		// add to search index
 		try {
-			Search.addPublic(Type.APP, app._id, app.name, app.description);
+			Search.add(Type.APP, app._id, app.name, app.description);
 		} catch (SearchException e) {
 			throw new ModelException(e);
 		}
@@ -51,7 +51,7 @@ public class App extends Plugin implements Comparable<App> {
 
 	public static void delete(ObjectId appId) throws ModelException {
 		// remove from search index
-		Search.deletePublic(Type.APP, appId);
+		Search.delete(Type.APP, appId);
 
 		// TODO also remove from installed list of users
 		Model.delete(collection, new ChainedMap<String, ObjectId>().put("_id", appId).get());

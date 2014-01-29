@@ -157,6 +157,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Users.get(),
 				controllers.routes.javascript.Users.getCurrentUser(),
 				controllers.routes.javascript.Users.search(),
+				controllers.routes.javascript.Users.loadContacts(),
+				controllers.routes.javascript.Users.complete(),
 				// Market
 				controllers.routes.javascript.Market.registerApp(),
 				controllers.routes.javascript.Market.registerVisualization(),

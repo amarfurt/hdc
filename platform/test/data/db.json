@@ -53,35 +53,35 @@
 	"messages" : [
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc670" },
-		"receiver": { "$oid" : "5255500630040546a0ddc671" },
+		"receivers": [{ "$oid" : "5255500630040546a0ddc671" }],
 		"created": "2001-01-01 12:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?"
 	},
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc671" },
-		"receiver": { "$oid" : "5255500630040546a0ddc672" },
+		"receivers": [{ "$oid" : "5255500630040546a0ddc672" }],
 		"created": "2001-01-01 13:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?"
 	},
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc672" },
-		"receiver": { "$oid" : "5255500630040546a0ddc673" },
+		"receivers": [{ "$oid" : "5255500630040546a0ddc673" }],
 		"created": "2001-01-01 14:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?"
 	},
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc673" },
-		"receiver": { "$oid" : "5255500630040546a0ddc670" },
+		"receivers": [{ "$oid" : "5255500630040546a0ddc670" }],
 		"created": "2001-01-01 15:00:00",
 		"title": "How are you?",
 		"content": "I'm fine. How are you today?"
 	},
 	{
 		"sender": { "$oid" : "5255500630040546a0ddc671" },
-		"receiver": { "$oid" : "5255500630040546a0ddc670" },
+		"receivers": [{ "$oid" : "5255500630040546a0ddc670" }],
 		"created": "2001-01-01 16:00:00",
 		"title": "RE: How are you?",
 		"content": "Thanks I'm fine."

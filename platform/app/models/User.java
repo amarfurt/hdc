@@ -50,7 +50,7 @@ public class User extends Model implements Comparable<User> {
 
 		// add to search index (email is document's content, so that it is searchable as well)
 		try {
-			Search.addPublic(Type.USER, user._id, user.name, user.email);
+			Search.add(Type.USER, user._id, user.name, user.email);
 		} catch (SearchException e) {
 			throw new ModelException(e);
 		}
@@ -58,7 +58,7 @@ public class User extends Model implements Comparable<User> {
 
 	public static void delete(ObjectId userId) throws ModelException {
 		// remove from search index
-		Search.deletePublic(Type.USER, userId);
+		Search.delete(Type.USER, userId);
 
 		// TODO remove all the user's messages, records, spaces, circles, apps (if published, ask whether to leave it in
 		// the marketplace), ...

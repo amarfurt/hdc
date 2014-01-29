@@ -29,6 +29,7 @@ import utils.search.SearchResult;
 import views.html.details.user;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class Users extends Controller {
@@ -66,7 +67,7 @@ public class Users extends Controller {
 
 	public static Result search(String query) {
 		// TODO use caching/incremental retrieval of results (scrolls)
-		List<SearchResult> searchResults = Search.searchPublic(Type.USER, query);
+		List<SearchResult> searchResults = Search.search(Type.USER, query);
 		Set<ObjectId> userIds = new HashSet<ObjectId>();
 		for (SearchResult searchResult : searchResults) {
 			userIds.add(new ObjectId(searchResult.id));
@@ -86,6 +87,55 @@ public class Users extends Controller {
 		}
 		Collections.sort(users);
 		return ok(Json.toJson(users));
+	}
+
+	/**
+	 * Prefetch contacts for completion suggestions.
+	 */
+	public static Result loadContacts() {
+		ObjectId userId = new ObjectId(request().username());
+		Set<ObjectId> contactIds = new HashSet<ObjectId>();
+		Set<User> contacts;
+		try {
+			Set<Circle> circles = Circle.getAll(new ChainedMap<String, ObjectId>().put("owner", userId).get(),
+					new ChainedSet<String>().add("members").get());
+			for (Circle circle : circles) {
+				contactIds.addAll(circle.members);
+			}
+			contacts = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", contactIds).get(),
+					new ChainedSet<String>().add("name").add("email").get());
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+		Set<ObjectNode> jsonContacts = new HashSet<ObjectNode>();
+		for (User contact : contacts) {
+			ObjectNode node = Json.newObject();
+			node.put("value", contact.name + " (" + contact.email + ")");
+			String[] split = contact.name.split(" ");
+			String[] tokens = new String[split.length + 1];
+			System.arraycopy(split, 0, tokens, 0, split.length);
+			tokens[tokens.length - 1] = contact.email;
+			node.put("tokens", Json.toJson(tokens));
+			node.put("id", contact._id.toString());
+			jsonContacts.add(node);
+		}
+		return ok(Json.toJson(jsonContacts));
+	}
+
+	/**
+	 * Suggest users that complete the given query.
+	 */
+	public static Result complete(String query) {
+		List<SearchResult> completions = Search.complete(Type.USER, query);
+		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
+		for (SearchResult completion : completions) {
+			ObjectNode node = Json.newObject();
+			node.put("value", completion.title);
+			node.put("tokens", Json.toJson(completion.title.split("[ ,\\.]+")));
+			node.put("id", completion.id);
+			jsonRecords.add(node);
+		}
+		return ok(Json.toJson(jsonRecords));
 	}
 
 	/**

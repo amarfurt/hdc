@@ -76,7 +76,7 @@ public class SearchTest {
 
 	private ObjectId addUser() throws SearchException {
 		ObjectId userId = new ObjectId();
-		Search.addPublic(Type.USER, userId, "Test User", "test@example.com");
+		Search.add(Type.USER, userId, "Test User", "test@example.com");
 		SearchTestHelper.refreshIndex();
 		return userId;
 	}

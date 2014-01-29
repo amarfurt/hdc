@@ -11,7 +11,7 @@
 		
 		<div class="row">
 			<p class="col-sm-2">Sent by:</p>
-			<p class="col-sm-10">{{message.sender}}</p>
+			<p class="col-sm-10">{{message.sender.name}}</p>
 		</div>
 		<div class="row">
 			<p class="col-sm-2">Sent on:</p>
@@ -19,7 +19,9 @@
 		</div>
 		<div class="row">
 			<p class="col-sm-2">Received by:</p>
-			<p class="col-sm-10">{{message.receiver}}</p>
+			<ul class="col-sm-10">
+				<li ng-repeat="receiver in message.receivers">{{receiver.name}}</li>
+			</ul>
 		</div>
 		<div class="row">
 			<p class="col-sm-2">Title:</p>

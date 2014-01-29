@@ -64,7 +64,7 @@ public class ReimportData {
 			ObjectId userId = (ObjectId) cur.get("_id");
 			String email = (String) cur.get("email");
 			String name = (String) cur.get("name");
-			Search.addPublic(Type.USER, userId, name, email);
+			Search.add(Type.USER, userId, name, email);
 			users.put(userId, name);
 		}
 
@@ -76,7 +76,7 @@ public class ReimportData {
 		for (ObjectId userId : users.keySet()) {
 			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
 			// messages
-			Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("receiver", userId).get();
+			Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("receivers", userId).get();
 			Set<String> fields = new ChainedSet<String>().add("title").add("content").get();
 			Set<Message> messages = Message.getAll(properties, fields);
 			for (Message message : messages) {
@@ -117,7 +117,7 @@ public class ReimportData {
 			ObjectId appId = (ObjectId) cur.get("_id");
 			String name = (String) cur.get("name");
 			String description = (String) cur.get("description");
-			Search.addPublic(Type.APP, appId, name, description);
+			Search.add(Type.APP, appId, name, description);
 		}
 		System.out.println("done.");
 
@@ -132,7 +132,7 @@ public class ReimportData {
 			ObjectId visualizationId = (ObjectId) cur.get("_id");
 			String name = (String) cur.get("name");
 			String description = (String) cur.get("description");
-			Search.addPublic(Type.VISUALIZATION, visualizationId, name, description);
+			Search.add(Type.VISUALIZATION, visualizationId, name, description);
 		}
 		System.out.println("done.");
 

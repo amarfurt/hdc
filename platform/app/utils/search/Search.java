@@ -15,8 +15,6 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.suggest.SuggestResponse;
@@ -156,6 +154,17 @@ public class Search {
 	 */
 	public static void add(ObjectId userId, String type, ObjectId modelId, String title, String content)
 			throws SearchException {
+		add(userId.toString(), type, modelId.toString(), title, content);
+	}
+
+	public static void add(Type type, ObjectId documentId, String title, String content) throws SearchException {
+		add(PUBLIC, getType(type), documentId.toString(), title, content);
+		if (type == Type.USER) {
+			createIndex(documentId);
+		}
+	}
+
+	private static void add(String index, String type, String id, String title, String content) throws SearchException {
 		// return if not connected
 		if (client == null) {
 			return;
@@ -163,63 +172,15 @@ public class Search {
 
 		String[] split = title.split("[ ,\\.]+");
 		try {
-			client.prepareIndex(userId.toString(), type, modelId.toString())
+			client.prepareIndex(index, type, id)
 					.setSource(
 							jsonBuilder().startObject().field(TITLE, title).startObject(SUGGEST).array("input", split)
-									.field("output", title).startObject("payload").field("type", type)
-									.field("id", modelId.toString()).endObject().endObject().field(CONTENT, content)
-									.endObject()).execute().actionGet();
+									.field("output", title).startObject("payload").field("type", type).field("id", id)
+									.endObject().endObject().field(CONTENT, content).endObject()).execute().actionGet();
 		} catch (ElasticSearchException e) {
 			throw new SearchException(e);
 		} catch (IOException e) {
 			throw new SearchException(e);
-		}
-	}
-
-	public static void addPublic(Type type, ObjectId documentId, String title, String content) throws SearchException {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		switch (type) {
-		case USER:
-			// add the user to the global user index and create an own index for the user
-			try {
-				client.prepareIndex(PUBLIC, getType(Type.USER), documentId.toString())
-						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
-						.execute().actionGet();
-			} catch (ElasticSearchException e) {
-				throw new SearchException(e);
-			} catch (IOException e) {
-				throw new SearchException(e);
-			}
-			createIndex(documentId);
-			break;
-		case APP:
-			try {
-				client.prepareIndex(PUBLIC, getType(Type.APP), documentId.toString())
-						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
-						.execute().actionGet();
-			} catch (ElasticSearchException e) {
-				throw new SearchException(e);
-			} catch (IOException e) {
-				throw new SearchException(e);
-			}
-			break;
-		case VISUALIZATION:
-			try {
-				client.prepareIndex(PUBLIC, getType(Type.VISUALIZATION), documentId.toString())
-						.setSource(jsonBuilder().startObject().field(TITLE, title).field(CONTENT, content).endObject())
-						.execute().actionGet();
-			} catch (ElasticSearchException e) {
-				throw new SearchException(e);
-			} catch (IOException e) {
-				throw new SearchException(e);
-			}
-			break;
-		default:
-			throw new NoSuchElementException("There is no such type.");
 		}
 	}
 
@@ -233,58 +194,51 @@ public class Search {
 		add(userId, type, modelId, title, content);
 	}
 
+	public static void update(Type type, ObjectId documentId, String title, String content) throws SearchException {
+		delete(type, documentId);
+		add(type, documentId, title, content);
+	}
+
 	public static void delete(ObjectId userId, String type, ObjectId modelId) {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		client.prepareDelete(userId.toString(), type, modelId.toString()).execute().actionGet();
+		delete(userId.toString(), type, modelId.toString());
 	}
 
-	public static void deleteMultiple(ObjectId userId, String type, Set<ObjectId> modelIds) {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		if (modelIds.size() == 0) {
-			return;
-		}
-		BulkRequestBuilder bulkRequest = client.prepareBulk();
-		for (ObjectId modelId : modelIds) {
-			bulkRequest.add(client.prepareDelete(userId.toString(), type, modelId.toString()));
-		}
-		bulkRequest.execute().actionGet();
-
-	}
-
-	public static void deletePublic(Type type, ObjectId documentId) {
-		// return if not connected
-		if (client == null) {
-			return;
-		}
-
-		switch (type) {
-		case USER:
-			// remove the user from the global user index and delete the user's index
-			ListenableActionFuture<DeleteResponse> deleteRequest = client.prepareDelete(PUBLIC, getType(Type.USER),
-					documentId.toString()).execute();
+	public static void delete(Type type, ObjectId documentId) {
+		delete(PUBLIC, getType(type), documentId.toString());
+		if (type == Type.USER) {
 			deleteIndex(documentId);
-			deleteRequest.actionGet();
-			break;
-		case APP:
-			client.prepareDelete(PUBLIC, getType(Type.APP), documentId.toString()).execute().actionGet();
-			break;
-		case VISUALIZATION:
-			client.prepareDelete(PUBLIC, getType(Type.VISUALIZATION), documentId.toString()).execute().actionGet();
-			break;
-		default:
-			throw new NoSuchElementException("There is no such type.");
 		}
 	}
 
+	private static void delete(String index, String type, String id) {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
+		client.prepareDelete(index, type, id).execute().actionGet();
+	}
+
+	/**
+	 * Suggest completions within the user's index.
+	 */
 	public static Map<String, List<SearchResult>> complete(ObjectId userId, String query) {
+		return complete(userId.toString(), query);
+	}
+
+	/**
+	 * Suggest completions of the given type within the public index.
+	 */
+	public static List<SearchResult> complete(Type type, String query) {
+		Map<String, List<SearchResult>> results = complete(PUBLIC, query);
+		if (results.containsKey(getType(type))) {
+			return results.get(getType(type));
+		} else {
+			return new ArrayList<SearchResult>();
+		}
+	}
+
+	private static Map<String, List<SearchResult>> complete(String index, String query) {
 		Map<String, List<SearchResult>> results = new HashMap<String, List<SearchResult>>();
 
 		// return if not connected
@@ -292,48 +246,35 @@ public class Search {
 			return results;
 		}
 
-		// only autocomplete in public and user's own index
+		// search for completion suggestions in index
 		SuggestionBuilder<CompletionSuggestionBuilder> suggestionBuilder = new CompletionSuggestionBuilder("suggestion")
 				.text(query).field("suggest");
-		ListenableActionFuture<SuggestResponse> publicSuggest = client.prepareSuggest(PUBLIC)
-				.addSuggestion(suggestionBuilder).execute();
-		ListenableActionFuture<SuggestResponse> userSuggest = client.prepareSuggest(userId.toString())
-				.addSuggestion(suggestionBuilder).execute();
-		SuggestResponse publicResponse = publicSuggest.actionGet();
-		SuggestResponse userResponse = userSuggest.actionGet();
-		SuggestResponse[] responses = { publicResponse, userResponse };
-		for (SuggestResponse response : responses) {
-			for (Suggestion<? extends Entry<? extends Option>> suggestion : response.getSuggest()) {
-				for (Entry<? extends Option> entry : suggestion) {
-					for (Option option : entry) {
-						String type = null;
-						SearchResult searchResult = new SearchResult();
-						try {
-							// proper payload support might be introduced in version 1.0.0
-							// for now: parse payload JSON object
-							String xContent = option.toXContent(jsonBuilder(), null).string();
-							JsonNode json = Json.parse(xContent);
-							if (json.has("payload")) {
-								JsonNode payload = json.get("payload");
-								if (payload.has("type")) {
-									type = payload.get("type").asText();
-								}
-								if (payload.has("id")) {
-									searchResult.id = payload.get("id").asText();
-								}
+		SuggestResponse response = client.prepareSuggest(index).addSuggestion(suggestionBuilder).execute().actionGet();
+		for (Suggestion<? extends Entry<? extends Option>> suggestion : response.getSuggest()) {
+			for (Entry<? extends Option> entry : suggestion) {
+				for (Option option : entry) {
+					String type = null;
+					SearchResult searchResult = new SearchResult();
+					try {
+						// proper payload support might be introduced in version 1.0.0
+						// for now: parse payload JSON object
+						String xContent = option.toXContent(jsonBuilder(), null).string();
+						JsonNode json = Json.parse(xContent);
+						if (json.has("payload")) {
+							JsonNode payload = json.get("payload");
+							if (payload.has("type")) {
+								type = payload.get("type").asText();
 							}
-						} catch (IOException e) {
-							// error while parsing payload, type and id stay null
+							if (payload.has("id")) {
+								searchResult.id = payload.get("id").asText();
+							}
 						}
-						searchResult.score = option.getScore();
-						searchResult.title = option.getText().string();
-
-						// highlighting not supported yet; might be introduced in future versions?
-						if (option.getHighlighted() != null) {
-							searchResult.highlighted = option.getHighlighted().string();
-						}
-						addToListInMap(results, type, searchResult);
+					} catch (IOException e) {
+						// error while parsing payload, type and id stay null
 					}
+					searchResult.score = option.getScore();
+					searchResult.title = option.getText().string();
+					addToListInMap(results, type, searchResult);
 				}
 			}
 		}
@@ -346,7 +287,7 @@ public class Search {
 		return results;
 	}
 
-	public static List<SearchResult> searchPublic(Type type, String query) {
+	public static List<SearchResult> search(Type type, String query) {
 		// return if not connected
 		if (client == null) {
 			return null;
@@ -392,7 +333,7 @@ public class Search {
 	}
 
 	/**
-	 * Search in all the user's data and all further visible records.
+	 * Search in all the user's data and all visible records.
 	 */
 	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords,
 			String query) {

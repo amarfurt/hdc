@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import utils.DateTimeUtils;
+import utils.collections.ChainedSet;
 import utils.db.Database;
 
 import com.mongodb.DBCollection;
@@ -36,7 +37,7 @@ public class MessageTest {
 		Message message = new Message();
 		message._id = new ObjectId();
 		message.sender = new ObjectId();
-		message.receiver = new ObjectId();
+		message.receivers = new ChainedSet<ObjectId>().add(new ObjectId()).get();
 		message.created = DateTimeUtils.now();
 		message.title = "Test title";
 		message.content = "Test content.";

@@ -70,7 +70,7 @@ details.controller('MessageCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// parse message id (format: /messages/:id) and load the app
 	var messageId = window.location.pathname.split("/")[2];
-	var data = {"properties": {"_id": {"$oid": messageId}}, "fields": ["sender", "receiver", "created", "title", "content"]};
+	var data = {"properties": {"_id": {"$oid": messageId}}, "fields": ["sender", "receivers", "created", "title", "content"]};
 	$http.post(jsRoutes.controllers.Messages.get().url, JSON.stringify(data)).
 		success(function(messages) {
 			$scope.message = messages[0];
@@ -80,12 +80,16 @@ details.controller('MessageCtrl', ['$scope', '$http', function($scope, $http) {
 		error(function(err) { $scope.error = "Failed to load message details: " + err; });
 	
 	getUserNames = function() {
-		var data = {"properties": {"_id": [$scope.message.sender, $scope.message.receiver]}, "fields": ["name"]};
+		var data = {"properties": {"_id": _.flatten([$scope.message.sender, $scope.message.receivers])}, "fields": ["name"]};
 		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
 			success(function(users) {
 				_.each(users, function(user) {
-					if ($scope.message.sender.$oid === user._id.$oid) { $scope.message.sender = user.name; }
-					if ($scope.message.receiver.$oid === user._id.$oid) { $scope.message.receiver = user.name; }
+					if ($scope.message.sender.$oid === user._id.$oid) {
+						$scope.message.sender.name = user.name;
+					} else {
+						var receiver = _.find($scope.message.receivers, function(rec) { return rec.$oid === user._id.$oid; });
+						receiver.name = user.name;
+					}
 				});
 			}).
 			error(function(err) { $scope.error = "Failed to load sender and receiver names: " + err; });

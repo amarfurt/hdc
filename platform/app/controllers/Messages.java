@@ -20,6 +20,7 @@ import play.mvc.Security;
 import utils.DateTimeUtils;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
+import utils.db.ObjectIdConversion;
 import utils.json.JsonExtraction;
 import utils.json.JsonValidation;
 import utils.json.JsonValidation.JsonValidationException;
@@ -71,29 +72,31 @@ public class Messages extends Controller {
 		// validate json
 		JsonNode json = request().body().asJson();
 		try {
-			JsonValidation.validate(json, "receiver", "title", "content");
+			JsonValidation.validate(json, "receivers", "title", "content");
 		} catch (JsonValidationException e) {
 			return badRequest(e.getMessage());
 		}
 
-		// validate receiver
-		String receiverEmail = json.get("receiver").asText();
-		if (!User.exists(new ChainedMap<String, String>().put("email", receiverEmail).get())) {
-			return badRequest("No user with this email address exists.");
-		}
-		User receiver;
+		// validate receivers
+		Set<ObjectId> receiverIds = ObjectIdConversion
+				.castToObjectIds(JsonExtraction.extractSet(json.get("receivers")));
+		Set<User> users;
 		try {
-			receiver = User.get(new ChainedMap<String, String>().put("email", receiverEmail).get(),
+			users = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", receiverIds).get(),
 					new ChainedSet<String>().add("_id").get());
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
+		}
+		if (receiverIds.size() != users.size()) {
+			return badRequest("One or more users could not be found.");
 		}
 
 		// create message
 		Message message = new Message();
 		message._id = new ObjectId();
 		message.sender = new ObjectId(request().username());
-		message.receiver = receiver._id;
+		message.receivers = receiverIds;
+		message.inbox = receiverIds;
 		message.created = DateTimeUtils.now();
 		message.title = json.get("title").asText();
 		message.content = json.get("content").asText();
