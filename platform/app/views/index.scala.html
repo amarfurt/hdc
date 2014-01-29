@@ -15,7 +15,7 @@
 		</div>
 		
 		<p ng-show="loading">Loading messages...</p>
-		<p ng-show="!loading && messages.length === 0">You have no messages yet.</p>
+		<p ng-show="!loading && messages.length === 0">You have no messages.</p>
 		<ul class="list-group" ng-show="!loading && messages.length > 0">
 			<li class="list-group-item" ng-repeat="message in messages">
 				{{names[message.sender.$oid]}}: 

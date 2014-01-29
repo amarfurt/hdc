@@ -20,6 +20,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import utils.SearchTestHelper;
+import utils.search.CompletionResult;
 import utils.search.Search;
 import utils.search.Search.Type;
 import utils.search.SearchException;
@@ -185,14 +186,14 @@ public class SearchTest {
 		Search.add(userId, "record", recordId, title, content);
 		SearchTestHelper.refreshIndex();
 		String query = "title";
-		Map<String, List<SearchResult>> completions = Search.complete(userId, query);
+		Map<String, List<CompletionResult>> completions = Search.complete(userId, query);
 		assertEquals(1, completions.size());
 		assertTrue(completions.containsKey("record"));
 		assertEquals(1, completions.get("record").size());
-		SearchResult completion = completions.get("record").get(0);
+		CompletionResult completion = completions.get("record").get(0);
 		assertTrue(completion.score > 0);
 		assertEquals(recordId, completion.id);
-		assertEquals(title, completion.title);
+		assertEquals(title, completion.value);
 	}
 
 }

@@ -1,11 +1,14 @@
 package utils.search;
 
-public class SearchResult implements Comparable<SearchResult> {
+import java.util.Set;
 
-	public String id;
+public class CompletionResult implements Comparable<CompletionResult> {
+
 	public float score;
-	public String title;
-	public String highlighted;
+	public String id;
+	public String type;
+	public String value;
+	public Set<String> tokens;
 
 	@Override
 	public boolean equals(Object other) {
@@ -17,7 +20,7 @@ public class SearchResult implements Comparable<SearchResult> {
 	}
 
 	@Override
-	public int compareTo(SearchResult o) {
+	public int compareTo(CompletionResult o) {
 		// higher score is "less", i.e. earlier in sorted list
 		return (int) -Math.signum(score - o.score);
 	}

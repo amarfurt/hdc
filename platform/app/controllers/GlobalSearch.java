@@ -1,6 +1,7 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,11 +17,10 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
+import utils.search.CompletionResult;
 import utils.search.Search;
 import utils.search.SearchResult;
 import views.html.search;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 @Security.Authenticated(Secured.class)
 public class GlobalSearch extends Controller {
@@ -53,18 +53,12 @@ public class GlobalSearch extends Controller {
 	 * Suggests completions for the given query.
 	 */
 	public static Result complete(String query) {
-		Map<String, List<SearchResult>> completions = Search.complete(new ObjectId(request().username()), query);
-		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
+		Map<String, List<CompletionResult>> completions = Search.complete(new ObjectId(request().username()), query);
+		List<CompletionResult> results = new ArrayList<CompletionResult>();
 		for (String type : completions.keySet()) {
-			for (SearchResult completion : completions.get(type)) {
-				ObjectNode datum = Json.newObject();
-				datum.put("value", completion.title);
-				datum.put("tokens", Json.toJson(completion.title.split("[ ,\\.]+")));
-				datum.put("type", type);
-				datum.put("id", completion.id);
-				jsonRecords.add(datum);
-			}
+			results.addAll(completions.get(type));
 		}
-		return ok(Json.toJson(jsonRecords));
+		Collections.sort(results);
+		return ok(Json.toJson(results));
 	}
 }

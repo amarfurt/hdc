@@ -222,24 +222,24 @@ public class Search {
 	/**
 	 * Suggest completions within the user's index.
 	 */
-	public static Map<String, List<SearchResult>> complete(ObjectId userId, String query) {
+	public static Map<String, List<CompletionResult>> complete(ObjectId userId, String query) {
 		return complete(userId.toString(), query);
 	}
 
 	/**
 	 * Suggest completions of the given type within the public index.
 	 */
-	public static List<SearchResult> complete(Type type, String query) {
-		Map<String, List<SearchResult>> results = complete(PUBLIC, query);
+	public static List<CompletionResult> complete(Type type, String query) {
+		Map<String, List<CompletionResult>> results = complete(PUBLIC, query);
 		if (results.containsKey(getType(type))) {
 			return results.get(getType(type));
 		} else {
-			return new ArrayList<SearchResult>();
+			return new ArrayList<CompletionResult>();
 		}
 	}
 
-	private static Map<String, List<SearchResult>> complete(String index, String query) {
-		Map<String, List<SearchResult>> results = new HashMap<String, List<SearchResult>>();
+	private static Map<String, List<CompletionResult>> complete(String index, String query) {
+		Map<String, List<CompletionResult>> results = new HashMap<String, List<CompletionResult>>();
 
 		// return if not connected
 		if (client == null) {
@@ -254,7 +254,7 @@ public class Search {
 			for (Entry<? extends Option> entry : suggestion) {
 				for (Option option : entry) {
 					String type = null;
-					SearchResult searchResult = new SearchResult();
+					CompletionResult completionResult = new CompletionResult();
 					try {
 						// proper payload support might be introduced in version 1.0.0
 						// for now: parse payload JSON object
@@ -266,15 +266,19 @@ public class Search {
 								type = payload.get("type").asText();
 							}
 							if (payload.has("id")) {
-								searchResult.id = payload.get("id").asText();
+								completionResult.id = payload.get("id").asText();
 							}
 						}
 					} catch (IOException e) {
 						// error while parsing payload, type and id stay null
 					}
-					searchResult.score = option.getScore();
-					searchResult.title = option.getText().string();
-					addToListInMap(results, type, searchResult);
+					completionResult.score = option.getScore();
+					completionResult.value = option.getText().string();
+					completionResult.tokens = new HashSet<String>();
+					for (String token : completionResult.value.split("[ ,\\.]+")) {
+						completionResult.tokens.add(token);
+					}
+					addToListInMap(results, type, completionResult);
 				}
 			}
 		}
@@ -441,9 +445,9 @@ public class Search {
 		return searchResults;
 	}
 
-	private static <T> void addToListInMap(Map<T, List<SearchResult>> map, T key, SearchResult value) {
+	private static <T, V> void addToListInMap(Map<T, List<V>> map, T key, V value) {
 		if (!map.containsKey(key)) {
-			map.put(key, new ArrayList<SearchResult>());
+			map.put(key, new ArrayList<V>());
 		}
 		map.get(key).add(value);
 	}

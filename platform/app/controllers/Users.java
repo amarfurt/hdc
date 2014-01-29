@@ -126,16 +126,7 @@ public class Users extends Controller {
 	 * Suggest users that complete the given query.
 	 */
 	public static Result complete(String query) {
-		List<SearchResult> completions = Search.complete(Type.USER, query);
-		List<ObjectNode> jsonRecords = new ArrayList<ObjectNode>();
-		for (SearchResult completion : completions) {
-			ObjectNode node = Json.newObject();
-			node.put("value", completion.title);
-			node.put("tokens", Json.toJson(completion.title.split("[ ,\\.]+")));
-			node.put("id", completion.id);
-			jsonRecords.add(node);
-		}
-		return ok(Json.toJson(jsonRecords));
+		return ok(Json.toJson(Search.complete(Type.USER, query)));
 	}
 
 	/**
