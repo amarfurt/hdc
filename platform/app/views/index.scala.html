@@ -20,6 +20,11 @@
 			<li class="list-group-item" ng-repeat="message in messages">
 				{{names[message.sender.$oid]}}: 
 				<a href="javascript:;" ng-click="showMessage(message)">{{message.title}}</a>
+				<div class="pull-right">
+					<button type="button" class="btn btn-xs btn-danger" ng-click="remove(message)">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+				</div>
 			</li> 
 		</ul>
 	</div>

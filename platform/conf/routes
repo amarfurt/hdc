@@ -13,6 +13,7 @@ POST    /messages/get               controllers.Messages.get()
 GET     /messages/create            controllers.Messages.create()
 POST    /messages/send              controllers.Messages.send()
 GET     /messages/:id               controllers.Messages.details(id: String)
+DELETE  /messages/:id               controllers.Messages.delete(id: String)
 # Records
 GET     /records                    controllers.Records.index()
 POST    /records/get                controllers.Records.get()

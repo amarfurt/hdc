@@ -47,6 +47,13 @@ messages.controller('MessagesCtrl', ['$scope', '$http', function($scope, $http) 
 		window.location.href = jsRoutes.controllers.Messages.details(message._id.$oid).url;
 	}
 	
+	// remove message
+	$scope.remove = function(message) {
+		$http(jsRoutes.controllers.Messages["delete"](message._id.$oid)).
+			success(function() { $scope.messages.splice($scope.messages.indexOf(message), 1); }).
+			error(function(err) { $scope.error = "Failed to delete message: " + err; });
+	}
+	
 }]);
 messages.controller('CreateMessageCtrl', ['$scope', '$http', function($scope, $http) {
 	

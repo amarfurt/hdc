@@ -107,4 +107,21 @@ public class Messages extends Controller {
 		}
 		return ok();
 	}
+
+	public static Result delete(String messageIdString) {
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId messageId = new ObjectId(messageIdString);
+		if (!Message.exists(new ChainedMap<String, ObjectId>().put("_id", messageId).put("inbox", userId).get())) {
+			return badRequest("No message with this id exists.");
+		}
+
+		// remove the message from the user's inbox
+		try {
+			Message.delete(userId, messageId);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
 }
