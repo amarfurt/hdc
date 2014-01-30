@@ -14,6 +14,8 @@ GET     /messages/create            controllers.Messages.create()
 POST    /messages/send              controllers.Messages.send()
 GET     /messages/:id               controllers.Messages.details(id: String)
 DELETE  /messages/:id               controllers.Messages.delete(id: String)
+DELETE  /messages/:id/trash         controllers.Messages.remove(id: String)
+PUT     /messages/:id/:from/:to     controllers.Messages.move(id: String, from: String, to: String)
 # Records
 GET     /records                    controllers.Records.index()
 POST    /records/get                controllers.Records.get()

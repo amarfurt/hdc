@@ -51,6 +51,7 @@ public class UserTest {
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
+		user.messages = new HashMap<String, Set<ObjectId>>();
 		User.add(user);
 		assertEquals(1, users.count());
 		DBObject query = new BasicDBObject("_id", user._id);

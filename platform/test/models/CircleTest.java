@@ -109,6 +109,7 @@ public class CircleTest {
 		DBCollection circles = Database.getCollection("circles");
 		assertEquals(0, circles.count());
 		Circle circle = new Circle();
+		circle._id = new ObjectId();
 		circle.owner = new ObjectId();
 		circle.name = "Test circle 1";
 		circle.order = 1;

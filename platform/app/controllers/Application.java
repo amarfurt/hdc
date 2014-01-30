@@ -94,6 +94,7 @@ public class Application extends Controller {
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
+		user.messages = new HashMap<String, Set<ObjectId>>();
 		try {
 			User.add(user);
 		} catch (ModelException e) {
@@ -134,6 +135,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Messages.details(),
 				controllers.routes.javascript.Messages.get(),
 				controllers.routes.javascript.Messages.send(),
+				controllers.routes.javascript.Messages.move(),
+				controllers.routes.javascript.Messages.remove(),
 				controllers.routes.javascript.Messages.delete(),
 				// Records
 				controllers.routes.javascript.Records.details(),
@@ -151,7 +154,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Circles.addUsers(),
 				controllers.routes.javascript.Circles.removeMember(),
 				// Spaces
-				controllers.routes.javascript.Spaces.get(), controllers.routes.javascript.Spaces.add(),
+				controllers.routes.javascript.Spaces.get(),
+				controllers.routes.javascript.Spaces.add(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.addRecords(),
 				// Users

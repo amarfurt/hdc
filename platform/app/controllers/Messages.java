@@ -83,7 +83,7 @@ public class Messages extends Controller {
 		Set<User> users;
 		try {
 			users = User.getAll(new ChainedMap<String, Set<ObjectId>>().put("_id", receiverIds).get(),
-					new ChainedSet<String>().add("_id").get());
+					new ChainedSet<String>().add("messages.inbox").get());
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -96,12 +96,64 @@ public class Messages extends Controller {
 		message._id = new ObjectId();
 		message.sender = new ObjectId(request().username());
 		message.receivers = receiverIds;
-		message.inbox = receiverIds;
 		message.created = DateTimeUtils.now();
 		message.title = json.get("title").asText();
 		message.content = json.get("content").asText();
 		try {
 			Message.add(message);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// add to inbox of receivers
+		for (User user : users) {
+			user.messages.get("inbox").add(message._id);
+			try {
+				User.set(user._id, "messages.inbox", user.messages.get("inbox"));
+			} catch (ModelException e) {
+				return badRequest(e.getMessage());
+			}
+		}
+		return ok();
+	}
+
+	public static Result move(String messageIdString, String from, String to) {
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId messageId = new ObjectId(messageIdString);
+		if (!User
+				.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages." + from, messageId).get())) {
+			return badRequest("No message with this id exists.");
+		}
+
+		// update the respective message folders
+		try {
+			User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>()
+					.add("messages." + from).add("messages." + to).get());
+			user.messages.get(from).remove(messageId);
+			user.messages.get(to).add(messageId);
+			User.set(userId, "messages." + from, user.messages.get(from));
+			User.set(userId, "messages." + to, user.messages.get(to));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
+
+	public static Result remove(String messageIdString) {
+		// validate request
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId messageId = new ObjectId(messageIdString);
+		if (!User.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages.trash", messageId).get())) {
+			return badRequest("No message with this id exists.");
+		}
+
+		// remove message from trash folder
+		try {
+			User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>()
+					.add("messages.trash").get());
+			user.messages.get("trash").remove(messageId);
+			User.set(userId, "messages.trash", user.messages.get("trash"));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -112,7 +164,7 @@ public class Messages extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId messageId = new ObjectId(messageIdString);
-		if (!Message.exists(new ChainedMap<String, ObjectId>().put("_id", messageId).put("inbox", userId).get())) {
+		if (!Message.exists(new ChainedMap<String, ObjectId>().put("_id", messageId).get())) {
 			return badRequest("No message with this id exists.");
 		}
 

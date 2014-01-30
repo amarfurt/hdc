@@ -32,6 +32,7 @@ public class CreateDBObjects {
 			user.visible = new HashMap<String, Set<ObjectId>>();
 			user.apps = new HashSet<ObjectId>();
 			user.visualizations = new HashSet<ObjectId>();
+			user.messages = new HashMap<String, Set<ObjectId>>();
 			User.add(user);
 			userIds[i] = user._id;
 		}

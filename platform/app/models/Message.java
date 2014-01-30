@@ -6,7 +6,6 @@ import java.util.Set;
 import org.bson.types.ObjectId;
 
 import utils.collections.ChainedMap;
-import utils.collections.ChainedSet;
 import utils.search.Search;
 import utils.search.SearchException;
 
@@ -16,7 +15,6 @@ public class Message extends Model implements Comparable<Message> {
 
 	public ObjectId sender;
 	public Set<ObjectId> receivers;
-	public Set<ObjectId> inbox; // users that have this message in their inbox
 	public String created;
 	public String title;
 	public String content;
@@ -60,17 +58,6 @@ public class Message extends Model implements Comparable<Message> {
 	public static void delete(ObjectId receiverId, ObjectId messageId) throws ModelException {
 		// also remove from the search index
 		Search.delete(receiverId, "message", messageId);
-
-		// remove user from inbox set
-		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", messageId).get();
-		Message message = Model.get(Message.class, collection, properties, new ChainedSet<String>().add("inbox").get());
-		message.inbox.remove(receiverId);
-		
-		// delete the message if no user has it in their inbox anymore
-		if (message.inbox.isEmpty()) {
-			Model.delete(collection, properties);
-		} else {
-			Model.set(collection, messageId, "inbox", message.inbox);
-		}
+		Model.delete(collection, new ChainedMap<String, ObjectId>().put("_id", messageId).get());
 	}
 }

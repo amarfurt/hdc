@@ -4,22 +4,28 @@ messages.controller('MessagesCtrl', ['$scope', '$http', function($scope, $http) 
 	// init
 	$scope.error = null;
 	$scope.loading = true;
-	$scope.messages = [];
+	$scope.inbox = [];
+	$scope.archive = [];
+	$scope.trash = [];
+	$scope.messages = {};
 	$scope.names = {};
 	
 	// get current user
 	$http(jsRoutes.controllers.Users.getCurrentUser()).
-		success(function(userId) { getMessages(userId); });
+		success(function(userId) { getFolders(userId); });
 	
 	// get messages
-	getMessages = function(userId) {
-		var properties = {"inbox": userId};
-		var fields = ["_id", "sender", "created", "title"];
+	getFolders = function(userId) {
+		var properties = {"_id": userId};
+		var fields = ["messages"];
 		var data = {"properties": properties, "fields": fields};
-		$http.post(jsRoutes.controllers.Messages.get().url, JSON.stringify(data)).
-			success(function(messages) {
-				$scope.messages = messages;
-				getSenderNames();
+		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+			success(function(users) {
+				$scope.inbox = users[0].messages.inbox;
+				$scope.archive = users[0].messages.archive;
+				$scope.trash = users[0].messages.trash;
+				var messageIds = _.flatten([$scope.inbox, $scope.archive, $scope.trash]);
+				getMessages(messageIds);
 			}).
 			error(function(err) {
 				$scope.error = "Failed to load message: " + err;
@@ -27,9 +33,24 @@ messages.controller('MessagesCtrl', ['$scope', '$http', function($scope, $http) 
 			});
 	}
 	
-	getSenderNames = function() {
-		var senderIdStrings = _.uniq(_.map($scope.messages, function(message) { return message.sender.$oid; }));
-		var senderIds = _.map(senderIdStrings, function(senderIdString) { return {"$oid": senderIdString}; });
+	getMessages = function(messageIds) {
+		var properties = {"_id": messageIds};
+		var fields = ["sender", "created", "title"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Messages.get().url, JSON.stringify(data)).
+			success(function(messages) {
+				_.each(messages, function(message) { $scope.messages[message._id.$oid] = message; });
+				var senderIds = _.map(messages, function(message) { return message.sender; });
+				senderIds = _.uniq(senderIds, false, function(senderId) { return senderId.$oid; });
+				getSenderNames(senderIds);
+			}).
+			error(function(err) {
+				$scope.error = "Failed to load message: " + err;
+				$scope.loading = false;
+			});
+	}
+	
+	getSenderNames = function(senderIds) {
 		var data = {"properties": {"_id": senderIds}, "fields": ["name"]};
 		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
 			success(function(users) {
@@ -43,14 +64,27 @@ messages.controller('MessagesCtrl', ['$scope', '$http', function($scope, $http) 
 	}
 	
 	// open message details
-	$scope.showMessage = function(message) {
-		window.location.href = jsRoutes.controllers.Messages.details(message._id.$oid).url;
+	$scope.showMessage = function(messageId) {
+		window.location.href = jsRoutes.controllers.Messages.details(messageId.$oid).url;
+	}
+	
+	// move message to another folder
+	$scope.move = function(messageId, from, to) {
+		$http(jsRoutes.controllers.Messages.move(messageId.$oid, from, to)).
+			success(function() {
+				$scope[from].splice($scope[from].indexOf(messageId), 1);
+				$scope[to].push(messageId);
+			}).
+			error(function(err) { $scope.error = "Failed to move the message from " + from + " to " + to + ": " + err; });
 	}
 	
 	// remove message
-	$scope.remove = function(message) {
-		$http(jsRoutes.controllers.Messages["delete"](message._id.$oid)).
-			success(function() { $scope.messages.splice($scope.messages.indexOf(message), 1); }).
+	$scope.remove = function(messageId) {
+		$http(jsRoutes.controllers.Messages.remove(messageId.$oid)).
+			success(function() {
+				delete $scope.messages[messageId.$oid];
+				$scope.trash.splice($scope.trash.indexOf(messageId), 1);
+			}).
 			error(function(err) { $scope.error = "Failed to delete message: " + err; });
 	}
 	

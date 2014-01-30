@@ -5,6 +5,7 @@ import static play.test.Helpers.fakeGlobal;
 import static play.test.Helpers.start;
 import utils.db.Database;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.WriteResult;
@@ -15,9 +16,9 @@ import com.mongodb.WriteResult;
 public class ManualMongo {
 
 	public static void main(String[] args) {
-		String collection = "records";
-		String field = "tags";
-		String[] value = new String[0];
+		String collection = "users";
+		String field = "messages.trash";
+		BasicDBList value = new BasicDBList();
 
 		start(fakeApplication(fakeGlobal()));
 		Database.connect();

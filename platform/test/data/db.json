@@ -11,7 +11,12 @@
 		],
 		"visualizations": [
 			{ "$oid" : "5255500630040546a0ddc674" }
-		]
+		],
+		"messages": {
+			"inbox": [ ],
+			"archive": [ ],
+			"trash": [ ]
+		}
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc671" },
@@ -20,7 +25,12 @@
 		"password" : "1000:6203f51737eebf6052f2d93fae1844d3400a2c731cb7cdba:0806ec1604e33b0d09fc51c2320eebb85ff93d334bd81975",
 		"visible": { }, 
 		"apps": [ ],
-		"visualizations": [ ]
+		"visualizations": [ ],
+		"messages": {
+			"inbox": [ ],
+			"archive": [ ],
+			"trash": [ ]
+		}
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc672" },
@@ -29,7 +39,12 @@
 		"password" : "1000:c9baf5689c8e7f5842de0bf3f1bc7c4c2fa0dff8d95425e8:3677f28113a374471c0c86aad602d3ef4ed6628111c18798",
 		"visible": { }, 
 		"apps": [ ],
-		"visualizations": [ ]
+		"visualizations": [ ],
+		"messages": {
+			"inbox": [ ],
+			"archive": [ ],
+			"trash": [ ]
+		}
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc673" },
@@ -38,7 +53,12 @@
 		"password" : "1000:cb0a03eddf8846e0da1152ece93a1dc7c1e1909388c003c5:d019303e8b826faf2a2d76290b66ae6fa444577b478a6572",
 		"visible": { }, 
 		"apps": [ ],
-		"visualizations": [ ]
+		"visualizations": [ ],
+		"messages": {
+			"inbox": [ ],
+			"archive": [ ],
+			"trash": [ ]
+		}
 	},
 	{
 		"_id" : { "$oid" : "525d0d84e4b097a840bcae9a" },
@@ -47,7 +67,12 @@
 		"password" : "1000:a0a1208dac2cf31c2d8fad26cbc9ac6fcf5284c4bc5f2e16:730b689e672c7b120322139ead1c20d3c0376cbb8d5920ac",
 		"visible": { }, 
 		"apps": [ ],
-		"visualizations": [ ]
+		"visualizations": [ ],
+		"messages": {
+			"inbox": [ ],
+			"archive": [ ],
+			"trash": [ ]
+		}
 	}
 	],
 	"messages" : [

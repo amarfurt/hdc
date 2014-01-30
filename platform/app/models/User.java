@@ -23,6 +23,7 @@ public class User extends Model implements Comparable<User> {
 	public Map<String, Set<ObjectId>> visible; // map from users (DBObjet requires string) to their shared records
 	public Set<ObjectId> apps; // installed apps
 	public Set<ObjectId> visualizations; // installed visualizations
+	public Map<String, Set<ObjectId>> messages; // keys (folders) are: inbox, archive, trash
 
 	@Override
 	public int compareTo(User o) {

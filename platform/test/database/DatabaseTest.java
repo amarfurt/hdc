@@ -74,6 +74,7 @@ public class DatabaseTest {
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
+		user.messages = new HashMap<String, Set<ObjectId>>();
 		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
@@ -93,6 +94,7 @@ public class DatabaseTest {
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
+		user.messages = new HashMap<String, Set<ObjectId>>();
 		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();

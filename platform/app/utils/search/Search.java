@@ -116,6 +116,11 @@ public class Search {
 	 * Create a user's index.
 	 */
 	private static void createIndex(ObjectId userId) throws SearchException {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
 			client.admin().indices().prepareCreate(userId.toString()).addMapping("_default_", getMapping()).execute()
 					.actionGet();
@@ -126,6 +131,11 @@ public class Search {
 	 * Delete a user's index.
 	 */
 	private static void deleteIndex(ObjectId userId) {
+		// return if not connected
+		if (client == null) {
+			return;
+		}
+
 		if (client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
 			client.admin().indices().prepareDelete(userId.toString()).execute().actionGet();
 			client.admin().indices().prepareClearCache(userId.toString()).execute().actionGet();
