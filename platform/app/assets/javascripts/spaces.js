@@ -95,8 +95,10 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	reloadSpace = function(space) {
 		activeSpace = space; // active space for filters (works for compare copy as well)
 		var filteredRecords = $filter("filter")(space.baseRecords, matchesFilters);
-		var filteredData = _.map(filteredRecords, function(record) { return record.data; });
-		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
+		// var filteredData = _.map(filteredRecords, function(record) { return record.data; });
+		// var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
+		// passing meta data as well
+		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredRecords)));
 		space.trustedUrl = $sce.trustAsResourceUrl(completedUrl);
 		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
 	}
