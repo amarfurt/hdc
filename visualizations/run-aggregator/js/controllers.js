@@ -53,7 +53,7 @@ controllers.controller('RunAggregatorCtrl', ['$scope', '$routeParams',
 				$scope.title = $scope.title.substring(0, $scope.title.length - 2);
 			}
 		} else {
-			$scope.title = "Statistics of " + users.length + " runners";
+			$scope.title = users.length + " runners";
 		}
 		$scope.loading = false;
 	}]);
