@@ -120,7 +120,12 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
 			data = {"properties": properties, "fields": fields};
 			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
-				success(function(users) { space.select.owners = users; });
+				success(function(users) {
+					// get current user (if present), rename as "myself" and put on top of the list
+					var curUser = _.find(users, function(user) { return user._id.$oid === $scope.userId.$oid; });
+					var owners = _.union([{"_id": curUser._id, "name": "myself"}], _.without(users, curUser));
+					space.select.owners = owners;
+				});
 		}
 		$("#appFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
 		$("#ownerFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
