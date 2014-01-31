@@ -40,8 +40,8 @@
 							<div ng-show="space.baseRecords.length > 0">
 								<div class="row">
 									<div class="form-group col-lg-3">
-										<label for="appFilter-{{space._id.$oid}}" class="control-label">Created with: </label>
-										<select id="appFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.appId" ng-options="app._id as app.name for app in space.select.apps">
+										<label for="circleFilter-{{space._id.$oid}}" class="control-label">By people in: </label>
+										<select id="circleFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.circleMembers" ng-options="circle.members as circle.name for circle in space.select.circles">
 											<option value="">any</option>
 										</select>
 									</div>
@@ -67,8 +67,8 @@
 							<div ng-show="space.copy.baseRecords.length > 0">
 								<div class="row">
 									<div class="form-group col-lg-3">
-										<label for="appFilter-copy-{{space._id.$oid}}" class="control-label">Created with: </label>
-										<select id="appFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.appId" ng-options="app._id as app.name for app in space.copy.select.apps">
+										<label for="circleFilter-copy-{{space._id.$oid}}" class="control-label">By people in: </label>
+										<select id="circleFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.circleMembers" ng-options="circle.members as circle.name for circle in space.copy.select.circles">
 											<option value="">any</option>
 										</select>
 									</div>

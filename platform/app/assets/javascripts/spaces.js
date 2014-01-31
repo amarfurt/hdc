@@ -74,7 +74,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	// load records for given space
 	loadBaseRecords = function(space) {
 		var properties = {"_id": space.records};
-		var fields = ["app", "owner", "created", "data"];
+		var fields = ["owner", "created", "data"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
 			success(function(records) {
@@ -106,17 +106,18 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	// *** FILTERS ***
 	// initialize filters
 	initFilters = function(space) {
-		// app and owner
+		// circle and owner
 		space.select = {};
 		if (space.baseRecords.length > 0) {
-			var appIds = _.uniq(_.map(space.baseRecords, function(record) { return record.app.$oid; }));
-			var ownerIds = _.uniq(_.map(space.baseRecords, function(record) { return record.owner.$oid; }));
-			// get the names
-			var properties = {"_id": _.map(appIds, function(id) { return {"$oid": id}; })};
-			var fields = ["name"];
+			// circle
+			var properties = {"owner": $scope.userId};
+			var fields = ["name", "members"];
 			var data = {"properties": properties, "fields": fields};
-			$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
-				success(function(apps) { space.select.apps = apps; });
+			$http.post(jsRoutes.controllers.Circles.get().url, JSON.stringify(data)).
+				success(function(circles) { space.select.circles = circles; });
+			
+			// owner
+			var ownerIds = _.uniq(_.map(space.baseRecords, function(record) { return record.owner.$oid; }));
 			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
 			data = {"properties": properties, "fields": fields};
 			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
@@ -127,7 +128,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 					space.select.owners = owners;
 				});
 		}
-		$("#appFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
+		$("#circleFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
 		$("#ownerFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
 		
 		// date
@@ -182,8 +183,8 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	// checks whether a record matches all filters
 	matchesFilters = function(record) {
 		var space = activeSpace;
-		if (space.filters.appId) {
-			if (space.filters.appId.$oid !== record.app.$oid) {
+		if (space.filters.circleMembers) {
+			if (!_.some(space.filters.circleMembers, function(member) { return member.$oid === record.owner.$oid; })) {
 				return false;
 			}
 		}
