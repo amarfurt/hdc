@@ -95,6 +95,9 @@ public class Application extends Controller {
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
 		user.messages = new HashMap<String, Set<ObjectId>>();
+		user.messages.put("inbox", new HashSet<ObjectId>());
+		user.messages.put("archive", new HashSet<ObjectId>());
+		user.messages.put("trash", new HashSet<ObjectId>());
 		try {
 			User.add(user);
 		} catch (ModelException e) {
