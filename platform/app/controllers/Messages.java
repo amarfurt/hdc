@@ -24,7 +24,9 @@ import utils.db.ObjectIdConversion;
 import utils.json.JsonExtraction;
 import utils.json.JsonValidation;
 import utils.json.JsonValidation.JsonValidationException;
-import views.html.index;
+import utils.search.Search;
+import utils.search.SearchException;
+import views.html.messages;
 import views.html.details.message;
 import views.html.dialogs.createmessage;
 
@@ -34,7 +36,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Messages extends Controller {
 
 	public static Result index() {
-		return ok(index.render());
+		return ok(messages.render());
 	}
 
 	public static Result details(String messageIdString) {
@@ -105,12 +107,15 @@ public class Messages extends Controller {
 			return badRequest(e.getMessage());
 		}
 
-		// add to inbox of receivers
+		// add to inbox and search index of receivers
 		for (User user : users) {
 			user.messages.get("inbox").add(message._id);
 			try {
 				User.set(user._id, "messages.inbox", user.messages.get("inbox"));
+				Search.add(user._id, "message", message._id, message.title, message.content);
 			} catch (ModelException e) {
+				return badRequest(e.getMessage());
+			} catch (SearchException e) {
 				return badRequest(e.getMessage());
 			}
 		}
@@ -148,12 +153,13 @@ public class Messages extends Controller {
 			return badRequest("No message with this id exists.");
 		}
 
-		// remove message from trash folder
+		// remove message from trash folder and user's search index
 		try {
 			User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>()
 					.add("messages.trash").get());
 			user.messages.get("trash").remove(messageId);
 			User.set(userId, "messages.trash", user.messages.get("trash"));
+			Search.delete(userId, "message", messageId);
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
