@@ -75,6 +75,9 @@ public class DatabaseTest {
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
 		user.messages = new HashMap<String, Set<ObjectId>>();
+		user.news = new HashSet<ObjectId>();
+		user.pushed = new HashSet<ObjectId>();
+		user.shared = new HashSet<ObjectId>();
 		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();
@@ -95,6 +98,9 @@ public class DatabaseTest {
 		user.apps = new HashSet<ObjectId>();
 		user.visualizations = new HashSet<ObjectId>();
 		user.messages = new HashMap<String, Set<ObjectId>>();
+		user.news = new HashSet<ObjectId>();
+		user.pushed = new HashSet<ObjectId>();
+		user.shared = new HashSet<ObjectId>();
 		users.insert(DatabaseConversion.toDBObject(user));
 		assertEquals(1, users.count());
 		DBObject foundObject = users.findOne();

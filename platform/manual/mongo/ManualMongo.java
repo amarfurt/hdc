@@ -17,7 +17,7 @@ public class ManualMongo {
 
 	public static void main(String[] args) {
 		String collection = "users";
-		String field = "messages.trash";
+		String field = "shared";
 		BasicDBList value = new BasicDBList();
 
 		start(fakeApplication(fakeGlobal()));

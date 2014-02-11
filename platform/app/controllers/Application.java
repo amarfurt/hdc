@@ -59,7 +59,7 @@ public class Application extends Controller {
 		// user authenticated
 		session().clear();
 		session("id", user._id.toString());
-		return ok(routes.Messages.index().url());
+		return ok(routes.News.index().url());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
@@ -98,6 +98,9 @@ public class Application extends Controller {
 		user.messages.put("inbox", new HashSet<ObjectId>());
 		user.messages.put("archive", new HashSet<ObjectId>());
 		user.messages.put("trash", new HashSet<ObjectId>());
+		user.news = new HashSet<ObjectId>();
+		user.pushed = new HashSet<ObjectId>();
+		user.shared = new HashSet<ObjectId>();
 		try {
 			User.add(user);
 		} catch (ModelException e) {
@@ -105,7 +108,7 @@ public class Application extends Controller {
 		}
 		session().clear();
 		session("id", user._id.toString());
-		return ok(routes.Messages.index().url());
+		return ok(routes.News.index().url());
 	}
 
 	public static Result logout() {
@@ -134,6 +137,9 @@ public class Application extends Controller {
 				controllers.routes.javascript.Visualizations.uninstall(),
 				controllers.routes.javascript.Visualizations.isInstalled(),
 				controllers.routes.javascript.Visualizations.getUrl(),
+				// News
+				controllers.routes.javascript.News.get(),
+				controllers.routes.javascript.News.hide(),
 				// Messages
 				controllers.routes.javascript.Messages.details(),
 				controllers.routes.javascript.Messages.get(),
@@ -167,6 +173,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Users.search(),
 				controllers.routes.javascript.Users.loadContacts(),
 				controllers.routes.javascript.Users.complete(),
+				controllers.routes.javascript.Users.clearPushed(),
+				controllers.routes.javascript.Users.clearShared(),
 				// Market
 				controllers.routes.javascript.Market.registerApp(),
 				controllers.routes.javascript.Market.registerVisualization(),

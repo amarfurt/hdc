@@ -16,7 +16,10 @@
 			"inbox": [ ],
 			"archive": [ ],
 			"trash": [ ]
-		}
+		},
+		"news": [ ],
+		"pushed": [ ],
+		"shared": [ ]
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc671" },
@@ -30,7 +33,10 @@
 			"inbox": [ ],
 			"archive": [ ],
 			"trash": [ ]
-		}
+		},
+		"news": [ ],
+		"pushed": [ ],
+		"shared": [ ]
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc672" },
@@ -44,7 +50,10 @@
 			"inbox": [ ],
 			"archive": [ ],
 			"trash": [ ]
-		}
+		},
+		"news": [ ],
+		"pushed": [ ],
+		"shared": [ ]
 	},
 	{
 		"_id": { "$oid" : "5255500630040546a0ddc673" },
@@ -58,7 +67,10 @@
 			"inbox": [ ],
 			"archive": [ ],
 			"trash": [ ]
-		}
+		},
+		"news": [ ],
+		"pushed": [ ],
+		"shared": [ ]
 	},
 	{
 		"_id" : { "$oid" : "525d0d84e4b097a840bcae9a" },
@@ -72,7 +84,10 @@
 			"inbox": [ ],
 			"archive": [ ],
 			"trash": [ ]
-		}
+		},
+		"news": [ ],
+		"pushed": [ ],
+		"shared": [ ]
 	}
 	],
 	"messages" : [

@@ -40,7 +40,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class Search {
 
 	public static enum Type {
-		USER, APP, VISUALIZATION
+		USER, APP, VISUALIZATION, NEWS
 	}
 
 	private static final String CLUSTER_NAME = "healthdata";
@@ -150,6 +150,8 @@ public class Search {
 			return "app";
 		case VISUALIZATION:
 			return "visualization";
+		case NEWS:
+			return "news";
 		default:
 			throw new NoSuchElementException("There is no such type.");
 		}

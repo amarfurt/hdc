@@ -33,6 +33,9 @@ public class CreateDBObjects {
 			user.apps = new HashSet<ObjectId>();
 			user.visualizations = new HashSet<ObjectId>();
 			user.messages = new HashMap<String, Set<ObjectId>>();
+			user.news = new HashSet<ObjectId>();
+			user.pushed = new HashSet<ObjectId>();
+			user.shared = new HashSet<ObjectId>();
 			User.add(user);
 			userIds[i] = user._id;
 		}

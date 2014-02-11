@@ -20,10 +20,13 @@ public class User extends Model implements Comparable<User> {
 	public String email; // must be unique
 	public String name;
 	public String password;
-	public Map<String, Set<ObjectId>> visible; // map from users (DBObjet requires string) to their shared records
+	public Map<String, Set<ObjectId>> visible; // map from users (DBObject requires string) to their shared records
 	public Set<ObjectId> apps; // installed apps
 	public Set<ObjectId> visualizations; // installed visualizations
 	public Map<String, Set<ObjectId>> messages; // keys (folders) are: inbox, archive, trash
+	public Set<ObjectId> news; // visible news items
+	public Set<ObjectId> pushed; // records pushed by apps (since last login)
+	public Set<ObjectId> shared; // records shared by users (since last login)
 
 	@Override
 	public int compareTo(User o) {

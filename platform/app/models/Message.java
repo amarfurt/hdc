@@ -45,7 +45,7 @@ public class Message extends Model implements Comparable<Message> {
 	public static void add(Message message) throws ModelException {
 		Model.insert(collection, message);
 
-		// also add this circle to each user's search index
+		// also add this message to each receiver's search index
 		for (ObjectId receiver : message.receivers) {
 			try {
 				Search.add(receiver, "message", message._id, message.title, message.content);

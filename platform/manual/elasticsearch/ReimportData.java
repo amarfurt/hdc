@@ -8,10 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import models.App;
 import models.Circle;
 import models.Message;
+import models.NewsItem;
 import models.Record;
 import models.Space;
+import models.User;
+import models.Visualization;
 
 import org.bson.types.ObjectId;
 
@@ -20,10 +24,6 @@ import utils.collections.ChainedSet;
 import utils.db.Database;
 import utils.search.Search;
 import utils.search.Search.Type;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 
 /**
  * Fetches the data from MongoDB and indexes it in ElasticSearch.
@@ -54,18 +54,11 @@ public class ReimportData {
 
 		// users
 		System.out.print("Importing users...");
-		Map<ObjectId, String> users = new HashMap<ObjectId, String>();
-		DBObject query = new BasicDBObject();
-		DBObject projection = new BasicDBObject("email", 1);
-		projection.put("name", 1);
-		DBCursor result = Database.getCollection("users").find(query, projection);
-		while (result.hasNext()) {
-			DBObject cur = result.next();
-			ObjectId userId = (ObjectId) cur.get("_id");
-			String email = (String) cur.get("email");
-			String name = (String) cur.get("name");
-			Search.add(Type.USER, userId, name, email);
-			users.put(userId, name);
+		Map<String, Object> emptyMap = new HashMap<String, Object>();
+		Set<User> users = User
+				.getAll(emptyMap, new ChainedSet<String>().add("email").add("name").add("messages").get());
+		for (User user : users) {
+			Search.add(Type.USER, user._id, user.name, user.email);
 		}
 
 		// waiting for previous operations to finish...
@@ -73,66 +66,66 @@ public class ReimportData {
 		System.out.println("done.");
 
 		// for each user: add all the data
-		for (ObjectId userId : users.keySet()) {
-			System.out.print("Importing personal data for user '" + users.get(userId) + "'...");
+		for (User user : users) {
+			System.out.print("Importing personal data for user '" + user.name + "'...");
+
 			// messages
-			Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("receivers", userId).get();
-			Set<String> fields = new ChainedSet<String>().add("title").add("content").get();
-			Set<Message> messages = Message.getAll(properties, fields);
+			Set<ObjectId> messageIds = user.messages.get("inbox");
+			messageIds.addAll(user.messages.get("archive"));
+			messageIds.addAll(user.messages.get("trash"));
+			Set<Message> messages = Message.getAll(
+					new ChainedMap<String, Set<ObjectId>>().put("_id", messageIds).get(),
+					new ChainedSet<String>().add("title").add("content").get());
 			for (Message message : messages) {
-				Search.add(userId, "message", message._id, message.title, message.content);
+				Search.add(user._id, "message", message._id, message.title, message.content);
 			}
 
 			// spaces
-			properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
-			fields = new ChainedSet<String>().add("name").get();
+			Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", user._id).get();
+			Set<String> fields = new ChainedSet<String>().add("name").get();
 			Set<Space> spaces = Space.getAll(properties, fields);
 			for (Space space : spaces) {
-				Search.add(userId, "space", space._id, space.name);
+				Search.add(user._id, "space", space._id, space.name);
 			}
 
 			// circles
 			Set<Circle> circles = Circle.getAll(properties, fields);
 			for (Circle circle : circles) {
-				Search.add(userId, "circle", circle._id, circle.name);
+				Search.add(user._id, "circle", circle._id, circle.name);
 			}
 
 			// records
 			fields.add("description");
 			Set<Record> records = Record.getAll(properties, fields);
 			for (Record record : records) {
-				Search.add(userId, "record", record._id, record.name, record.description);
+				Search.add(user._id, "record", record._id, record.name, record.description);
 			}
 			System.out.println("done.");
 		}
 
+		// news
+		System.out.print("Importing news...");
+		Set<NewsItem> newsItems = NewsItem.getAll(emptyMap, new ChainedSet<String>().add("title").add("content").get());
+		for (NewsItem newsItem : newsItems) {
+			Search.add(Type.NEWS, newsItem._id, newsItem.title, newsItem.content);
+		}
+		System.out.println("done.");
+
 		// apps
 		System.out.print("Importing apps...");
-		query = new BasicDBObject();
-		projection = new BasicDBObject("name", 1);
-		projection.put("description", 1);
-		result = Database.getCollection("apps").find(query, projection);
-		while (result.hasNext()) {
-			DBObject cur = result.next();
-			ObjectId appId = (ObjectId) cur.get("_id");
-			String name = (String) cur.get("name");
-			String description = (String) cur.get("description");
-			Search.add(Type.APP, appId, name, description);
+		Set<App> apps = App.getAll(new HashMap<String, Object>(),
+				new ChainedSet<String>().add("name").add("description").get());
+		for (App app : apps) {
+			Search.add(Type.APP, app._id, app.name, app.description);
 		}
 		System.out.println("done.");
 
 		// visualizations
 		System.out.print("Importing visualizations...");
-		query = new BasicDBObject();
-		projection = new BasicDBObject("name", 1);
-		projection.put("description", 1);
-		result = Database.getCollection("visualizations").find(query, projection);
-		while (result.hasNext()) {
-			DBObject cur = result.next();
-			ObjectId visualizationId = (ObjectId) cur.get("_id");
-			String name = (String) cur.get("name");
-			String description = (String) cur.get("description");
-			Search.add(Type.VISUALIZATION, visualizationId, name, description);
+		Set<Visualization> visualizations = Visualization.getAll(emptyMap,
+				new ChainedSet<String>().add("name").add("description").get());
+		for (Visualization visualization : visualizations) {
+			Search.add(Type.VISUALIZATION, visualization._id, visualization.name, visualization.description);
 		}
 		System.out.println("done.");
 
@@ -141,5 +134,4 @@ public class ReimportData {
 		Search.close();
 		System.out.println("Finished.");
 	}
-
 }

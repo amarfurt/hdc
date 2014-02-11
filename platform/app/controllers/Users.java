@@ -135,7 +135,7 @@ public class Users extends Controller {
 	static void makeVisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) throws ModelException {
 		// get the visible fields for the owner from all users
 		Map<String, Set<ObjectId>> properties = new ChainedMap<String, Set<ObjectId>>().put("_id", userIds).get();
-		Set<String> fields = new ChainedSet<String>().add("visible." + ownerId.toString()).get();
+		Set<String> fields = new ChainedSet<String>().add("visible." + ownerId.toString()).add("shared").get();
 		Set<User> users = User.getAll(properties, fields);
 		for (User user : users) {
 			if (user.visible.containsKey(ownerId.toString())) {
@@ -149,6 +149,13 @@ public class Users extends Controller {
 				}
 			} else {
 				User.set(user._id, "visible." + ownerId.toString(), recordIds);
+			}
+
+			// also update shared field if it has changed
+			int originalSize = user.shared.size();
+			user.shared.addAll(recordIds);
+			if (user.shared.size() > originalSize) {
+				User.set(user._id, "shared", user.shared);
 			}
 		}
 	}
@@ -179,15 +186,68 @@ public class Users extends Controller {
 				}
 			}
 
-			// update visible field iff visible records have changed
+			// update visible field if visible records have changed
 			recordIds.removeAll(stillSharedRecords);
 			if (recordIds.size() > 0) {
 				User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(),
-						new ChainedSet<String>().add("visible." + ownerId.toString()).get());
+						new ChainedSet<String>().add("visible." + ownerId.toString()).add("shared").get());
 				Set<ObjectId> visibleRecords = user.visible.get(ownerId.toString());
 				visibleRecords.removeAll(recordIds);
 				User.set(userId, "visible." + ownerId.toString(), visibleRecords);
+
+				// also update shared field if it has changed
+				int originalSize = user.shared.size();
+				user.shared.removeAll(recordIds);
+				if (user.shared.size() < originalSize) {
+					User.set(userId, "shared", user.shared);
+				}
 			}
 		}
+	}
+
+	/**
+	 * Add a record to the list of pushed records of the given user.
+	 */
+	static void pushRecord(ObjectId userId, ObjectId recordId) throws ModelException {
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(),
+				new ChainedSet<String>().add("pushed").get());
+		user.pushed.add(recordId);
+		User.set(user._id, "pushed", user.pushed);
+	}
+
+	/**
+	 * Remove a record from the list of pushed records of the given user.
+	 */
+	static void pullRecord(ObjectId userId, ObjectId recordId) throws ModelException {
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(),
+				new ChainedSet<String>().add("pushed").get());
+		user.pushed.remove(recordId);
+		User.set(user._id, "pushed", user.pushed);
+	}
+
+	/**
+	 * Clear the list of pushed records of the current user.
+	 */
+	public static Result clearPushed() {
+		ObjectId userId = new ObjectId(request().username());
+		try {
+			User.set(userId, "pushed", new HashSet<ObjectId>());
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
+
+	/**
+	 * Clear the list of shared records of the current user.
+	 */
+	public static Result clearShared() {
+		ObjectId userId = new ObjectId(request().username());
+		try {
+			User.set(userId, "shared", new HashSet<ObjectId>());
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
 	}
 }
