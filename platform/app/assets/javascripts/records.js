@@ -14,6 +14,9 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.circles = [];
 	$scope.filter = {};
 	$scope.select = {};
+	$scope.filters = {};
+	$scope.filters.current = [];
+	$scope.filters.add = {};
 	
 	// get current user
 	$http(jsRoutes.controllers.Users.getCurrentUser()).

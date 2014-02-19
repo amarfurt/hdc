@@ -47,24 +47,7 @@
 		
 		<!-- Filters -->
 		<div ng-show="records.length > 0">
-			<div class="row">
-				<div class="form-group col-lg-3">
-					<label for="appFilter" class="control-label">Created with: </label>
-					<select id="appFilter" class="form-control" ng-model="filter.appId" ng-options="app._id as app.name for app in select.apps">
-						<option value="">any</option>
-					</select>
-				</div>
-				<div class="form-group col-lg-3">
-					<label for="ownerFilter" class="control-label">Owned by: </label>
-					<select id="ownerFilter" class="form-control" ng-model="filter.ownerId" ng-options="owner._id as owner.name for owner in select.owners">
-						<option value="">any</option>
-					</select>
-				</div>
-				<div class="form-group col-lg-6">
-					<label for="dateFilter" class="control-label">Created between: <span style="color:#707070">{{filter.date}}</span></label>
-					<input id="dateFilter" style="width:500px">
-				</div>
-			</div>
+			@filters("1")
 		</div>
 		
 		<!-- Spaces modal -->
