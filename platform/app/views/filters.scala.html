@@ -1,53 +1,28 @@
 @(id: String)
+<!-- Current filters -->
+<div class="well well-sm" ng-repeat="filter in filters.current" ng-init="index = $index">
+	<button type="button" class="close" aria-hidden="true" ng-click="removeFilter(filter)">&times;</button>
+	<form class="form-inline">
+		<select class="form-control" ng-model="filter.property" ng-options="property.name for property in filters.properties" ng-click="initSlider(filter)">
+			<option value="">Choose a property</option>
+		</select>
+		<select class="form-control" ng-model="filter.operator" ng-show="filter.property.type === 'point'">
+			<option value="">is</option>
+			<option value="not">isn't</option>
+			<!-- TODO <option value="circle">is in circle</option> -->
+		</select>
+		<select class="form-control" ng-model="filter.value" ng-options="value.name for value in filter.property.values" ng-show="filter.property.type === 'point'">
+			<option value="">Choose a value</option>
+		</select>
+		<span ng-show="filter.property.type === 'range'">
+			between <span style="color:#707070">{{filter.from.name}}</span>
+			and <span style="color:#707070">{{filter.to.name}}</span>
+		</span>
+		<div id="{{filter.id}}" style="margin:10px; width:250px;" ng-show="filter.property.type === 'range'"> </div>
+	</form>
+</div>
+
 <!-- Add new filter button -->
-<button data-toggle="modal" data-target="#filterModal-@id" class="btn btn-primary">
+<button class="btn btn-primary" ng-click="addFilter()">
 	<span class="glyphicon glyphicon-filter"></span> Add filter
 </button>
-
-<!-- Current filters -->
-<div class="well" ng-repeat="filter in filters.current">
-	<button type="button" class="close" aria-hidden="true" ng-click="removeFilter(filter)">&times;</button>
-	<p ng-show="filter.equality">
-		{{filter.property}} is {{filter.value}}
-	</p>
-	<p ng-show="filter.inequality">
-		{{filter.property}} isn't {{filter.value}}
-	</p>
-	<div ng-show="filter.time">
-		Created between {{filter.from}} and {{filter.to}}
-	</div>
-</div>
-
-<!-- Filters modal -->
-<!-- TODO possibly in own .scala.html file with a makeActive(...) call on the add filter button -->
-<div class="modal fade" id="filterModal-@id" role="dialog" aria-labelledby="filterModalLabel-@id" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-				<h4 class="modal-title" id="filterModalLabel-@id">Add a new filter</h4>
-			</div>
-			<div class="modal-body">
-				<select class="form-control" ng-model="filters.add.property" ng-options="property in filters.properties">
-					<option value="">Choose a property</option>
-				</select>
-				<select class="form-control" ng-model="filters.add.operator" ng-show="filters.add.isEquality">
-					<option value="is">is</option>
-					<option value="isnt">isn't</option>
-				</select>
-				<select class="form-control" ng-model="filters.add.value" ng-show="filters.add.isEquality">
-					<option value="">Choose a value</option>
-				</select>
-				<p ng-show="filters.add.isRange">
-					Created between <span style="color:#707070">{{filters.add.from}}</span>
-					and <span style="color:#707070">{{filters.add.to}}</span>
-				</p>
-				<input id="date" ng-show="filters.add.isRange">
-			</div>
-			<div class="modal-footer">
-				<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-click="addFilter()">Create</button>
-				<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-			</div>
-		</div>
-	</div>
-</div>

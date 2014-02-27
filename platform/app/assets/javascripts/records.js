@@ -1,5 +1,5 @@
 var records = angular.module('records', []);
-records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
+records.controller('RecordsCtrl', ['$scope', '$http', '$q', function($scope, $http, $q) {
 	
 	// init
 	$scope.error = null;
@@ -14,9 +14,11 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	$scope.circles = [];
 	$scope.filter = {};
 	$scope.select = {};
+	
+	// --- FILTERS ---
 	$scope.filters = {};
 	$scope.filters.current = [];
-	$scope.filters.add = {};
+	// --- FILTERS END ---
 	
 	// get current user
 	$http(jsRoutes.controllers.Users.getCurrentUser()).
@@ -56,10 +58,19 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 		$http(jsRoutes.controllers.Records.getVisibleRecords()).
 			success(function(data) {
 				$scope.records = data;
-				initFilters();
+				prepareRecords();
 				$scope.loadingRecords = false;
 			}).
 			error(function(err) { $scope.error = "Failed to load records: " + err; });
+	}
+	
+	// prepare records: clip time from created and add JS date
+	prepareRecords = function() {
+		_.each($scope.records, function(record) {
+			var date = record.created.split(" ")[0];
+			var split = _.map(date.split(/[ -]/), function(num) { return Number(num); });
+			record.created = {"name": date, "value": new Date(split[0], split[1] - 1, split[2])}
+		});
 	}
 	
 	// go to record creation dialog
@@ -211,66 +222,91 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 			error(function(err) { $scope.error = "Failed to update circles: " + err; });
 	}
 	
-	// *** filters ***
-	// initialize filters
+	// --- FILTERS ---
+	// requires $q to be injected
+	// initialize filters once
 	initFilters = function() {
-		// app and owner
-		if ($scope.records.length > 0) {
-			var appIds = _.uniq(_.map($scope.records, function(record) { return record.app.$oid; }));
-			var ownerIds = _.uniq(_.map($scope.records, function(record) { return record.owner.$oid; }));
-			// get the names
-			var properties = {"_id": _.map(appIds, function(id) { return {"$oid": id}; })};
-			var fields = ["name"];
-			var data = {"properties": properties, "fields": fields};
-			$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
-				success(function(apps) { $scope.select.apps = apps; });
-			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
-			data = {"properties": properties, "fields": fields};
-			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
-				success(function(users) {
-					// get current user (if present), rename as "myself" and put on top of the list
-					var curUser = _.find(users, function(user) { return user._id.$oid === $scope.userId.$oid; });
-					var owners = _.union([{"_id": curUser._id, "name": "myself"}], _.without(users, curUser));
-					$scope.select.owners = owners;
-				});
+		if (!$scope.filters.properties) {
+			$scope.filters.properties = [
+				{"name": "app", "type": "point"},
+				{"name": "owner", "type": "point"},
+				{"name": "creator", "type": "point"},
+				{"name": "created", "type": "range", "from": getMin("created"), "to": getMax("created")}
+			];
+			getPropertyValues("app", jsRoutes.controllers.Apps.get().url).then(
+					function(values) { $scope.filters.properties[0].values = values; }, 
+					function(err) { $scope.error = err; });
+			getPropertyValues("owner", jsRoutes.controllers.Users.get().url).then(
+					function(values) { $scope.filters.properties[1].values = renameCurUser(values); }, 
+					function(err) { $scope.error = err; });
+			getPropertyValues("creator", jsRoutes.controllers.Users.get().url).then(
+					function(values) { $scope.filters.properties[2].values = renameCurUser(values); }, 
+					function(err) { $scope.error = err; });
 		}
-		
-		// date
-		$scope.filter.date = "any";
-		if ($scope.records.length > 0) {
-			var sortedRecords = _.sortBy($scope.records, "created");
-			var earliest = _.first(sortedRecords);
-			var latest = _.last(sortedRecords);
-			earliest = stringToDate(earliest.created);
-			latest = stringToDate(latest.created);
-		} else {
-			earliest = new Date();
-			latest = new Date();
+	}
+	
+	// get the min of all values of a property with a 'value' field
+	getMin = function(property) {
+		return _.min($scope.records, function(record) { return record[property].value; })[property];
+	}
+	
+	// get the max of all values of a property with a 'value' field
+	getMax = function(property) {
+		return _.max($scope.records, function(record) { return record[property].value; })[property];
+	}
+	
+	// get the values of a property, fetch the name from the given url and sort by it
+	getPropertyValues = function(property, url) {
+		var ids = _.uniq(_.pluck($scope.records, property), false, function(value) { return value.$oid; });
+		var data = {"properties": {"_id": ids}, "fields": ["name"]};
+		var deferred = $q.defer();
+		$http.post(url, JSON.stringify(data)).
+			success(function(values) { deferred.resolve(_.sortBy(values, "name")); }).
+			error(function(err) { deferred.reject("Failed to load filter values for property '" + property + "': " + err); });
+		return deferred.promise;
+	}
+	
+	// get current user (if present), rename as "myself" and put on top of the list
+	renameCurUser = function(users) {
+		var curUser = _.find(users, function(user) { return user._id.$oid === $scope.userId.$oid; });
+		if (curUser) {
+			curUser.name = "myself";
+			users = _.union([curUser], _.without(users, curUser));
 		}
-		day = 1000 * 60 * 60 * 24;
-		$("#dateFilter").slider({
-			min:earliest.getTime(), max:latest.getTime() + day, step:day,
-			value:[earliest.getTime(), latest.getTime() + day],
-			formater: function(date) { return dateToString(new Date(date)); }
-		}).
-		on("slideStop", function(event) {
-			// rerun the filters (is not automatically triggered)
-			$scope.$apply(function() {
-				var split = $("#dateFilter").val().split(",");
-				$scope.filter.fromDate = Number(split[0]);
-				$scope.filter.toDate = Number(split[1]);
-				var fromDate = dateToString(new Date($scope.filter.fromDate));
-				var toDate = dateToString(new Date($scope.filter.toDate));
-				$scope.filter.date = fromDate + " and " + toDate;
-			});
+		return users;
+	}
+	
+	// add a new filter
+	$scope.addFilter = function() {
+		initFilters();
+		$scope.filters.current.push({"id": _.uniqueId("filter")});
+	}
+	
+	// initialize slider (cannot be done in 'addFilter' since id of HTML slider element must be updated first)
+	$scope.initSlider = function(filter) {
+		if (!filter.sliderReady) {
+			// hard code this metric and property for now
+			var day = 1000 * 60 * 60 * 24;
+			var property = "created";
+			filter.from = getMin(property);
+			filter.to = getMax(property);
+			$("#" + filter.id).slider({range: true, min: filter.from.value.getTime(), max: filter.to.value.getTime(), step: day, 
+				values: [filter.from.value.getTime(), filter.to.value.getTime()], slide: function(event, ui){ sliderChanged(event, ui, filter); }});
+			filter.sliderReady = true;
+		}
+	}
+	
+	// slider value changed
+	sliderChanged = function(event, ui, filter) {
+		$scope.$apply(function(){
+			filter.from = {"name": dateToString(new Date(ui.values[0])), "value": new Date(ui.values[0])};
+			filter.to = {"name": dateToString(new Date(ui.values[1])), "value": new Date(ui.values[1])};
 		});
 	}
 	
-	// convert date in string format to JS date
-	stringToDate = function(dateString) {
-		var split = dateString.split(/[ -]/);
-		split = _.map(split, function(number) { return Number(number); });
-		return new Date(split[0], split[1] - 1, split[2]);
+	// remove a filter
+	$scope.removeFilter = function(filter) {
+		$scope.filters.current = _.without($scope.filters.current, filter);
 	}
 	
 	// convert date to string
@@ -283,24 +319,22 @@ records.controller('RecordsCtrl', ['$scope', '$http', function($scope, $http) {
 	
 	// checks whether a record matches all filters
 	$scope.matchesFilters = function(record) {
-		if ($scope.filter.appId) {
-			if ($scope.filter.appId.$oid !== record.app.$oid) {
-				return false;
+		return _.every($scope.filters.current, function(filter) {
+			if (!filter.property) {
+				return true;
+			} else if (filter.property.type === "point" && filter.value) {
+				if (!filter.operator) { // equality
+					return record[filter.property.name].$oid === filter.value._id.$oid;
+				} else if (filter.operator === "not") { // inequality
+					return record[filter.property.name].$oid !== filter.value._id.$oid;
+				}
+			} else if (filter.sliderReady && filter.property.type === "range") {
+				return filter.from.value <= record[filter.property.name].value && record[filter.property.name].value <= filter.to.value;
 			}
-		}
-		if ($scope.filter.ownerId) {
-			if ($scope.filter.ownerId.$oid !== record.owner.$oid) {
-				return false;
-			}
-		}
-		if ($scope.filter.fromDate && $scope.filter.toDate) {
-			var recordDate = Number(stringToDate(record.created));
-			if ($scope.filter.fromDate > recordDate || recordDate > $scope.filter.toDate) {
-				return false;
-			}
-		}
-		return true;
+			return true;
+		});
 	}
+	// --- FILTERS END ---
 	
 }]);
 records.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
