@@ -11,7 +11,7 @@ controllers.controller('RecordListCtrl', ['$scope', '$routeParams',
 		
 		// assign ids for collapsible titles
 		for (var i = 0; i < $scope.records.length; i++) {
-			$scope.records[i] = JSON.parse($scope.records[i].data);
+			$scope.records[i] = JSON.parse($scope.records[i]);
 			$scope.records[i].id = i;
 		}
 		

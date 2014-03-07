@@ -228,7 +228,10 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', function(
 	}
 	
 }]);
-records.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
+
+// record creation
+var createRecords = angular.module('createRecords', []);
+createRecords.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
 	
 	// init
 	$scope.error = null;

@@ -122,10 +122,8 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 	// reload the space
 	reloadSpace = function(space) {
 		var filteredRecords = $filter("recordFilter")(space.baseRecords, space.serviceId);
-		// var filteredData = _.map(filteredRecords, function(record) { return record.data; });
-		// var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
-		// passing meta data as well
-		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredRecords)));
+		var filteredData = _.map(filteredRecords, function(record) { return record.data; });
+		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
 		space.trustedUrl = $sce.trustAsResourceUrl(completedUrl);
 		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
 	}
