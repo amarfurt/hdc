@@ -1,5 +1,5 @@
-var spaces = angular.module('spaces', []);
-spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function($scope, $http, $sce, $filter) {
+var spaces = angular.module('spaces', ['filters']);
+spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterService', function($scope, $http, $sce, $filter, filterService) {
 	
 	// init
 	$scope.error = null;
@@ -10,7 +10,6 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	$scope.loadingVisualizations = false;
 	$scope.visualizations = [];
 	$scope.searching = false;
-	var activeSpace = null; // for filters
 	
 	// get current user
 	$http(jsRoutes.controllers.Users.getCurrentUser()).
@@ -55,6 +54,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	
 		// load url, records and visualization
 		if (!space.baseUrl) {
+			space.serviceId = 0;
 			loadBaseUrl(space);
 		} else {
 			spaceChanged(space);
@@ -74,27 +74,54 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 	// load records for given space
 	loadBaseRecords = function(space) {
 		var properties = {"_id": space.records};
-		var fields = ["owner", "created", "data"];
+		var fields = ["app", "owner", "creator", "created", "name", "data"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
 			success(function(records) {
 				$scope.error = null;
 				space.baseRecords = records;
+				prepareRecords(space.baseRecords)
 				spaceChanged(space); // chain because callback is async
 			}).
 			error(function(err) { $scope.error = "Failed to load records for space '" + space.name + "': " + err; });
 	}
 	
+	// prepare records: clip time from created and add JS date
+	prepareRecords = function(records) {
+		_.each(records, function(record) {
+			var date = record.created.split(" ")[0];
+			var split = _.map(date.split(/[ -]/), function(num) { return Number(num); });
+			record.created = {"name": date, "value": new Date(split[0], split[1] - 1, split[2])}
+		});
+	}
+	
 	// either the records of a space have changed or another space became active
 	spaceChanged = function(space) {
-		initFilters(space);
+		initFilterService(space, $scope.userId);
 		reloadSpace(space);
+	}
+	
+	// initialize filter service
+	initFilterService = function(space, userId) {
+		$scope.filterChanged = function(serviceId) {
+			var activeSpace = _.find($scope.spaces, function(space) { return space.active; });
+			if (serviceId === 0) {
+				reloadSpace(activeSpace);
+			} else {
+				reloadSpace(activeSpace.copy);
+			}
+		}
+		filterService.init(space.name, space.serviceId, space.baseRecords, userId, $scope.filterChanged);
+		$scope.filters = filterService.filters;
+		$scope.filterError = filterService.error;
+		$scope.initSlider = filterService.initSlider;
+		$scope.addFilter = filterService.addFilter;
+		$scope.removeFilter = filterService.removeFilter;
 	}
 	
 	// reload the space
 	reloadSpace = function(space) {
-		activeSpace = space; // active space for filters (works for compare copy as well)
-		var filteredRecords = $filter("filter")(space.baseRecords, matchesFilters);
+		var filteredRecords = $filter("recordFilter")(space.baseRecords, space.serviceId);
 		// var filteredData = _.map(filteredRecords, function(record) { return record.data; });
 		// var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
 		// passing meta data as well
@@ -103,111 +130,13 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
 	}
 	
-	// *** FILTERS ***
-	// initialize filters
-	initFilters = function(space) {
-		// circle and owner
-		space.select = {};
-		if (space.baseRecords.length > 0) {
-			// circle
-			var properties = {"owner": $scope.userId};
-			var fields = ["name", "members"];
-			var data = {"properties": properties, "fields": fields};
-			$http.post(jsRoutes.controllers.Circles.get().url, JSON.stringify(data)).
-				success(function(circles) { space.select.circles = circles; });
-			
-			// owner
-			var ownerIds = _.uniq(_.map(space.baseRecords, function(record) { return record.owner.$oid; }));
-			properties = {"_id": _.map(ownerIds, function(id) { return {"$oid": id}; })};
-			data = {"properties": properties, "fields": fields};
-			$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
-				success(function(users) {
-					// get current user (if present), rename as "myself" and put on top of the list
-					var curUser = _.find(users, function(user) { return user._id.$oid === $scope.userId.$oid; });
-					var owners = _.union([{"_id": curUser._id, "name": "myself"}], _.without(users, curUser));
-					space.select.owners = owners;
-				});
-		}
-		$("#circleFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
-		$("#ownerFilter-" + space._id.$oid).on("change", function(event) { reloadSpace(space); });
-		
-		// date
-		space.filters = {};
-		space.filters.date = "any";
-		if (space.baseRecords.length > 0) {
-			var sortedRecords = _.sortBy(space.baseRecords, "created");
-			var earliest = _.first(sortedRecords);
-			var latest = _.last(sortedRecords);
-			earliest = stringToDate(earliest.created);
-			latest = stringToDate(latest.created);
-		} else {
-			earliest = new Date();
-			latest = new Date();
-		}
-		day = 1000 * 60 * 60 * 24;
-		// TODO slider does not take added records into account once it is created...
-		$("#dateFilter-" + space._id.$oid).slider({
-			min:earliest.getTime(), max:latest.getTime() + day, step:day,
-			value:[earliest.getTime(), latest.getTime() + day],
-			formater: function(date) { return dateToString(new Date(date)); }
-		}).
-		slider("setValue", [earliest.getTime(), latest.getTime() + day]).
-		on("slideStop", function(event) {
-			var split = $("#dateFilter-" + space._id.$oid).val().split(",");
-			space.filters.fromDate = Number(split[0]);
-			space.filters.toDate = Number(split[1]);
-			var fromDate = dateToString(new Date(space.filters.fromDate));
-			var toDate = dateToString(new Date(space.filters.toDate));
-			$scope.$apply(function() { space.filters.date = fromDate + " and " + toDate; });
-			
-			// reload the space
-			reloadSpace(space);
-		});
-	}
-	
-	// convert date in string format to JS date
-	stringToDate = function(dateString) {
-		var split = dateString.split(/[ -]/);
-		split = _.map(split, function(number) { return Number(number); });
-		return new Date(split[0], split[1] - 1, split[2]);
-	}
-	
-	// convert date to string
-	dateToString = function(date) {
-		var year = date.getFullYear();
-		var month = ((date.getMonth() < 9) ? "0" : "") + (date.getMonth() + 1);
-		var day = ((date.getDate() < 10) ? "0" : "") + date.getDate();
-		return year + "-" + month + "-" + day;
-	}
-	
-	// checks whether a record matches all filters
-	matchesFilters = function(record) {
-		var space = activeSpace;
-		if (space.filters.circleMembers) {
-			if (!_.some(space.filters.circleMembers, function(member) { return member.$oid === record.owner.$oid; })) {
-				return false;
-			}
-		}
-		if (space.filters.ownerId) {
-			if (space.filters.ownerId.$oid !== record.owner.$oid) {
-				return false;
-			}
-		}
-		if (space.filters.fromDate && space.filters.toDate) {
-			var recordDate = Number(stringToDate(record.created));
-			if (space.filters.fromDate > recordDate || recordDate > space.filters.toDate) {
-				return false;
-			}
-		}
-		return true;
-	}
-	// *** FILTERS END ***
-	
 	// *** COMPARE ***
 	$scope.startCompare = function(space) {
 		// copy relevant properties
 		space.copy = {};
 		space.copy._id = {"$oid": "copy-" + space._id.$oid};
+		space.copy.serviceId = 1;
+		space.copy.name = space.name;
 		space.copy.baseUrl = space.baseUrl;
 		space.copy.baseRecords = space.baseRecords;
 		
@@ -216,13 +145,11 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', function(
 		
 		// switch to compare mode
 		space.compare = true;
-		$(".slider").attr("style", "width:250px");
 	}
 	
 	$scope.endCompare = function(space) {
 		space.compare = false;
 		space.copy = {};
-		$(".slider").attr("style", "width:500px");
 	}
 	// *** COMPARE END ***
 	

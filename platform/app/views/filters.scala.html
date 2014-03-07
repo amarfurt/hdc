@@ -1,28 +1,28 @@
-@(id: String)
+@(id: Integer)
 <!-- Current filters -->
-<div class="well well-sm" ng-repeat="filter in filters.current" ng-init="index = $index">
+<div class="well well-sm" ng-repeat="filter in filters[@id].current">
 	<button type="button" class="close" aria-hidden="true" ng-click="removeFilter(filter)">&times;</button>
 	<form class="form-inline">
-		<select class="form-control" ng-model="filter.property" ng-options="property.name for property in filters.properties" ng-click="initSlider(filter)">
+		<select class="form-control" ng-model="filter.property" ng-options="property.name for property in filters[@id].properties" ng-click="initSlider(filter)" ng-change="filterChanged(@id)">
 			<option value="">Choose a property</option>
 		</select>
-		<select class="form-control" ng-model="filter.operator" ng-show="filter.property.type === 'point'">
+		<select class="form-control" ng-model="filter.operator" ng-show="filter.property.type === 'point'" ng-change="filterChanged(@id)">
 			<option value="">is</option>
 			<option value="not">isn't</option>
 			<!-- TODO <option value="circle">is in circle</option> -->
 		</select>
-		<select class="form-control" ng-model="filter.value" ng-options="value.name for value in filter.property.values" ng-show="filter.property.type === 'point'">
+		<select class="form-control" ng-model="filter.value" ng-options="value.name for value in filter.property.values" ng-show="filter.property.type === 'point'" ng-change="filterChanged(@id)">
 			<option value="">Choose a value</option>
 		</select>
 		<span ng-show="filter.property.type === 'range'">
 			between <span style="color:#707070">{{filter.from.name}}</span>
 			and <span style="color:#707070">{{filter.to.name}}</span>
 		</span>
-		<div id="{{filter.id}}" style="margin:10px; width:250px;" ng-show="filter.property.type === 'range'"> </div>
+		<div id="{{filter.id}}" style="margin-top:10px; margin-left:10px; width:250px;" ng-show="filter.property.type === 'range'"></div>
 	</form>
 </div>
 
 <!-- Add new filter button -->
-<button class="btn btn-primary" ng-click="addFilter()">
+<button class="btn btn-primary" style="margin-bottom:10px;" ng-click="addFilter(@id)">
 	<span class="glyphicon glyphicon-filter"></span> Add filter
 </button>

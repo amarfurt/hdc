@@ -9,9 +9,10 @@
 			<h1>My spaces</h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error">
+		<div class="alert alert-danger alert-dismissable" ng-show="error || filterError">
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			<p>{{error}}</p>
+			<p ng-show="error">{{error}}</p>
+			<p ng-show="filterError">{{filterError}}</p>
 		</div>
 		
 		<!-- Spaces -->
@@ -37,25 +38,8 @@
 							<iframe id="iframe-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
 							
 							<!-- Filters -->
-							<div ng-show="space.baseRecords.length > 0">
-								<div class="row">
-									<div class="form-group col-lg-3">
-										<label for="circleFilter-{{space._id.$oid}}" class="control-label">By people in: </label>
-										<select id="circleFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.circleMembers" ng-options="circle.members as circle.name for circle in space.select.circles">
-											<option value="">any</option>
-										</select>
-									</div>
-									<div class="form-group col-lg-3">
-										<label for="ownerFilter-{{space._id.$oid}}" class="control-label">Owned by: </label>
-										<select id="ownerFilter-{{space._id.$oid}}" class="form-control" ng-model="space.filters.ownerId" ng-options="owner._id as owner.name for owner in space.select.owners">
-											<option value="">any</option>
-										</select>
-									</div>
-									<div class="form-group col-lg-6">
-										<label for="dateFilter-{{space._id.$oid}}" class="control-label">Created between: <span style="color:#707070">{{space.filters.date}}</span></label>
-										<input id="dateFilter-{{space._id.$oid}}" style="width:500px">
-									</div>
-								</div>
+							<div id="{{space.name}}-0" ng-show="space.baseRecords.length > 0">
+								@filters(0)
 							</div>
 						</div>
 						<div class="col-lg-6" ng-show="space.compare">
@@ -64,25 +48,8 @@
 							<iframe id="iframe-copy-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
 							
 							<!-- Filters -->
-							<div ng-show="space.copy.baseRecords.length > 0">
-								<div class="row">
-									<div class="form-group col-lg-3">
-										<label for="circleFilter-copy-{{space._id.$oid}}" class="control-label">By people in: </label>
-										<select id="circleFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.circleMembers" ng-options="circle.members as circle.name for circle in space.copy.select.circles">
-											<option value="">any</option>
-										</select>
-									</div>
-									<div class="form-group col-lg-3">
-										<label for="ownerFilter-copy-{{space._id.$oid}}" class="control-label">Owned by: </label>
-										<select id="ownerFilter-copy-{{space._id.$oid}}" class="form-control" ng-model="space.copy.filters.ownerId" ng-options="owner._id as owner.name for owner in space.copy.select.owners">
-											<option value="">any</option>
-										</select>
-									</div>
-									<div class="form-group col-lg-6">
-										<label for="dateFilter-copy-{{space._id.$oid}}" class="control-label">Created between: <span style="color:#707070">{{space.copy.filters.date}}</span></label>
-										<input id="dateFilter-copy-{{space._id.$oid}}" style="width:250px">
-									</div>
-								</div>
+							<div id="{{space.name}}-1" ng-show="space.copy.baseRecords.length > 0">
+								@filters(1)
 							</div>
 						</div>
 					</div>
@@ -186,5 +153,6 @@
 	</div>
 
 	<!-- Load spaces controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/filters.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>
 }
