@@ -90,7 +90,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 	prepareRecords = function(records) {
 		_.each(records, function(record) {
 			var date = record.created.split(" ")[0];
-			var split = _.map(date.split(/[ -]/), function(num) { return Number(num); });
+			var split = _.map(date.split("-"), function(num) { return Number(num); });
 			record.created = {"name": date, "value": new Date(split[0], split[1] - 1, split[2])}
 		});
 	}
@@ -114,7 +114,6 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		filterService.init(space.name, space.serviceId, space.baseRecords, userId, $scope.filterChanged);
 		$scope.filters = filterService.filters;
 		$scope.filterError = filterService.error;
-		$scope.initSlider = filterService.initSlider;
 		$scope.addFilter = filterService.addFilter;
 		$scope.removeFilter = filterService.removeFilter;
 	}

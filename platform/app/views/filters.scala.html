@@ -3,7 +3,7 @@
 <div class="well well-sm" ng-repeat="filter in filters[@id].current">
 	<button type="button" class="close" aria-hidden="true" ng-click="removeFilter(filter)">&times;</button>
 	<form class="form-inline">
-		<select class="form-control" ng-model="filter.property" ng-options="property.name for property in filters[@id].properties" ng-click="initSlider(filter)" ng-change="filterChanged(@id)">
+		<select class="form-control" ng-model="filter.property" ng-options="property.name for property in filters[@id].properties" ng-change="filterChanged(@id)">
 			<option value="">Choose a property</option>
 		</select>
 		<select class="form-control" ng-model="filter.operator" ng-show="filter.property.type === 'point'" ng-change="filterChanged(@id)">

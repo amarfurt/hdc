@@ -42,7 +42,7 @@ filters.filter('recordFilter', ['filterData', function(filterData) {
 		}
 	}
 }]);
-filters.factory('filterService', ['$rootScope', '$http', '$q', 'filterData', function($rootScope, $http, $q, filterData) {
+filters.factory('filterService', ['$rootScope', '$http', '$q', '$timeout', 'filterData', function($rootScope, $http, $q, $timeout, filterData) {
 	// main service with a generic record filter
 	
 	// init
@@ -63,18 +63,19 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', 'filterData', fun
 	initFilters = function(serviceId) {
 		if (!filterData.filters[serviceId].properties) {
 			filterData.filters[serviceId].properties = [
-				{"name": "app", "type": "point"},
-				{"name": "owner", "type": "point"},
-				{"name": "creator", "type": "point"},
+				{"name": "app", "type": "point", "promise": getPropertyValues("app", jsRoutes.controllers.Apps.get().url)},
+				{"name": "owner", "type": "point", "promise": getPropertyValues("owner", jsRoutes.controllers.Users.get().url)},
+				{"name": "creator", "type": "point", "promise": getPropertyValues("creator", jsRoutes.controllers.Users.get().url)},
 				{"name": "created", "type": "range", "from": getMin("created"), "to": getMax("created")}
 			];
-			getPropertyValues("app", jsRoutes.controllers.Apps.get().url).then(
+			// expose promises, so other components can also depend on their resolution
+			filterData.filters[serviceId].properties[0].promise.then(
 					function(values) { filterData.filters[serviceId].properties[0].values = values; }, 
 					function(err) { error = err; });
-			getPropertyValues("owner", jsRoutes.controllers.Users.get().url).then(
+			filterData.filters[serviceId].properties[1].promise.then(
 					function(values) { filterData.filters[serviceId].properties[1].values = renameCurUser(values); }, 
 					function(err) { error = err; });
-			getPropertyValues("creator", jsRoutes.controllers.Users.get().url).then(
+			filterData.filters[serviceId].properties[2].promise.then(
 					function(values) { filterData.filters[serviceId].properties[2].values = renameCurUser(values); }, 
 					function(err) { error = err; });
 		}
@@ -114,7 +115,10 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', 'filterData', fun
 	// add a new filter
 	addFilter = function(serviceId) {
 		initFilters(serviceId);
-		filterData.filters[serviceId].current.push({"id": _.uniqueId("filter"), "context": filterData.context, "serviceId": serviceId});
+		var newFilter = {"id": _.uniqueId("filter"), "context": filterData.context, "serviceId": serviceId};
+		filterData.filters[serviceId].current.push(newFilter);
+		// call init slider after view has been updated (i.e., after $digest cycle finished)
+		$timeout(function() { initSlider(newFilter); });
 	}
 	
 	// initialize slider (cannot be done in 'addFilter' since id of HTML slider element must be updated first)
@@ -141,6 +145,22 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', 'filterData', fun
 		onChangeFunction(filter.serviceId);
 	}
 	
+	// set slider to given value
+	setSlider = function(filter, from, to) {
+		$timeout(function() {
+			// if slider is not ready yet, timeout again
+			if (!filter.sliderReady) {
+				setSlider(filter, from, to);
+			} else {
+				$rootScope.$apply(function() {
+					filter.from = from;
+					filter.to = to;
+				});
+				$("#" + filter.context + "-" + filter.serviceId).find("#" + filter.id).slider("option", "values", [from.value, to.value]);
+			}
+		});
+	}
+	
 	// remove a filter
 	removeFilter = function(filter) {
 		filterData.filters[filter.serviceId].current = _.without(filterData.filters[filter.serviceId].current, filter);
@@ -162,8 +182,8 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', 'filterData', fun
 		error: error,
 		// functions
 		init: initService,
-		initSlider: initSlider,
 		addFilter: addFilter,
-		removeFilter: removeFilter
+		removeFilter: removeFilter,
+		setSlider: setSlider
 	}
 }]);

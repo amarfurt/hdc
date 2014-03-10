@@ -43,6 +43,10 @@ public class Records extends Controller {
 	public static Result index() {
 		return ok(records.render());
 	}
+	
+	public static Result filter(String property, String operator, String value) {
+		return index();
+	}
 
 	public static Result details(String recordIdString) {
 		return ok(record.render());
