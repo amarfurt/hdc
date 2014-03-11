@@ -32,7 +32,7 @@ GET     /records/search/:query      controllers.Records.search(query: String)
 GET     /records/:id/details        controllers.Records.getDetailsUrl(id: String)
 POST    /records/:id/spaces         controllers.Records.updateSpaces(id: String)
 POST    /records/:id/circles        controllers.Records.updateSharing(id: String)
-GET     /records/filters/:prop/:op/:val controllers.Records.filter(prop: String, op: String, val: String)
+GET     /records/filters/*filters   controllers.Records.filter(filters)
 # Spaces
 GET     /spaces                     controllers.Spaces.index()
 POST    /spaces                     controllers.Spaces.add()

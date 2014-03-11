@@ -81,26 +81,32 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', function(
 		// set filters if any are defined in the url
 		if (window.location.pathname.indexOf("filters") !== -1) {
 			var split = window.location.pathname.split("/");
-			var name = split[3];
-			var arg1 = split[4];
-			var arg2 = split[5];
-			$scope.addFilter(serviceId);
-			var filter = _.last($scope.filters[serviceId].current);
-			filter.property = _.findWhere($scope.filters[serviceId].properties, {"name": name});
-			if (filter.property.type === "point") {
-				filter.operator = arg1;
-				if (arg1 === "is") {
-					filter.operator = "";
-				}
-				filter.property.promise.then(function(values) {
-					filter.value = _.find(values, function(value) { return value._id.$oid === arg2; });
-				});
-			} else if (filter.property.type === "range") {
-				var split = _.map(arg1.split("-"), function(num) { return Number(num); });
-				filter.from = {"name": arg1, "value": new Date(split[0], split[1] - 1, split[2])};
-				split = _.map(arg2.split("-"), function(num) { return Number(num); });
-				filter.to = {"name": arg2, "value": new Date(split[0], split[1] - 1, split[2])};
-				filterService.setSlider(filter, filter.from, filter.to);
+			for (var i = 3; i < split.length - 2; i += 3) {
+				var name = split[i];
+				var arg1 = split[i+1];
+				var arg2 = split[i+2];
+
+				// wrap in function so that references are kept through promises/timeouts
+				(function(name, arg1, arg2) {
+					$scope.addFilter(serviceId);
+					var filter = _.last($scope.filters[serviceId].current);
+					filter.property = _.findWhere($scope.filters[serviceId].properties, {"name": name});
+					if (filter.property.type === "point") {
+						filter.operator = arg1;
+						if (arg1 === "is") {
+							filter.operator = "";
+						}
+						filter.property.promise.then(function(values) {
+							filter.value = _.find(values, function(value) { return value._id.$oid === arg2; });
+						});
+					} else if (filter.property.type === "range") {
+						var split = _.map(arg1.split("-"), function(num) { return Number(num); });
+						filter.from = {"name": arg1, "value": new Date(split[0], split[1] - 1, split[2])};
+						split = _.map(arg2.split("-"), function(num) { return Number(num); });
+						filter.to = {"name": arg2, "value": new Date(split[0], split[1] - 1, split[2])};
+						filterService.setSlider(filter, filter.from, filter.to);
+					}
+				})(name, arg1, arg2);
 			}
 		}
 	}

@@ -44,7 +44,7 @@ public class Records extends Controller {
 		return ok(records.render());
 	}
 	
-	public static Result filter(String property, String operator, String value) {
+	public static Result filter(String filters) {
 		return index();
 	}
 
