@@ -1,4 +1,4 @@
-var filters = angular.module('filters', []);
+var filters = angular.module('filters', ['date']);
 filters.factory('filterData', function() {
 	// service to share data between the record filter and the filter service
 	var context = null;
@@ -42,7 +42,8 @@ filters.filter('recordFilter', ['filterData', function(filterData) {
 		}
 	}
 }]);
-filters.factory('filterService', ['$rootScope', '$http', '$q', '$timeout', 'filterData', function($rootScope, $http, $q, $timeout, filterData) {
+filters.factory('filterService', ['$rootScope', '$http', '$q', '$timeout', 'dateService', 'filterData', 
+                                  function($rootScope, $http, $q, $timeout, dateService, filterData) {
 	// main service with a generic record filter
 	
 	// init
@@ -139,8 +140,8 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', '$timeout', 'filt
 	// slider value changed
 	sliderChanged = function(event, ui, filter) {
 		$rootScope.$apply(function(){
-			filter.from = {"name": dateToString(new Date(ui.values[0])), "value": new Date(ui.values[0])};
-			filter.to = {"name": dateToString(new Date(ui.values[1])), "value": new Date(ui.values[1])};
+			filter.from = {"name": dateService.toString(new Date(ui.values[0])), "value": new Date(ui.values[0])};
+			filter.to = {"name": dateService.toString(new Date(ui.values[1])), "value": new Date(ui.values[1])};
 		});
 		onChangeFunction(filter.serviceId);
 	}
@@ -165,14 +166,6 @@ filters.factory('filterService', ['$rootScope', '$http', '$q', '$timeout', 'filt
 	removeFilter = function(filter) {
 		filterData.filters[filter.serviceId].current = _.without(filterData.filters[filter.serviceId].current, filter);
 		onChangeFunction(filter.serviceId);
-	}
-	
-	// convert date to string
-	dateToString = function(date) {
-		var year = date.getFullYear();
-		var month = ((date.getMonth() < 9) ? "0" : "") + (date.getMonth() + 1);
-		var day = ((date.getDate() < 10) ? "0" : "") + date.getDate();
-		return year + "-" + month + "-" + day;
 	}
 	
 	// api of the filter service

@@ -1,5 +1,6 @@
-var spaces = angular.module('spaces', ['filters']);
-spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterService', function($scope, $http, $sce, $filter, filterService) {
+var spaces = angular.module('spaces', ['filters', 'date']);
+spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterService', 'dateService', 
+                                 function($scope, $http, $sce, $filter, filterService, dateService) {
 	
 	// init
 	$scope.error = null;
@@ -90,8 +91,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 	prepareRecords = function(records) {
 		_.each(records, function(record) {
 			var date = record.created.split(" ")[0];
-			var split = _.map(date.split("-"), function(num) { return Number(num); });
-			record.created = {"name": date, "value": new Date(split[0], split[1] - 1, split[2])}
+			record.created = {"name": date, "value": dateService.toDate(date)};
 		});
 	}
 	

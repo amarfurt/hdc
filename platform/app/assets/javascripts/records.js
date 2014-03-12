@@ -1,5 +1,5 @@
-var records = angular.module('records', ['filters']);
-records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', function($scope, $http, filterService) {
+var records = angular.module('records', ['filters', 'date']);
+records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateService', function($scope, $http, filterService, dateService) {
 	
 	// init
 	$scope.error = null;
@@ -62,8 +62,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', function(
 	prepareRecords = function() {
 		_.each($scope.records, function(record) {
 			var date = record.created.split(" ")[0];
-			var split = _.map(date.split("-"), function(num) { return Number(num); });
-			record.created = {"name": date, "value": new Date(split[0], split[1] - 1, split[2])}
+			record.created = {"name": date, "value": dateService.toDate(date)};
 		});
 	}
 	
@@ -100,10 +99,8 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', function(
 							filter.value = _.find(values, function(value) { return value._id.$oid === arg2; });
 						});
 					} else if (filter.property.type === "range") {
-						var split = _.map(arg1.split("-"), function(num) { return Number(num); });
-						filter.from = {"name": arg1, "value": new Date(split[0], split[1] - 1, split[2])};
-						split = _.map(arg2.split("-"), function(num) { return Number(num); });
-						filter.to = {"name": arg2, "value": new Date(split[0], split[1] - 1, split[2])};
+						filter.from = {"name": arg1, "value": dateService.toDate(arg1)};
+						filter.to = {"name": arg2, "value": dateService.toDate(arg2)};
 						filterService.setSlider(filter, filter.from, filter.to);
 					}
 				})(name, arg1, arg2);

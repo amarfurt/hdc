@@ -24,6 +24,7 @@ public class User extends Model implements Comparable<User> {
 	public Set<ObjectId> apps; // installed apps
 	public Set<ObjectId> visualizations; // installed visualizations
 	public Map<String, Set<ObjectId>> messages; // keys (folders) are: inbox, archive, trash
+	public String login; // timestamp of last login
 	public Set<ObjectId> news; // visible news items
 	public Set<ObjectId> pushed; // records pushed by apps (since last login)
 	public Set<ObjectId> shared; // records shared by users (since last login)

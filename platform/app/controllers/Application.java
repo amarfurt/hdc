@@ -148,6 +148,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Messages.remove(),
 				controllers.routes.javascript.Messages.delete(),
 				// Records
+				controllers.routes.javascript.Records.filter(),
 				controllers.routes.javascript.Records.details(),
 				controllers.routes.javascript.Records.create(),
 				controllers.routes.javascript.Records.get(),

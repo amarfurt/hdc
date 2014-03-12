@@ -18,6 +18,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.DateTimeUtils;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonExtraction;
@@ -232,6 +233,7 @@ public class Users extends Controller {
 		ObjectId userId = new ObjectId(request().username());
 		try {
 			User.set(userId, "pushed", new HashSet<ObjectId>());
+			User.set(userId, "login", DateTimeUtils.now());
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -245,6 +247,7 @@ public class Users extends Controller {
 		ObjectId userId = new ObjectId(request().username());
 		try {
 			User.set(userId, "shared", new HashSet<ObjectId>());
+			User.set(userId, "login", DateTimeUtils.now());
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
