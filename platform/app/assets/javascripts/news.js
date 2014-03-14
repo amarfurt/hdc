@@ -83,7 +83,7 @@ news.controller('NewsCtrl', ['$scope', '$http', 'dateService', function($scope, 
 	// show new shared records
 	$scope.showShared = function() {
 		$scope.clearAll();
-		var ownerFilter = "owner/not/" + $scope.userId.$oid;
+		var ownerFilter = "owner/isnt/" + $scope.userId.$oid;
 		var createdFilter = "created/" + $scope.lastLogin + "/" + dateService.toString(dateService.now());
 		window.location.href = jsRoutes.controllers.Records.filter(ownerFilter + "/" + createdFilter).url;
 	}

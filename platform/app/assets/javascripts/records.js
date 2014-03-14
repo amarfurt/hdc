@@ -91,11 +91,8 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 					var filter = _.last($scope.filters[serviceId].current);
 					filter.property = _.findWhere($scope.filters[serviceId].properties, {"name": name});
 					if (filter.property.type === "point") {
-						filter.operator = arg1;
-						if (arg1 === "is") {
-							filter.operator = "";
-						}
-						filter.property.promise.then(function(values) {
+						filter.operator = $scope.filters[serviceId].operators[arg1];
+						$scope.filters[serviceId].promises[filter.property.name].then(function(values) {
 							filter.value = _.find(values, function(value) { return value._id.$oid === arg2; });
 						});
 					} else if (filter.property.type === "range") {
