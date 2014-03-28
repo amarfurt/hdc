@@ -39,14 +39,28 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 	$scope.app = {};
 	
 	// register app
-	$scope.registerApp = function() {
-		if (!$scope.app.name || !$scope.app.description || !$scope.app.create || !$scope.app.details) {
+	$scope.registerApp = function(type) {
+		// check required fields
+		if (!$scope.app.name || !$scope.app.description || !$scope.app.detailsUrl) {
+			$scope.error = "Please fill in all required fields";
+			return;
+		} else if (type === "create" && !$scope.app.createUrl) {
+			$scope.error = "Please fill in all required fields";
+			return;
+		} else if (type === "oauth1" && !$scope.app.consumerKey) {
+			$scope.error = "Please fill in all required fields";
+			return;
+		} else if (type === "oauth2" && (!$scope.app.consumerKey || !$scope.app.consumerSecret || !$scope.app.scopeParameters)) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		}
 		
+		// piece together data object
+		if (type === "create") {
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "create": $scope.app.createUrl, "details": $scope.app.detailsUrl};
+		}
+		
 		// send the request
-		var data = {"name": $scope.app.name, "description": $scope.app.description, "create": $scope.app.create, "details": $scope.app.details};
 		$http.post(jsRoutes.controllers.Market.registerApp().url, data).
 			success(function(redirectUrl) { window.location.replace(redirectUrl); }).
 			error(function(err) { $scope.error = "Failed to register app: " + err; });

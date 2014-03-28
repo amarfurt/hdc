@@ -130,7 +130,7 @@ public class Records extends Controller {
 
 		// get app
 		properties = new ChainedMap<String, ObjectId>().put("_id", record.app).get();
-		fields = new ChainedSet<String>().add("details").get();
+		fields = new ChainedSet<String>().add("detailsUrl").get();
 		App app;
 		try {
 			app = App.get(properties, fields);
@@ -141,7 +141,7 @@ public class Records extends Controller {
 		// put together url to send to iframe (which then loads the record representation)
 		String appServer = Play.application().configuration().getString("plugins.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
-		String detailsUrl = app.details.replace(":record", encodedData);
+		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
 		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
 	}
 

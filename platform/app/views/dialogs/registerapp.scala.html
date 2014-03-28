@@ -9,36 +9,121 @@
 			<p>{{error}}</p>
 		</div>
 		
-		<form class="form-horizontal" ng-submit="registerApp()">
-			<div class="form-group">
-				<label for="name" class="col-md-2 control-label">Name</label>
-				<div class="col-md-10">
-					<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
-				</div>
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#create" data-toggle="tab">Creation</a></li>
+			<li><a href="#oauth1" data-toggle="tab">Import with OAuth 1.0</a></li>
+			<li><a href="#oauth2" data-toggle="tab">Import with OAuth 2.0</a></li>
+		</ul>
+		<div class="tab-content">
+			<div id="create" class="tab-pane fade active in">
+				<form class="form-horizontal" ng-submit="registerApp('create')">
+					<div class="form-group">
+						<label for="name" class="col-md-2 control-label">Name</label>
+						<div class="col-md-10">
+							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description" class="col-md-2 control-label">Description</label>
+						<div class="col-md-10">
+							<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="createUrl" class="col-md-2 control-label">URL to create records</label>
+						<div class="col-md-10">
+							<input type="text" id="create" class="form-control" placeholder="URL (relative to project home)" ng-model="app.createUrl">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="detailsUrl" class="col-md-2 control-label">URL to detailed record view</label>
+						<div class="col-md-10">
+							<input type="text" id="details" class="form-control" placeholder="URL (relative to project home)" ng-model="app.detailsUrl">
+						</div>
+					</div>
+					<div class="pull-right">
+						<button type="submit" class="btn btn-primary">Register</button>
+						<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+					</div>
+				</form>
 			</div>
-			<div class="form-group">
-				<label for="description" class="col-md-2 control-label">Description</label>
-				<div class="col-md-10">
-					<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
-				</div>
+			<div id="oauth1" class="tab-pane fade">
+				<form class="form-horizontal" ng-submit="registerApp('oauth1')">
+					<div class="form-group">
+						<label for="name" class="col-md-2 control-label">Name</label>
+						<div class="col-md-10">
+							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description" class="col-md-2 control-label">Description</label>
+						<div class="col-md-10">
+							<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="consumerKey1" class="col-md-2 control-label">Consumer key</label>
+						<div class="col-md-10">
+							<input type="text" id="consumerKey1" class="form-control" placeholder="Consumer key" ng-model="app.consumerKey">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="detailsUrl" class="col-md-2 control-label">URL to detailed record view</label>
+						<div class="col-md-10">
+							<input type="text" id="details" class="form-control" placeholder="URL (relative to project home)" ng-model="app.detailsUrl">
+						</div>
+					</div>
+					<div class="pull-right">
+						<button type="submit" class="btn btn-primary">Register</button>
+						<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+					</div>
+				</form>
 			</div>
-			<div class="form-group">
-				<label for="create" class="col-md-2 control-label">URL to create records</label>
-				<div class="col-md-10">
-					<input type="text" id="create" class="form-control" placeholder="URL (relative to project home)" ng-model="app.create">
-				</div>
+			<div id="oauth2" class="tab-pane fade">
+				<form class="form-horizontal" ng-submit="registerApp('oauth2')">
+					<div class="form-group">
+						<label for="name" class="col-md-2 control-label">Name</label>
+						<div class="col-md-10">
+							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description" class="col-md-2 control-label">Description</label>
+						<div class="col-md-10">
+							<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="consumerKey2" class="col-md-2 control-label">Consumer key</label>
+						<div class="col-md-10">
+							<input type="text" id="consumerKey2" class="form-control" placeholder="Consumer key" ng-model="app.consumerKey">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="consumerSecret" class="col-md-2 control-label">Consumer secret</label>
+						<div class="col-md-10">
+							<input type="text" id="consumerSecret" class="form-control" placeholder="Consumer secret" ng-model="app.consumerSecret">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="scopeParameters" class="col-md-2 control-label">Scope parameters</label>
+						<div class="col-md-10">
+							<input type="text" id="scopeParameters" class="form-control" placeholder="Scope parameters" ng-model="app.scopeParameters">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="detailsUrl" class="col-md-2 control-label">URL to detailed record view</label>
+						<div class="col-md-10">
+							<input type="text" id="details" class="form-control" placeholder="URL (relative to project home)" ng-model="app.detailsUrl">
+						</div>
+					</div>
+					<div class="pull-right">
+						<button type="submit" class="btn btn-primary">Register</button>
+						<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
+					</div>
+				</form>
 			</div>
-			<div class="form-group">
-				<label for="details" class="col-md-2 control-label">URL to detailed record view</label>
-				<div class="col-md-10">
-					<input type="text" id="details" class="form-control" placeholder="URL (relative to project home)" ng-model="app.details">
-				</div>
-			</div>
-			<div class="pull-right">
-				<button type="submit" class="btn btn-primary">Register</button>
-				<a href="@routes.Market.index()" class="btn btn-default">Cancel</a>
-			</div>
-		</form>
+		</div>
 	</div>
 	
 	<!-- Load market controller -->

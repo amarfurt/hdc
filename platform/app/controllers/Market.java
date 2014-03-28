@@ -35,11 +35,19 @@ public class Market extends Controller {
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
-	public static Result registerApp() {
+	public static Result registerApp(String type) {
 		// validate json
 		JsonNode json = request().body().asJson();
 		try {
-			JsonValidation.validate(json, "name", "description", "create", "details");
+			if (type.equals("create")) {
+				JsonValidation.validate(json, "name", "description", "createUrl", "detailsUrl");
+			} else if (type.equals("oauth1")) {
+				JsonValidation.validate(json, "name", "description", "consumerKey", "detailsUrl");
+			} else if (type.equals("oauth2")) {
+				JsonValidation.validate(json, "name", "description", "consumerKey", "consumerSecret", "scopeParameters", "detailsUrl");
+			} else {
+				return badRequest("Unknown app type.");
+			}
 		} catch (JsonValidationException e) {
 			return badRequest(e.getMessage());
 		}
@@ -58,8 +66,20 @@ public class Market extends Controller {
 		app.name = name;
 		app.description = json.get("description").asText();
 		app.spotlighted = false;
-		app.create = json.get("create").asText();
-		app.details = json.get("details").asText();
+		app.detailsUrl = json.get("detailsUrl").asText();
+
+		// fill in specific fields
+		if (type.equals("create")) {
+			app.createUrl = json.get("createUrl").asText();
+		} else if (type.equals("oauth1")) {
+			app.consumerKey = json.get("consumerKey").asText();
+		} else if (type.equals("oauth2")) {
+			app.consumerKey = json.get("consumerKey").asText();
+			app.consumerSecret = json.get("consumerSecret").asText();
+			app.scopeParameters = json.get("scopeParameters").asText();
+		}
+
+		// add app to the platform
 		try {
 			App.add(app);
 		} catch (ModelException e) {

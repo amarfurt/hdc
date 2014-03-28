@@ -267,11 +267,32 @@ createRecords.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', functi
 	var appId = window.location.pathname.split("/")[3];
 	
 	// get record creation url
-	$http(jsRoutes.controllers.Apps.getCreateUrl(appId)).
-		success(function(url) {
+	$http(jsRoutes.controllers.Apps.start(appId)).
+		success(function(parameters) {
 			$scope.error = null;
-			$scope.url = $sce.trustAsResourceUrl(url);
+			if (parameters.type === "create") {
+				initCreateApp(parameters);
+			} else if (parameters.type === "oauth1") {
+				initOAuth1App(parameters);
+			} else if (parameters.type === "oauth2") {
+				initOAuth2App(parameters);
+			}
 		}).
 		error(function(err) { $scope.error = "Failed to load record creation dialog: " + err; });
+	
+	// initialize create app
+	initCreateApp = function(parameters) {
+		$scope.url = $sce.trustAsResourceUrl(parameters.url);
+	}
+	
+	// initialize OAuth 1.0 app
+	initOAuth1App = function(parameters) {
+		
+	}
+	
+	// initialize OAuth 2.0 app
+	initOAuth2App = function(parameters) {
+		
+	}
 	
 }]);
