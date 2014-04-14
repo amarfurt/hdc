@@ -104,8 +104,8 @@ public class Visualizations extends Controller {
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
-		String visualizationServer = Play.application().configuration().getString("plugins.server");
-		String url = "http://" + visualizationServer + "/visualizations/" + visualizationId + "/" + visualization.url;
+		String visualizationServer = Play.application().configuration().getString("visualizations.server");
+		String url = "http://" + visualizationServer + "/" + visualizationId + "/" + visualization.url;
 		return ok(url);
 	}
 

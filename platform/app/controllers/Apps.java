@@ -119,9 +119,9 @@ public class Apps extends Controller {
 			String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
 			
 			// put together url to load in iframe
-			String appServer = Play.application().configuration().getString("plugins.server");
+			String appServer = Play.application().configuration().getString("apps.server");
 			String createUrl = app.createUrl.replace(":replyTo", encodedReplyTo);
-			String url = "http://" + appServer + "/apps/" + appIdString + "/" + createUrl;
+			String url = "http://" + appServer + "/" + appIdString + "/" + createUrl;
 			parameters.put("url", url);
 		}
 		return ok(Json.toJson(parameters));

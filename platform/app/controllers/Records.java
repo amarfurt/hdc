@@ -139,10 +139,10 @@ public class Records extends Controller {
 		}
 
 		// put together url to send to iframe (which then loads the record representation)
-		String appServer = Play.application().configuration().getString("plugins.server");
+		String appServer = Play.application().configuration().getString("apps.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
-		return ok("http://" + appServer + "/apps/" + record.app.toString() + "/" + detailsUrl);
+		return ok("http://" + appServer + "/" + record.app.toString() + "/" + detailsUrl);
 	}
 
 	public static Result search(String query) {
