@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="hdcSnpInfo">
+<head>
+<meta charset="utf-8">
+<title>SNP-INFO</title>
+<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+<!-- jQuery needed for Bootstrap's JavaScript plugins -->
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.min.js"></script>
+<script type="text/javascript" src="lib/jquery.parse.min.js"></script>
+<script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="js/controllers.js"></script>
+</head>
+<body ng-controller="SnpInfoCtrl">
+
+<h3> Search for a SNP</h3>
+<img src="../../img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
+<form>
+	<div class="form-horizontal">
+		<input ng-model="searchbox.rs" placeholder="rs-number (e.g. rs53576)"/>
+		<button ng-click="search(searchbox.rs)">search</button>
+	</div>
+</form>
+
+<div class="container" ng-view></div>
+
+</body>
+</html>
