@@ -1,18 +1,40 @@
 <div>
-	<!-- this section of the page is split into columns -->
-				<h3>What is SNP-snip?</h3>
-				SNP-snip is a simple tool that allows you to look up which variant of a SNP (single nucleotice polymorphism) you carry at a particular location in your genome and provides a number of external links that give you further information about this particular SNP. 
-				To use this tool you need to have data your personal genotype data stored in this data bank. You may have obtained this data either from a direct-to-consumer service such as <a href="http://www.23andme.com">23andMe</a> or <a href="http:www.navigenics.com">Navigenics</a>, in the course of genetic testing for a medical condition or as part of a research study. If the appropriate data is available in your profile, you should be able to choose it in the drop
-				-down menu on the left.
-				<h3>What is a SNP?</h3>
-				Overall the sequence of any two humans will be very similar, but there are nevertheless numerous genetic variations that distinguish an indiviudal from all others. This genetic variation is part of what makes us unique. <br/> A particularly common type of genetic variation are so-called <a href="http://en.wikipedia.org/wiki/Single-nucleotide_polymorphism">Single Nucelotide Polymorphisms (SNPs) </a> in which a specific <a href="http://en.wikipedia.org/wiki/Base_pair">base pair</a>
-				in a specific location of our genome differs from one individual to the next. <br/>
-				<h3>What is an rs-numbers?</h3>
-				The rs-number (e.g. rs53576) identifies a specific location in the human genome where a genetic variation has been observed. Think of it as a molecular ZIP code. The use of rs-numbers facilitates the comparison of genetic variation across individuals and across research studies. 
-				<h3>How can I use my personal SNP data?</h3>
-				A large number of research studies have linked the genetic variations at specific SNPs to a wide-range of phenomena.<br/> For example a SNP with a particular rs-number may have been found to be linked to a particular disease, such that carriers of one variant may be more likely to develop that disease than the carriers of the other variant. Other SNPs may change the way an individual reacts to certain medications while yet another SNP may provide insights into an individual's genetic ancestry. 
-				<h3>How do I use SNP-snip?</h3>
-				If you have stored personal genotype information (e.g. from 23andMe) in your account the SNP-snip tool allows you to determine your genotype at a particular SNP (i.e. which variant you carry at the genome location identified by a given rs-number). In the search field below the SNP-snip logo enter the rs-number of the SNP that interests you. If your personal genotype data contains information on this SNP, you will be shown a page that shows your genotype a this SNP and additional information about this SNP such as a short description, links to relevant scientific literature as well as information extracted from online databases. 
-				<h3>Limitations of SNP-snip</h3>
-				Commercial genotyping tests measure only a subset (only about 1 million) of the more than 10 million known SNPs. Information may therefore not be available for each of the SNPs you search for.<br/> Please note that any information beyond your genotype at the specified SNP, which is extracted directly from the genotyping data you uploaded, all other information provided in the SNP-snip results is not curated by SNP-snip. Instead, this additional information and the external links are aglomerated from public online resources such as <a href="http://snpedia.com">SNPedia</a>, <a href="http://dbsnp.org">dbsnp</a> and <a href="http://ncbi.gov">pubmed</a>. SNP-snip takes noresponsibility for the accuracy of this external information.
+    <h3> Search for a SNP</h3>
+    <img src="../../img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
+    <form>
+        <div class="form-horizontal">
+            <input ng-model="input.rs" placeholder="rs-number (e.g. rs53576)"/>
+            <button ng-click="searchUpdate(input.rs)">search</button>
+        </div>
+    </form>
+
+    <div ng-if="searched">
+        <br/>
+        <h3>Your genome</h3>
+        <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
+        <div ng-if="!userHas">N/A</div>
+        <h3>Information from Snpedia</h3>
+        <div ng-bind-html="snpediaText"></div>
+        <h3>Hapmap chart</h3>
+        <div ng-bind-html="hapmapChart"></div>
+        <img src={{imageSource}}></img>
+    </div>
+    
+    <div ng-if="!searched">
+        <h3>What is SNP-snip?</h3>
+        SNP-snip is a simple tool that allows you to look up which variant of a SNP (single nucleotice polymorphism) you carry at a particular location in your genome and provides a number of external links that give you further information about this particular SNP. 
+        To use this tool you need to have data your personal genotype data stored in this data bank. You may have obtained this data either from a direct-to-consumer service such as <a href="http://www.23andme.com">23andMe</a> or <a href="http:www.navigenics.com">Navigenics</a>, in the course of genetic testing for a medical condition or as part of a research study. If the appropriate data is available in your profile, you should be able to choose it in the drop
+        -down menu on the left.
+        <h3>What is a SNP?</h3>
+        Overall the sequence of any two humans will be very similar, but there are nevertheless numerous genetic variations that distinguish an indiviudal from all others. This genetic variation is part of what makes us unique. <br/> A particularly common type of genetic variation are so-called <a href="http://en.wikipedia.org/wiki/Single-nucleotide_polymorphism">Single Nucelotide Polymorphisms (SNPs) </a> in which a specific <a href="http://en.wikipedia.org/wiki/Base_pair">base pair</a>
+        in a specific location of our genome differs from one individual to the next. <br/>
+        <h3>What is an rs-numbers?</h3>
+        The rs-number (e.g. rs53576) identifies a specific location in the human genome where a genetic variation has been observed. Think of it as a molecular ZIP code. The use of rs-numbers facilitates the comparison of genetic variation across individuals and across research studies. 
+        <h3>How can I use my personal SNP data?</h3>
+        A large number of research studies have linked the genetic variations at specific SNPs to a wide-range of phenomena.<br/> For example a SNP with a particular rs-number may have been found to be linked to a particular disease, such that carriers of one variant may be more likely to develop that disease than the carriers of the other variant. Other SNPs may change the way an individual reacts to certain medications while yet another SNP may provide insights into an individual's genetic ancestry. 
+        <h3>How do I use SNP-snip?</h3>
+        If you have stored personal genotype information (e.g. from 23andMe) in your account the SNP-snip tool allows you to determine your genotype at a particular SNP (i.e. which variant you carry at the genome location identified by a given rs-number). In the search field below the SNP-snip logo enter the rs-number of the SNP that interests you. If your personal genotype data contains information on this SNP, you will be shown a page that shows your genotype a this SNP and additional information about this SNP such as a short description, links to relevant scientific literature as well as information extracted from online databases. 
+        <h3>Limitations of SNP-snip</h3>
+        Commercial genotyping tests measure only a subset (only about 1 million) of the more than 10 million known SNPs. Information may therefore not be available for each of the SNPs you search for.<br/> Please note that any information beyond your genotype at the specified SNP, which is extracted directly from the genotyping data you uploaded, all other information provided in the SNP-snip results is not curated by SNP-snip. Instead, this additional information and the external links are aglomerated from public online resources such as <a href="http://snpedia.com">SNPedia</a>, <a href="http://dbsnp.org">dbsnp</a> and <a href="http://ncbi.gov">pubmed</a>. SNP-snip takes noresponsibility for the accuracy of this external information.
+    </div>
 </div>
