@@ -14,10 +14,12 @@
         <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
         <div ng-if="!userHas">N/A</div>
         <h3>Information from Snpedia</h3>
-        <div ng-bind-html="snpediaText"></div>
+        <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
+        <div ng-if="snpediaText==null">N/A</div>
         <h3>Hapmap chart</h3>
-        <div ng-bind-html="hapmapChart"></div>
-        <img src={{imageSource}}></img>
+        <div ng-if="hapmapChart!=null" ng-bind-html="hapmapChart"></div>
+        <img ng-if="hapmapChart!=null" src={{imageSource}}></img>
+        <div ng-if="hapmapChart==null">N/A</div>
     </div>
     
     <div ng-if="!searched">
