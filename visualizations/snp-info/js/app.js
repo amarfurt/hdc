@@ -7,7 +7,7 @@ hdcRecordList.config(['$routeProvider',
 	function($routeProvider) {
     $routeProvider.
 		when('/:records', {
-			templateUrl: 'views/main.html',
+			templateUrl: 'views/snpInfo.html',
 			controller: 'SnpInfoCtrl'
 		});
 	}

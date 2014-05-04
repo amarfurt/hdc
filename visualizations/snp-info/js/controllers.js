@@ -39,15 +39,22 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         success: function(data) {
             $scope.snpediaText = $sce.trustAsHtml(data);
         },
+        error: function() {
+            $scope.snpediaText = null;
+        },
         async: false
     });
     
-    $scope.imageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
     
     $.ajax({
         url: "http://localhost:8888/"+$scope.rs+"/hapmap_chart.html",
         success: function(data) {
             $scope.hapmapChart = $sce.trustAsHtml(data);
+            $scope.imageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
+        },
+        error: function() {
+            $scope.hapmapChart = null;
+            $scope.imageSource = null;
         },
         async: false
     });
