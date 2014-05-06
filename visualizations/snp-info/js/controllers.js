@@ -59,9 +59,12 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         async: false
     });
 
+    $scope.firstAccordion = true;
+    $scope.secondAccordion = true;
+    $scope.thirdAccordion = true;
 };
 
-var controllers = angular.module('snpInfoControllers', []);
+var controllers = angular.module('snpInfoControllers', ['ui.bootstrap']);
 controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams',
 function($scope, $sce, $routeParams) {
 

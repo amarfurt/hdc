@@ -1,28 +1,44 @@
 <div>
-    <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
-    <h3> Search for a SNP</h3>
-    <form>
-        <div class="form-horizontal">
-            <input ng-model="input.rs" placeholder="rs-number (e.g. rs53576)"/>
-            <button ng-click="searchUpdate(input.rs)">search</button>
-        </div>
-    </form>
+<img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
 
-    <div ng-if="searched">
-        <br/>
-        <h3>Your genome</h3>
-        <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
-        <div ng-if="!userHas">N/A</div>
-        <h3>Information from Snpedia</h3>
+<form role="form">
+   <div class="form-group">
+      <label>Search for a SNP</label>
+      <input type="text" class="form-control" id="name" 
+         ng-model="input.rs" placeholder="rs-number (e.g. rs53576)">
+   </div>
+   <button class="btn btn-default" ng-click="searchUpdate(input.rs)">search</button>
+</form>
+
+<br/>
+
+<div ng-if="searched">
+<accordion close-others="false">
+    <accordion-group heading="Your genome" is-open="firstAccordion">
+	<div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
+	<div ng-if="!userHas">N/A</div>
+    </accordion-group>
+    <accordion-group heading="Information from Snpedia" is-open="secondAccordion">
         <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
         <div ng-if="snpediaText==null">N/A</div>
-        <h3>Hapmap chart</h3>
-        <div ng-if="hapmapChart!=null" ng-bind-html="hapmapChart"></div>
-        <img ng-if="hapmapChart!=null" src={{imageSource}}></img>
+    </accordion-group>
+    <accordion-group heading="Hapmap chart" is-open="thirdAccordion">
+        <div ng-if="hapmapChart!=null">
+            <div ng-bind-html="hapmapChart"></div>
+            <img src={{imageSource}}></img>
+<p>
+<font size="1">
+ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
+</font> 
+</p>
+        </div>
         <div ng-if="hapmapChart==null">N/A</div>
-    </div>
+    </accordion-group>
+</accordion>
+</div>
+
     
-    <div ng-if="!searched">
+<div ng-if="!searched">
         <h3>What is SNP-snip?</h3>
         SNP-snip is a simple tool that allows you to look up which variant of a SNP (single nucleotice polymorphism) you carry at a particular location in your genome and provides a number of external links that give you further information about this particular SNP. 
         To use this tool you need to have data your personal genotype data stored in this data bank. You may have obtained this data either from a direct-to-consumer service such as <a href="http://www.23andme.com">23andMe</a> or <a href="http:www.navigenics.com">Navigenics</a>, in the course of genetic testing for a medical condition or as part of a research study. If the appropriate data is available in your profile, you should be able to choose it in the drop
