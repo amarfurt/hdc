@@ -20,7 +20,7 @@ var getGenomeDataFromUrl = function($scope, $routeParams) {
 };
 
 var validRs = function (rs) {
-    return rs.match(/rs\d+/);
+    return rs.match(/^rs\d+$/);
 }
 
 var prepareSearchResults = function ($scope, $sce, rs) {

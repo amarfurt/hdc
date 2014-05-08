@@ -1,17 +1,18 @@
 <div>
 <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
 
-<a ng-click="open()">Help</a>
-
-<form role="form">
-   <div class="form-group">
-      <label>Search for a SNP</label>
-      <input type="text" class="form-control" id="name" 
-         ng-model="input.rs" placeholder="rs-number (e.g. rs53576)">
-   </div>
-   <alert ng-if="invalidInput" type="danger">Invalid input! Please enter a valid rs number!</alert>
-   <button class="btn btn-default" ng-click="searchUpdate(input.rs)">search</button>
+<form>
+    <label>Search for a SNP </label>
+    <a ng-click="open()">Help</a>
+    <div class="input-group">
+        <span class="input-group-btn">
+            <button type="submit" class="btn btn-default" ng-click="searchUpdate(input.rs)" type="button">Go!</button>
+        </span>
+        <input type="text" class="form-control" ng-model="input.rs" placeholder="rs-number (e.g. rs53576)">
+    </div>
 </form>
+
+<alert ng-if="invalidInput" type="danger">Invalid input! Please enter a valid rs-number!</alert>
 
 <div ng-if="searches.length > 0">
 
@@ -23,28 +24,38 @@
 
 	<br/>
 
-	<accordion close-others="false">
-	    <accordion-group heading="Your genome" is-open="firstAccordion">
-		<div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
-		<div ng-if="!userHas">N/A</div>
-	    </accordion-group>
-	    <accordion-group heading="Information from Snpedia" is-open="secondAccordion">
-		<div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
-		<div ng-if="snpediaText==null">N/A</div>
-	    </accordion-group>
-	    <accordion-group heading="Hapmap chart" is-open="thirdAccordion">
-		<div ng-if="hapmapChart!=null">
-		    <div compile="hapmapChart"></div>
-		<br/>
-		<p>
-		<font size="1">
-		ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
-		</font> 
-		</p>
-		</div>
-		<div ng-if="hapmapChart==null">N/A</div>
-	    </accordion-group>
-	</accordion>
+    <div class="panel panel-default">
+        <div class="panel-heading">Your genome</div>
+        <div class="panel-body">
+            <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}}.</div>
+            <div ng-if="!userHas">N/A</div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Snpedia information</div>
+        <div class="panel-body">
+            <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
+            <div ng-if="snpediaText==null">N/A</div>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">Hapmap information</div>
+        <div class="panel-body">
+            <div ng-if="hapmapChart!=null">
+                <div compile="hapmapChart"></div>
+            <br/>
+            <p>
+            <font size="1">
+            ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
+            </font> 
+            </p>
+            </div>
+            <div ng-if="hapmapChart==null">N/A</div>
+        </div>
+    </div>
+
 </div>
 
 </div>
