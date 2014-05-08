@@ -26,7 +26,6 @@ var validRs = function (rs) {
 var prepareSearchResults = function ($scope, $sce, rs) {
 
     $scope.invalidInput = !validRs(rs);
-
     if (validRs(rs)) {
 
         // tabs
@@ -34,6 +33,9 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         if (index === -1) {
             $scope.searches.unshift({rs: rs, active: true});
         } else {
+            for (i in $scope.searches) {
+                $scope.searches[i].active = false;
+            }
             $scope.searches[index].active = true;
         }
 
@@ -83,6 +85,15 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         getGenomeDataFromUrl($scope, $routeParams);
         
         $scope.searches = [];
+
+        $scope.removeTab = function (index) {
+            $scope.searches.splice(index, 1);
+            if (index > 0) {
+                $scope.searchUpdate($scope.searches[index - 1].rs);
+            } else if (index < $scope.searches.length) {
+                $scope.searchUpdate($scope.searches[index].rs);
+            }
+        };
 
         $scope.searchUpdate = function(rs) {
             prepareSearchResults($scope, $sce, rs);

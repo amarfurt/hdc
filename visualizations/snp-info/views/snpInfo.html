@@ -19,7 +19,9 @@
 	<br/>
 
 	<tabset>
-	    <tab ng-repeat="search in searches" ng-click="searchUpdate(search.rs)" active="search.active" heading="{{search.rs}}"></tab>
+	    <tab ng-repeat="search in searches" ng-click="searchUpdate(search.rs)" active="search.active">
+            <tab-heading>{{search.rs}} <a ng-click="removeTab($index)" href=""><i class="glyphicon glyphicon-remove"></i></a></tab-heading>
+        </tab>
 	</tabset>
 
 	<br/>
