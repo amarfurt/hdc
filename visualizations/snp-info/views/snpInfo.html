@@ -32,13 +32,13 @@
     </accordion-group>
     <accordion-group heading="Hapmap chart" is-open="thirdAccordion">
         <div ng-if="hapmapChart!=null">
-            <div ng-bind-html="hapmapChart"></div>
-            <img src={{imageSource}}></img>
-<p>
-<font size="1">
-ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
-</font> 
-</p>
+            <div compile="hapmapChart"></div>
+	<br/>
+	<p>
+	<font size="1">
+	ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
+	</font> 
+	</p>
         </div>
         <div ng-if="hapmapChart==null">N/A</div>
     </accordion-group>

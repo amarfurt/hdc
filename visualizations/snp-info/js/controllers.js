@@ -1,4 +1,3 @@
-
 var getGenomeDataFromUrl = function($scope, $routeParams) {
 	// parse Base64 encoded JSON records
 	if ($routeParams.records != null && $scope.snpTable == null) {
@@ -28,12 +27,11 @@ var prepareSearchResults = function ($scope, $sce, rs) {
 
     $scope.invalidInput = !validRs(rs);
 
-    if (!rs) {
-        $scope.searched = false;
-    } else if (validRs(rs)) {
+    if (validRs(rs)) {
 
         $scope.searched = true;
 
+        // tabs
         var index = $scope.searches.map(function(search){return search.rs}).indexOf(rs);
         if (index === -1) {
             $scope.searches.unshift({rs: rs, active: true});
@@ -41,6 +39,7 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             $scope.searches[index].active = true;
         }
 
+        // search results
         $scope.rs = rs;
         $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
 
@@ -63,8 +62,8 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         $.ajax({
             url: "http://localhost:8888/"+$scope.rs+"/hapmap_chart.html",
             success: function(data) {
-                $scope.hapmapChart = $sce.trustAsHtml(data);
-                $scope.imageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
+                $scope.hapmapChart = data;
+                $scope.hapmapImageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
             },
             error: function() {
                 $scope.hapmapChart = null;
@@ -79,7 +78,7 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         }
     };
 
-    var controllers = angular.module('snpInfoControllers', ['ui.bootstrap']);
+    var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
     controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams',
     function($scope, $sce, $routeParams) {
 

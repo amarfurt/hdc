@@ -1,9 +1,9 @@
-var hdcRecordList = angular.module('hdcSnpInfo', [
+var hdcSnpInfo = angular.module('hdcSnpInfo', [
   'ngRoute',
   'snpInfoControllers'
 ]);
  
-hdcRecordList.config(['$routeProvider',
+hdcSnpInfo.config(['$routeProvider',
 	function($routeProvider) {
     $routeProvider.
 		when('/:records', {
