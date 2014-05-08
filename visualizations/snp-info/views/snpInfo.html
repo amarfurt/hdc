@@ -7,8 +7,16 @@
       <input type="text" class="form-control" id="name" 
          ng-model="input.rs" placeholder="rs-number (e.g. rs53576)">
    </div>
+   <alert ng-if="invalidInput" type="danger">Invalid input! Please enter a valid rs number!</alert>
    <button class="btn btn-default" ng-click="searchUpdate(input.rs)">search</button>
 </form>
+
+
+<br/>
+
+<tabset>
+    <tab ng-repeat="search in searches" ng-click="searchUpdate(search.rs)" active="search.active" heading="{{search.rs}}"></tab>
+</tabset>
 
 <br/>
 

@@ -20,57 +20,75 @@ var getGenomeDataFromUrl = function($scope, $routeParams) {
 	}
 };
 
+var validRs = function (rs) {
+    return rs.match(/rs\d+/);
+}
+
 var prepareSearchResults = function ($scope, $sce, rs) {
 
-    if (rs) {
-        $scope.searched = true;
-    } else {
+    $scope.invalidInput = !validRs(rs);
+
+    if (!rs) {
         $scope.searched = false;
-    }
+    } else if (validRs(rs)) {
 
-    $scope.rs = rs;
-    $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
-    if ($scope.userHas) {
-        $scope.genotype = $scope.snpMap[$scope.rs];
-    }
+        $scope.searched = true;
 
-    $.ajax({
-        url: "http://localhost:8888/"+$scope.rs+"/snpedia_text.html",
-        success: function(data) {
-            $scope.snpediaText = $sce.trustAsHtml(data);
-        },
-        error: function() {
-            $scope.snpediaText = null;
-        },
-        async: false
-    });
-    
-    
-    $.ajax({
-        url: "http://localhost:8888/"+$scope.rs+"/hapmap_chart.html",
-        success: function(data) {
-            $scope.hapmapChart = $sce.trustAsHtml(data);
-            $scope.imageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
-        },
-        error: function() {
-            $scope.hapmapChart = null;
-            $scope.imageSource = null;
-        },
-        async: false
-    });
+        var index = $scope.searches.map(function(search){return search.rs}).indexOf(rs);
+        if (index === -1) {
+            $scope.searches.unshift({rs: rs, active: true});
+        } else {
+            $scope.searches[index].active = true;
+        }
 
-    $scope.firstAccordion = true;
-    $scope.secondAccordion = true;
-    $scope.thirdAccordion = true;
-};
+        $scope.rs = rs;
+        $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
 
-var controllers = angular.module('snpInfoControllers', ['ui.bootstrap']);
-controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams',
-function($scope, $sce, $routeParams) {
+        if ($scope.userHas) {
+            $scope.genotype = $scope.snpMap[$scope.rs];
+        }
 
-	getGenomeDataFromUrl($scope, $routeParams);
-	
-    $scope.searchUpdate = function(rs) {
-        prepareSearchResults($scope, $sce, rs);
+        $.ajax({
+            url: "http://localhost:8888/"+$scope.rs+"/snpedia_text.html",
+            success: function(data) {
+                $scope.snpediaText = $sce.trustAsHtml(data);
+            },
+            error: function() {
+                $scope.snpediaText = null;
+            },
+            async: false
+        });
+        
+        
+        $.ajax({
+            url: "http://localhost:8888/"+$scope.rs+"/hapmap_chart.html",
+            success: function(data) {
+                $scope.hapmapChart = $sce.trustAsHtml(data);
+                $scope.imageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
+            },
+            error: function() {
+                $scope.hapmapChart = null;
+                $scope.imageSource = null;
+            },
+            async: false
+        });
+
+        $scope.firstAccordion = true;
+        $scope.secondAccordion = true;
+        $scope.thirdAccordion = true;
+        }
     };
+
+    var controllers = angular.module('snpInfoControllers', ['ui.bootstrap']);
+    controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams',
+    function($scope, $sce, $routeParams) {
+
+        getGenomeDataFromUrl($scope, $routeParams);
+        
+        $scope.searches = [];
+
+        $scope.searchUpdate = function(rs) {
+            prepareSearchResults($scope, $sce, rs);
+        };
+
 }]);
