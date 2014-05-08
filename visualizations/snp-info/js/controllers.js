@@ -29,8 +29,6 @@ var prepareSearchResults = function ($scope, $sce, rs) {
 
     if (validRs(rs)) {
 
-        $scope.searched = true;
-
         // tabs
         var index = $scope.searches.map(function(search){return search.rs}).indexOf(rs);
         if (index === -1) {
@@ -79,8 +77,8 @@ var prepareSearchResults = function ($scope, $sce, rs) {
     };
 
     var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
-    controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams',
-    function($scope, $sce, $routeParams) {
+    controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
+    function($scope, $sce, $routeParams, $modal, $log) {
 
         getGenomeDataFromUrl($scope, $routeParams);
         
@@ -90,4 +88,17 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             prepareSearchResults($scope, $sce, rs);
         };
 
+        $scope.open = function () {
+
+            var modalInstance = $modal.open({
+              templateUrl: 'views/help.html',
+              size: 'lg',
+            });
+
+            modalInstance.result.then(function (selectedItem) {
+                    $scope.selected = selectedItem;
+                }, function () {
+                    $log.info('Modal dismissed at: ' + new Date());
+            });
+        };
 }]);
