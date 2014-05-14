@@ -137,9 +137,9 @@ def download_hapmap_data():
             gunzip('archive/' + filename)
 
 
-def create_sqlite_database():
+def create_hapmap_sqlite_database():
     if not os.path.isfile('hapmap.db'):
-        print 'creating sqlite database ...'
+        print 'creating hapmap sqlite database ...'
         conn = sqlite3.connect('hapmap.db') 
         c = conn.cursor()
 
@@ -239,9 +239,46 @@ def generate_complete_database(max=0):
 
     #hapmap charts
     download_hapmap_data()
-    create_sqlite_database()
+    create_hapmap_sqlite_database()
     generate_hapmap_charts()
 
+def get_omim_text(rsnumbers):
+    for rs in rsnumbers:
+        query = 'http://www.ncbi.nlm.nih.gov/omim/?term='+rs+'&report=uilist&format=text'
+        response = urllib2.urlopen(query)
+        html = response.read()
+        soup = BeautifulSoup(html)
+        entry = soup.pre.text.split('\n')[0]
+        if entry:
+            url = 'http://api.omim.org/api/entry?mimNumber=' + entry
+            urllib.urlretrieve(url, 'snp_db/' + rs + '/omim_entry.html')
+
+def create_dbsnp_sqlite_database():
+    if not os.path.isfile('dbsnp.db'):
+        print 'creating dbsnp sqlite database ...'
+        conn = sqlite3.connect('hapmap.db') 
+        c = conn.cursor()
+
+        c.execute('''CREATE TABLE dbsnp_data
+                (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+
+        hapmap_files = os.listdir('archive')
+        for idx, f in enumerate(hapmap_files):
+            print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
+
+            reader = csv.reader(open('archive/' + f), delimiter=' ', quotechar='#')
+
+            next(reader, None) # skip header
+            for row in reader:
+
+                pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
+
+                if re.search(r'genotype', f):
+                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
+                else:
+                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
+        conn.commit()
+        conn.close()
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

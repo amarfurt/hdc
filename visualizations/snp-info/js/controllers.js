@@ -1,13 +1,21 @@
 var getGenomeDataFromUrl = function($scope, $routeParams) {
-	// parse Base64 encoded JSON records
+	// parse Base64 encoded uri and get the file
 	if ($routeParams.records != null && $scope.snpTable == null) {
-		var records = JSON.parse(atob($routeParams.records));
 		
+        var record;
+        $.ajax({
+            url: atob($routeParams.records),
+            success: function(data) {
+                record = data;
+            },
+            async: false
+        });
+
 		// need to remove comments (papaparse cant do it I think?)
-		records[0] = records[0].replace(/\s*#.*$/gm, '');
+		record = record.replace(/\s*#.*$/gm, '');
 
 		// extract the snp data 
-		var snpData = $.parse(records[0], {
+		var snpData = $.parse(record, {
 			delimiter: '\t',
 			header: false,
 		}).results;
