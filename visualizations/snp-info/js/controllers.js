@@ -1,29 +1,30 @@
 var getGenomeDataFromUrl = function($scope, $routeParams) {
 	// parse Base64 encoded uri and get the file
-	if ($routeParams.records != null && $scope.snpTable == null) {
+	if ($routeParams.records != null && $.isEmptyObject($scope.snpTable)) {
 		
-        var record;
-        $.ajax({
-            url: atob($routeParams.records),
-            success: function(data) {
-                record = data;
-            },
-            async: false
-        });
+        try {
+            var record;
+            $.ajax({
+                url: atob($routeParams.records),
+                success: function(data) {
+                    record = data;
+                },
+                async: false
+            });
 
-		// need to remove comments (papaparse cant do it I think?)
-		record = record.replace(/\s*#.*$/gm, '');
+            // need to remove comments (papaparse cant do it I think?)
+            record = record.replace(/\s*#.*$/gm, '');
 
-		// extract the snp data 
-		var snpData = $.parse(record, {
-			delimiter: '\t',
-			header: false,
-		}).results;
-		
-		$scope.snpMap = {};
-		for (var x in snpData) {
-			$scope.snpMap[snpData[x][0]] = snpData[x][3];
-		}
+            // extract the snp data 
+            var snpData = $.parse(record, {
+                delimiter: '\t',
+                header: false,
+            }).results;
+            
+            for (var x in snpData) {
+                $scope.snpMap[snpData[x][0]] = snpData[x][3];
+            }
+        } catch (err) {}
 	}
 };
 
@@ -90,9 +91,12 @@ var prepareSearchResults = function ($scope, $sce, rs) {
     controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
     function($scope, $sce, $routeParams, $modal, $log) {
 
-        getGenomeDataFromUrl($scope, $routeParams);
-        
+        $scope.loading = true;
+
+        $scope.snpMap = {};
         $scope.searches = [];
+
+        getGenomeDataFromUrl($scope, $routeParams);
 
         $scope.removeTab = function (index) {
             $scope.searches.splice(index, 1);
@@ -120,4 +124,6 @@ var prepareSearchResults = function ($scope, $sce, rs) {
                     $log.info('Modal dismissed at: ' + new Date());
             });
         };
+
+        $scope.loading = false;
 }]);

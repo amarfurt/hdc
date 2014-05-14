@@ -9,6 +9,9 @@ hdcSnpInfo.config(['$routeProvider',
 		when('/:records', {
 			templateUrl: 'views/snpInfo.html',
 			controller: 'SnpInfoCtrl'
-		});
+		}).when('/', {
+            templateUrl: 'views/snpInfo.html',
+            controller: 'SnpInfoCtrl'
+        });
 	}
 ]);
