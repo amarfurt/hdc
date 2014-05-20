@@ -1,11 +1,17 @@
 <div>
     <div ng-show="loading">
         <h3>Loading records...</h3>
+<div class="progress progress-striped active">
+  <div class="progress-bar"  role="progressbar" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100" style="width: 45%">
+    <span class="sr-only">45% Complete</span>
+  </div>
+</div>
+
         <div class="row">
             <div class="col-sm-4"><progressbar class="progress-striped active" value="100"></div>
         </div>
     </div>
-    <div ng-if="!loading">
+    <div ngHide="loading">
         <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
 
         <form>
