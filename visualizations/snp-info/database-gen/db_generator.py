@@ -151,34 +151,35 @@ def download_hapmap_data():
             urllib.urlretrieve(prefix + filename, 'hapmap_archive/' + filename)
             gunzip('hapmap_archive/' + filename)
 
-def create_intermediate_hapmap_database():
-    print 'creating intermediate hapmap database ...'
-    conn = sqlite3.connect('hapmap.db') 
-    c = conn.cursor()
+def create_hapmap_database():
+    if not os.path.isfile('hapmap.db'):
+        print 'creating intermediate hapmap database ...'
+        conn = sqlite3.connect('hapmap.db') 
+        c = conn.cursor()
 
-    c.execute('''CREATE TABLE genotype
-            (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
+        c.execute('''CREATE TABLE genotype
+                (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
 
-    c.execute('''CREATE TABLE allele
-            (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+        c.execute('''CREATE TABLE allele
+                (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
 
-    hapmap_files = os.listdir('hapmap_archive')
-    for idx, f in enumerate(hapmap_files):
-        print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
+        hapmap_files = os.listdir('hapmap_archive')
+        for idx, f in enumerate(hapmap_files):
+            print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
 
-        reader = csv.reader(open('hapmap_archive/' + f), delimiter=' ', quotechar='#')
+            reader = csv.reader(open('hapmap_archive/' + f), delimiter=' ', quotechar='#')
 
-        next(reader, None) # skip header
-        for row in reader:
+            next(reader, None) # skip header
+            for row in reader:
 
-            pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
+                pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
 
-            if re.search(r'genotype', f):
-                c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
-            else:
-                c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
-    conn.commit()
-    conn.close()
+                if re.search(r'genotype', f):
+                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
+                else:
+                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
+        conn.commit()
+        conn.close()
 
 def add_final_hapmap_data(database, max_entries):
     print 'generating hapmap charts ...'
@@ -233,7 +234,7 @@ def add_final_hapmap_data(database, max_entries):
         image = urllib.urlopen(url).read()
 
         # insert both into the database 
-        c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, image))
+        c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, buffer(image)))
 
     conn.commit()
     conn.close()
@@ -241,7 +242,7 @@ def add_final_hapmap_data(database, max_entries):
 
 def download_and_add_hapmap_data(database, max_entries):
     download_hapmap_data()
-    add_intermediate_hapmap_data(database)
+    create_hapmap_database()
     add_final_hapmap_data(database, max_entries)
 
 def get_omim_text(rsnumbers):
