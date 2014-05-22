@@ -2,6 +2,7 @@ package controllers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -98,8 +99,8 @@ public class Users extends Controller {
 		Set<ObjectId> contactIds = new HashSet<ObjectId>();
 		Set<User> contacts;
 		try {
-			Set<Circle> circles = Circle.getAll(new ChainedMap<String, ObjectId>().put("owner", userId).get(),
-					new ChainedSet<String>().add("members").get());
+			Set<Circle> circles = Circle.getAll(new ChainedMap<String, ObjectId>().put("owner", userId).get(), new ChainedSet<String>()
+					.add("members").get());
 			for (Circle circle : circles) {
 				contactIds.addAll(circle.members);
 			}
@@ -162,8 +163,7 @@ public class Users extends Controller {
 	}
 
 	/**
-	 * Make the owner's records invisible to a set of users, if these records are not shared with them via another
-	 * circle.
+	 * Make the owner's records invisible to a set of users, if these records are not shared with them via another circle.
 	 */
 	static void makeInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds) throws ModelException {
 		// get the owner's circles
@@ -176,8 +176,7 @@ public class Users extends Controller {
 	/**
 	 * Use this if the owner's circles have already been loaded.
 	 */
-	static void makeInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds, Set<Circle> circles)
-			throws ModelException {
+	static void makeInvisible(ObjectId ownerId, Set<ObjectId> recordIds, Set<ObjectId> userIds, Set<Circle> circles) throws ModelException {
 		for (ObjectId userId : userIds) {
 			// get the records that are still shared with this user
 			Set<ObjectId> stillSharedRecords = new HashSet<ObjectId>();
@@ -210,8 +209,7 @@ public class Users extends Controller {
 	 * Add a record to the list of pushed records of the given user.
 	 */
 	static void pushRecord(ObjectId userId, ObjectId recordId) throws ModelException {
-		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(),
-				new ChainedSet<String>().add("pushed").get());
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>().add("pushed").get());
 		user.pushed.add(recordId);
 		User.set(user._id, "pushed", user.pushed);
 	}
@@ -220,8 +218,7 @@ public class Users extends Controller {
 	 * Remove a record from the list of pushed records of the given user.
 	 */
 	static void pullRecord(ObjectId userId, ObjectId recordId) throws ModelException {
-		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(),
-				new ChainedSet<String>().add("pushed").get());
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>().add("pushed").get());
 		user.pushed.remove(recordId);
 		User.set(user._id, "pushed", user.pushed);
 	}
@@ -252,5 +249,29 @@ public class Users extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok();
+	}
+
+	/**
+	 * Get a user's authorization tokens for an app.
+	 */
+	static Map<String, String> getTokens(ObjectId userId, ObjectId appId) throws ModelException {
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>().add("tokens").get());
+		if (user.tokens.containsKey(appId.toString())) {
+			return user.tokens.get(appId.toString());
+		} else {
+			return new HashMap<String, String>();
+		}
+	}
+
+	/**
+	 * Set authorization tokens, namely the access and refresh token.
+	 */
+	static void setTokens(ObjectId userId, ObjectId appId, String accessToken, String refreshToken) throws ModelException {
+		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>().add("tokens").get());
+		Map<String, String> tokens = new HashMap<String, String>();
+		tokens.put("accessToken", accessToken);
+		tokens.put("refreshToken", refreshToken);
+		user.tokens.put(appId.toString(), tokens);
+		User.set(userId, "tokens", user.tokens);
 	}
 }

@@ -2,7 +2,6 @@ package controllers;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +44,10 @@ public class Apps extends Controller {
 		} catch (JsonValidationException e) {
 			return badRequest(e.getMessage());
 		}
+		return getApps(json);
+	}
 
+	static Result getApps(JsonNode json) {
 		// get apps
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
 		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
@@ -95,12 +97,11 @@ public class Apps extends Controller {
 		return ok(Json.toJson(isInstalled));
 	}
 
-	public static Result start(String appIdString) {
+	public static Result getCreateUrl(String appIdString) {
 		// get app
 		ObjectId appId = new ObjectId(appIdString);
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
-		Set<String> fields = new ChainedSet<String>().add("createUrl").add("consumerKey").add("consumerSecret").add("scopeParameters")
-				.get();
+		Set<String> fields = new ChainedSet<String>().add("createUrl").get();
 		App app;
 		try {
 			app = App.get(properties, fields);
@@ -108,23 +109,16 @@ public class Apps extends Controller {
 			return internalServerError(e.getMessage());
 		}
 
-		// perform different actions depending on the type
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		if (app.createUrl != null) {
-			parameters.put("type", "create");
-			
-			// create reply to address and encode it with Base64
-			String platformServer = Play.application().configuration().getString("platform.server");
-			String replyTo = "http://" + platformServer + routes.AppsAPI.createRecord(request().username(), appIdString).url();
-			String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
-			
-			// put together url to load in iframe
-			String appServer = Play.application().configuration().getString("apps.server");
-			String createUrl = app.createUrl.replace(":replyTo", encodedReplyTo);
-			String url = "http://" + appServer + "/" + appIdString + "/" + createUrl;
-			parameters.put("url", url);
-		}
-		return ok(Json.toJson(parameters));
+		// create reply to address and encode it with Base64
+		String platformServer = Play.application().configuration().getString("platform.server");
+		String replyTo = "https://" + platformServer + routes.AppsAPI.createRecord(request().username(), appIdString).url();
+		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
+
+		// put together url to load in iframe
+		String appServer = Play.application().configuration().getString("apps.server");
+		String createUrl = app.createUrl.replace(":replyTo", encodedReplyTo);
+		String url = "https://" + appServer + "/" + appIdString + "/" + createUrl;
+		return ok(url);
 	}
 
 }

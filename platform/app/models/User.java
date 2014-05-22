@@ -22,6 +22,7 @@ public class User extends Model implements Comparable<User> {
 	public String password;
 	public Map<String, Set<ObjectId>> visible; // map from users (DBObject requires string) to their shared records
 	public Set<ObjectId> apps; // installed apps
+	public Map<String, Map<String, String>> tokens; // map from apps to app details
 	public Set<ObjectId> visualizations; // installed visualizations
 	public Map<String, Set<ObjectId>> messages; // keys (folders) are: inbox, archive, trash
 	public String login; // timestamp of last login

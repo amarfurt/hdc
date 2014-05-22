@@ -28,15 +28,15 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
 			success(function(users) {
-				getAppNames(users[0].apps);
+				getAppDetails(users[0].apps);
 			}).
 			error(function(err) { $scope.error = "Failed to load apps: " + err; });
 	}
 	
-	// get name for app ids
-	getAppNames = function(appIds) {
+	// get name and type for app ids
+	getAppDetails = function(appIds) {
 		var properties = {"_id": appIds};
-		var fields = ["name"];
+		var fields = ["name", "type"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
 			success(function(apps) {
@@ -105,9 +105,14 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 		}
 	}
 	
-	// go to record creation dialog
-	$scope.createRecord = function(app) {
-		window.location.href = jsRoutes.controllers.Records.create(app._id.$oid).url;
+	// go to record creation/import dialog
+	$scope.createOrImport = function(app) {
+		console.log(app);
+		if (app.type === "create") {
+			window.location.href = jsRoutes.controllers.Records.create(app._id.$oid).url;
+		} else {
+			window.location.href = jsRoutes.controllers.Records.importRecords(app._id.$oid).url;
+		}
 	}
 	
 	// show record details
@@ -267,31 +272,113 @@ createRecords.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', functi
 	var appId = window.location.pathname.split("/")[3];
 	
 	// get record creation url
-	$http(jsRoutes.controllers.Apps.start(appId)).
-		success(function(parameters) {
+	$http(jsRoutes.controllers.Apps.getCreateUrl(appId)).
+		success(function(url) {
 			$scope.error = null;
-			if (parameters.type === "create") {
-				initCreateApp(parameters);
-			} else if (parameters.type === "oauth1") {
-				initOAuth1App(parameters);
-			} else if (parameters.type === "oauth2") {
-				initOAuth2App(parameters);
-			}
+			$scope.url = $sce.trustAsResourceUrl(url);
 		}).
 		error(function(err) { $scope.error = "Failed to load record creation dialog: " + err; });
 	
-	// initialize create app
-	initCreateApp = function(parameters) {
-		$scope.url = $sce.trustAsResourceUrl(parameters.url);
+}]);
+
+// importing records
+var importRecords = angular.module('importRecords', []);
+importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
+	
+	// init
+	$scope.error = null;
+	$scope.message = null;
+	$scope.loading = true;
+	$scope.authorized = false;
+	var app = null;
+	var authWindow = null;
+	var userId = null;
+	
+	// get app id (format: /records/import/:appId)
+	var appId = window.location.pathname.split("/")[3];
+	
+	// get current user
+	$http(jsRoutes.controllers.Users.getCurrentUser()).
+		success(function(uId) {
+			userId = uId.$oid;
+			checkAuthorized();
+		});
+	
+	// check whether we have been authorized already
+	checkAuthorized = function() {
+		$http.get("https://localhost:5000/" + userId + "/" + appId + "/authorized").
+			success(function(status) {
+				if (status.authorized) {
+					$scope.authorized = true;
+					$scope.message = "The app is authorized to import data on your behalf.";
+					$scope.loading = false;
+				} else {
+					loadAppDetails();
+				}
+			}).
+			error(function(err) {
+				$scope.error = "Failed to load user tokens: " + err;
+				$scope.loading = false;
+			});
 	}
 	
-	// initialize OAuth 1.0 app
-	initOAuth1App = function(parameters) {
-		
+	loadAppDetails = function() {
+		// get the app information
+		var properties = {"_id": {"$oid": appId}};
+		var fields = ["name", "type", "authorizationUrl", "consumerKey", "consumerSecret", "scopeParameters"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
+			success(function(apps) {
+				app = apps[0];
+				$scope.message = "The app is not authorized to import data on your behalf yet.";
+				$scope.loading = false;
+			}).
+			error(function(err) { $scope.error = "Failed to load apps: " + err; });
+	}
+
+	// start authorization procedure
+	$scope.authorize = function() {
+		$scope.message = "Authorization in progress...";
+		if (app.type === "oauth2") {
+			var redirectUri = "https://localhost:9000/records/redirect/" + app._id.$oid;
+			var parameters = "?response_type=code" + "&client_id=" + app.consumerKey + "&scope=" + app.scopeParameters +
+				"&redirect_uri=" + redirectUri;
+			authWindow = window.open(app.authorizationUrl + encodeURI(parameters));
+			window.addEventListener("message", onAuthorized);
+		} else {
+			$scope.error = "App type not supported yet.";
+		}
 	}
 	
-	// initialize OAuth 2.0 app
-	initOAuth2App = function(parameters) {
+	// authorization granted
+	onAuthorized = function(event) {
+		if (event.origin === "https://localhost:9000" && event.source === authWindow) {
+			$scope.$apply(function() {
+				$scope.message = "User authorization granted. Requesting access token...";
+			});
+			requestAccessToken(event.data);
+		} else {
+			$scope.$apply(function() {
+				$scope.message = "User authorization failed. Please try again.";
+			});
+		}
+		authWindow.close();
+	}
+	
+	// request access token
+	requestAccessToken = function(code) {
+		var data = {"code": code};
+		$http.post("https://localhost:5000/" + userId + "/" + appId + "/accessToken", JSON.stringify(data)).
+			success(function() {
+				$scope.authorized = true;
+				$scope.message = "The app is authorized to import data on your behalf.";
+			}).
+			error(function(err) { $scope.error = "Requesting access token failed: " + err; });
+	}
+	
+	
+	// import records
+	$scope.importRecords = function() {
 		
 	}
 	

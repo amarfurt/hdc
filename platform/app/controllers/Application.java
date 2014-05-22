@@ -93,6 +93,7 @@ public class Application extends Controller {
 		}
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
+		user.tokens = new HashMap<String, Map<String, String>>();
 		user.visualizations = new HashSet<ObjectId>();
 		user.messages = new HashMap<String, Set<ObjectId>>();
 		user.messages.put("inbox", new HashSet<ObjectId>());
@@ -129,7 +130,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Apps.install(),
 				controllers.routes.javascript.Apps.uninstall(),
 				controllers.routes.javascript.Apps.isInstalled(),
-				controllers.routes.javascript.Apps.start(),
+				controllers.routes.javascript.Apps.getCreateUrl(),
 				// Visualizations
 				controllers.routes.javascript.Visualizations.details(),
 				controllers.routes.javascript.Visualizations.get(),
@@ -151,6 +152,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.filter(),
 				controllers.routes.javascript.Records.details(),
 				controllers.routes.javascript.Records.create(),
+				controllers.routes.javascript.Records.importRecords(),
 				controllers.routes.javascript.Records.get(),
 				controllers.routes.javascript.Records.getVisibleRecords(),
 				controllers.routes.javascript.Records.getDetailsUrl(),

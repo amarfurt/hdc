@@ -1,0 +1,9 @@
+@setup("Authorized") {
+	<!-- Pass code to opener window and close this window. -->
+	<script type="text/javascript">
+		//<![CDATA[
+		window.opener.postMessage(window.location.search.split("=")[1], "https://localhost:9000");
+		//]]>
+	</script>
+	
+}

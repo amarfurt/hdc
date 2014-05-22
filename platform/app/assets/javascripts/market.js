@@ -47,21 +47,25 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 		} else if (type === "create" && !$scope.app.createUrl) {
 			$scope.error = "Please fill in all required fields";
 			return;
-		} else if (type === "oauth1" && !$scope.app.consumerKey) {
+		} else if (type === "oauth1" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey)) {
 			$scope.error = "Please fill in all required fields";
 			return;
-		} else if (type === "oauth2" && (!$scope.app.consumerKey || !$scope.app.consumerSecret || !$scope.app.scopeParameters)) {
+		} else if (type === "oauth2" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey || !$scope.app.consumerSecret || !$scope.app.scopeParameters)) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		}
 		
 		// piece together data object
 		if (type === "create") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "create": $scope.app.createUrl, "details": $scope.app.detailsUrl};
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "create": $scope.app.createUrl};
+		} else if (type === "oauth1") {
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey};
+		} else if (type === "oauth2") {
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey, "consumerSecret": $scope.app.consumerSecret, "scopeParameters": $scope.app.scopeParameters};
 		}
 		
 		// send the request
-		$http.post(jsRoutes.controllers.Market.registerApp().url, data).
+		$http.post(jsRoutes.controllers.Market.registerApp(type).url, data).
 			success(function(redirectUrl) { window.location.replace(redirectUrl); }).
 			error(function(err) { $scope.error = "Failed to register app: " + err; });
 	}

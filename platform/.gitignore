@@ -16,3 +16,4 @@ dist
 /.target
 /bin
 /data
+/conf/generated.keystore

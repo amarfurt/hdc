@@ -33,7 +33,9 @@ import utils.search.Search;
 import utils.search.SearchResult;
 import views.html.records;
 import views.html.details.record;
+import views.html.dialogs.authorized;
 import views.html.dialogs.createrecords;
+import views.html.dialogs.importrecords;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -54,6 +56,14 @@ public class Records extends Controller {
 
 	public static Result create(String appIdString) {
 		return ok(createrecords.render());
+	}
+	
+	public static Result importRecords(String appIdString) {
+		return ok(importrecords.render());
+	}
+	
+	public static Result onAuthorized(String appIdString) {
+		return ok(authorized.render());
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
@@ -142,7 +152,7 @@ public class Records extends Controller {
 		String appServer = Play.application().configuration().getString("apps.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
-		return ok("http://" + appServer + "/" + record.app.toString() + "/" + detailsUrl);
+		return ok("https://" + appServer + "/" + record.app.toString() + "/" + detailsUrl);
 	}
 
 	public static Result search(String query) {
