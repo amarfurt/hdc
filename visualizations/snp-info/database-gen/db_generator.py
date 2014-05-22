@@ -189,7 +189,7 @@ def add_final_hapmap_data(database, max_entries):
     c = conn.cursor()
     hapmap_c = hapmap_conn.cursor()
 
-    c.execute('CREATE TABLE hapmap (rs text, html text, chart blob)')
+    c.execute('CREATE TABLE hapmap (rs text, html text, image blob)')
 
     url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
     html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{{{{hapmapImageSource}}}}"></td></tr></tbody></table>'
@@ -234,7 +234,7 @@ def add_final_hapmap_data(database, max_entries):
         image = urllib.urlopen(url).read()
 
         # insert both into the database 
-        c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, buffer(image)))
+        c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
 
     conn.commit()
     conn.close()

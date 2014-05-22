@@ -34,6 +34,10 @@ var validRs = function (rs) {
 
 var prepareSearchResults = function ($scope, $sce, rs) {
 
+    $scope.snpediaText = null;
+    $scope.hapmapChart = null;
+    $scope.imageSource = null;
+
     $scope.invalidInput = !validRs(rs);
     if (validRs(rs)) {
 
@@ -57,73 +61,63 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         }
 
         $.ajax({
-            url: "http://localhost:8888/"+$scope.rs+"/snpedia_text.html",
+            url: "http://localhost:8888/?resource=snpedia_text&rs="+$scope.rs,
             success: function(data) {
                 $scope.snpediaText = $sce.trustAsHtml(data);
-            },
-            error: function() {
-                $scope.snpediaText = null;
             },
             async: false
         });
         
         
         $.ajax({
-            url: "http://localhost:8888/"+$scope.rs+"/hapmap_chart.html",
+            url: "http://localhost:8888/?resource=hapmap_chart_html&rs="+$scope.rs,
             success: function(data) {
                 $scope.hapmapChart = data;
-                $scope.hapmapImageSource = "http://localhost:8888/"+$scope.rs+"/hapmap_chart.png";
-            },
-            error: function() {
-                $scope.hapmapChart = null;
-                $scope.imageSource = null;
+                $scope.hapmapImageSource = "http://localhost:8888/?resource=hapmap_chart_image&rs="+$scope.rs;
             },
             async: false
         });
+    }
+    console.log($scope.hapmapChart);
+};
 
-        $scope.firstAccordion = true;
-        $scope.secondAccordion = true;
-        $scope.thirdAccordion = true;
+var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
+controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
+function($scope, $sce, $routeParams, $modal, $log) {
+
+    $scope.loading = true;
+
+    $scope.snpMap = {};
+    $scope.searches = [];
+
+    getGenomeDataFromUrl($scope, $routeParams);
+
+    $scope.removeTab = function (index) {
+        $scope.searches.splice(index, 1);
+        if (index > 0) {
+            $scope.searchUpdate($scope.searches[index - 1].rs);
+        } else if (index < $scope.searches.length) {
+            $scope.searchUpdate($scope.searches[index].rs);
         }
     };
 
-    var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
-    controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
-    function($scope, $sce, $routeParams, $modal, $log) {
+    $scope.searchUpdate = function(rs) {
+        prepareSearchResults($scope, $sce, rs);
+    };
 
-        $scope.loading = true;
+    $scope.open = function () {
 
-        $scope.snpMap = {};
-        $scope.searches = [];
+        var modalInstance = $modal.open({
+          templateUrl: 'views/help.html',
+          size: 'lg',
+        });
 
-        getGenomeDataFromUrl($scope, $routeParams);
+        modalInstance.result.then(function (selectedItem) {
+                $scope.selected = selectedItem;
+            }, function () {
+                $log.info('Modal dismissed at: ' + new Date());
+        });
+    };
 
-        $scope.removeTab = function (index) {
-            $scope.searches.splice(index, 1);
-            if (index > 0) {
-                $scope.searchUpdate($scope.searches[index - 1].rs);
-            } else if (index < $scope.searches.length) {
-                $scope.searchUpdate($scope.searches[index].rs);
-            }
-        };
-
-        $scope.searchUpdate = function(rs) {
-            prepareSearchResults($scope, $sce, rs);
-        };
-
-        $scope.open = function () {
-
-            var modalInstance = $modal.open({
-              templateUrl: 'views/help.html',
-              size: 'lg',
-            });
-
-            modalInstance.result.then(function (selectedItem) {
-                    $scope.selected = selectedItem;
-                }, function () {
-                    $log.info('Modal dismissed at: ' + new Date());
-            });
-        };
-
-        $scope.loading = false;
+    $scope.loading = false;
 }]);
