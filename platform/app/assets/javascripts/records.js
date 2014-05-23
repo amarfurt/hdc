@@ -306,9 +306,13 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// check whether we have been authorized already
 	checkAuthorized = function() {
-		$http.get("https://localhost:5000/" + userId + "/" + appId + "/authorized").
-			success(function(status) {
-				if (status.authorized) {
+		var properties = {"_id": {"$oid": userId}};
+		var fields = ["tokens." + appId];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
+			success(function(users) {
+				var tokens = users[0].tokens[appId];
+				if(tokens && tokens.accessToken) {
 					$scope.authorized = true;
 					$scope.message = "The app is authorized to import data on your behalf.";
 					$scope.loading = false;
