@@ -1,31 +1,33 @@
 var getGenomeDataFromUrl = function($scope, $routeParams) {
+
 	// parse Base64 encoded uri and get the file
-	if ($routeParams.records != null && $.isEmptyObject($scope.snpTable)) {
+	if ($routeParams.records) {
 		
-        try {
-            var record;
-            $.ajax({
-                url: atob($routeParams.records),
-                success: function(data) {
-                    record = data;
-                },
-                async: false
-            });
+        var record = "";
+        $.ajax({
+            url: atob($routeParams.records),
+            success: function(data) {
+                record = data;
+            },
+            async: false
+        });
 
-            // need to remove comments (papaparse cant do it I think?)
-            record = record.replace(/\s*#.*$/gm, '');
+        // need to remove comments first
+        record = record.replace(/\s*#.*$/gm, '');
 
-            // extract the snp data 
-            var snpData = $.parse(record, {
-                delimiter: '\t',
-                header: false,
-            }).results;
-            
-            for (var x in snpData) {
-                $scope.snpMap[snpData[x][0]] = snpData[x][3];
-            }
-        } catch (err) {}
+        // extract the snp data 
+        var snpData = $.csv.toArrays(record, {
+            separator: '\t',
+        });
+        
+        for (var x in snpData) {
+            $scope.snpMap[snpData[x][0]] = snpData[x][3];
+        }
+
 	}
+
+    // set scope variables for the loading message
+    $scope.loaded_snps_count = Object.keys($scope.snpMap).length; 
 };
 
 var validRs = function (rs) {
