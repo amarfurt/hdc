@@ -1,3 +1,9 @@
+var changeOrientation = function(genotype) {
+    swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'}
+    types = genotype.split('');
+    return swap[types[0]]+swap[types[1]];
+}
+
 var getGenomeDataFromUrl = function($scope, $routeParams) {
 
 	// parse Base64 encoded uri and get the file
@@ -36,11 +42,8 @@ var validRs = function (rs) {
 
 var prepareSearchResults = function ($scope, $sce, rs) {
 
-    $scope.snpediaText = null;
-    $scope.hapmapChart = null;
-    $scope.imageSource = null;
-
     $scope.invalidInput = !validRs(rs);
+
     if (validRs(rs)) {
 
         // tabs
@@ -55,12 +58,36 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         }
 
         // search results
+        $scope.rs = null;
+        $scope.genotype = null; 
+        $scope.orientation = null;
+        $scope.snpediaText = null;
+        $scope.hapmapChart = null;
+        $scope.imageSource = null;
+
         $scope.rs = rs;
         $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
 
         if ($scope.userHas) {
-            $scope.genotype = $scope.snpMap[$scope.rs];
+
+            var strandInfo;
+            $.ajax({
+                url: "http://localhost:8888/?resource=snpedia_strand_info&rs="+$scope.rs,
+                success: function(data) {
+                    strandInfo = data;
+                },
+                async: false
+            });
+
+            if (strandInfo === "minus") {
+                $scope.orientation = "minus";
+                $scope.genotype = changeOrientation($scope.snpMap[$scope.rs]);
+            } else {
+                $scope.orientation = "plus";
+                $scope.genotype = $scope.snpMap[$scope.rs];
+            }
         }
+
 
         $.ajax({
             url: "http://localhost:8888/?resource=snpedia_text&rs="+$scope.rs,
@@ -80,7 +107,6 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             async: false
         });
     }
-    console.log($scope.hapmapChart);
 };
 
 var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
