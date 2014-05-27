@@ -107,7 +107,6 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 	
 	// go to record creation/import dialog
 	$scope.createOrImport = function(app) {
-		console.log(app);
 		if (app.type === "create") {
 			window.location.href = jsRoutes.controllers.Records.create(app._id.$oid).url;
 		} else {
@@ -290,6 +289,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	$scope.message = null;
 	$scope.loading = true;
 	$scope.authorized = false;
+	$scope.finished = false;
 	var app = null;
 	var authWindow = null;
 	var userId = null;
@@ -314,8 +314,9 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 				var tokens = users[0].tokens[appId];
 				if(tokens && tokens.accessToken) {
 					$scope.authorized = true;
-					$scope.message = "The app is authorized to import data on your behalf.";
+					$scope.message = "Loading app...";
 					$scope.loading = false;
+					loadApp();
 				} else {
 					loadAppDetails();
 				}
@@ -326,10 +327,10 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 			});
 	}
 	
+	// get the app information
 	loadAppDetails = function() {
-		// get the app information
 		var properties = {"_id": {"$oid": appId}};
-		var fields = ["name", "type", "authorizationUrl", "consumerKey", "consumerSecret", "scopeParameters"];
+		var fields = ["name", "type", "authorizationUrl", "consumerKey", "scopeParameters"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
 			success(function(apps) {
@@ -372,18 +373,20 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// request access token
 	requestAccessToken = function(code) {
 		var data = {"code": code};
-		$http.post("https://localhost:5000/" + userId + "/" + appId + "/accessToken", JSON.stringify(data)).
+		$http.post("https://localhost:5000/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
 			success(function() {
 				$scope.authorized = true;
-				$scope.message = "The app is authorized to import data on your behalf.";
+				$scope.message = "Loading app...";
+				loadApp();
 			}).
 			error(function(err) { $scope.error = "Requesting access token failed: " + err; });
 	}
 	
-	
-	// import records
-	$scope.importRecords = function() {
-		
+	// load the app into the iframe
+	loadApp = function() {
+		var url = "https://localhost:3000/" + appId + "/#/import/" + userId + "/" + appId + "/abc";
+		$scope.importUrl = $sce.trustAsResourceUrl(url);
+		$scope.message = null;
+		$scope.loaded = true;
 	}
-	
 }]);
