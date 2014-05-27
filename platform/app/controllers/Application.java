@@ -14,6 +14,7 @@ import play.Routes;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.DateTimeUtils;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonValidation;
@@ -99,6 +100,7 @@ public class Application extends Controller {
 		user.messages.put("inbox", new HashSet<ObjectId>());
 		user.messages.put("archive", new HashSet<ObjectId>());
 		user.messages.put("trash", new HashSet<ObjectId>());
+		user.login = DateTimeUtils.now();
 		user.news = new HashSet<ObjectId>();
 		user.pushed = new HashSet<ObjectId>();
 		user.shared = new HashSet<ObjectId>();
