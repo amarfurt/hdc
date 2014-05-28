@@ -85,7 +85,7 @@
             <br/>
 
             <div class="panel panel-default">
-                <div class="panel-heading">Your genome</div>
+                <div class="panel-heading">Your genotype</div>
                 <div class="panel-body">
                     <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}} (Orientation: {{orientation}}).</div>
                     <div ng-if="!userHas">N/A</div>
@@ -93,7 +93,7 @@
             </div>
 
             <div class="panel panel-default">
-                <div class="panel-heading">General information <font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></div>
+                <div class="panel-heading">General information about the SNP<font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></div>
                 <div class="panel-body">
                     <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
                     <div ng-if="snpediaText==null">N/A</div>
