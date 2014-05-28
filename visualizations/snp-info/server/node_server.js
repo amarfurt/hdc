@@ -4,10 +4,20 @@ var url = require('url');
 var dblite = require('dblite');
 var querystring = require('querystring');
 
-var resourceNotFound = function(response) {
-response.writeHead(404, {"Content-Type": "text/plain"});
-response.end("404 Not Found\n");
+function resourceNotFound(response) {
+    response.writeHead(404, {"Content-Type": "text/plain"});
+    response.end("404 Not Found\n");
 };
+
+function hex2bin(hex)
+{
+    var bytes = [], str;
+
+    for(var i=0; i< hex.length-1; i+=2)
+        bytes.push(parseInt(hex.substr(i, 2), 16));
+
+    return String.fromCharCode.apply(String, bytes);    
+}
 
 function onRequest(request, response) {
     var query = url.parse(request.url).query; 
@@ -27,6 +37,7 @@ function onRequest(request, response) {
             [rsNumber],
             function (rows) {
                 if (rows[0] && rows[0][0]) {
+                    response.writeHead(200, {"Content-Type": "text/html"});
                     response.end(rows[0][0]);
                 } else {
                     resourceNotFound(response);
@@ -40,6 +51,7 @@ function onRequest(request, response) {
             [rsNumber],
             function (rows) {
                 if (rows[0] && rows[0][0]) {
+                    response.writeHead(200, {"Content-Type": "text/plain"});
                     response.end(rows[0][0]);
                 } else {
                     resourceNotFound(response);
@@ -53,6 +65,7 @@ function onRequest(request, response) {
             [rsNumber],
             function (rows) {
                 if (rows[0] && rows[0][0]) {
+                    response.writeHead(200, {"Content-Type": "text/html"});
                     response.end(rows[0][0]);
                 } else {
                     resourceNotFound(response);
@@ -62,12 +75,12 @@ function onRequest(request, response) {
     } else if (resource === 'hapmap_chart_image') {
         console.log("serving hapmap chart image");
         db.query(
-            'SELECT image FROM hapmap WHERE rs = ?',
+            'SELECT hex(image) FROM hapmap WHERE rs = ?',
             [rsNumber],
             function (rows) {
                 if (rows[0] && rows[0][0]) {
                     response.writeHead(200, {"Content-type" : "image/png"});
-                    response.end(rows[0][0], 'binary');
+                    response.end(hex2bin(rows[0][0]), 'binary');
                 } else {
                     resourceNotFound(response);
                 }
