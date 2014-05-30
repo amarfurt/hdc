@@ -86,6 +86,12 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$routeParams', function(
 	
 }]);
 
-jawboneUp.controller('DetailsCtrl', ['$scope', function($scope) {
-	
+jawboneUp.controller('DetailsCtrl', ['$scope', '$routeParams', function($scope, $routeParams) {
+	// init
+    $scope.loading = true;
+
+    // parse Base64 encoded JSON record
+    var record = JSON.parse(atob($routeParams.record));
+    $scope.output = JSON.stringify(record, null, "\t");
+    $scope.loading = false;
 }]);
