@@ -13,6 +13,9 @@ import csv
 import sqlite3
 from plumbum.cmd import gunzip
 
+def load_accepted_rsnumbers(filename):
+    return set(rs.lower for rs in open(filename).read().split('\n'))
+
 def get_snpedia_snp_names():
     # use local cache if possible
     if os.path.isfile('snpcache.json'):
@@ -22,13 +25,13 @@ def get_snpedia_snp_names():
         print 'creating cache for snps in snpedia ...'
         site = wiki.Wiki('http://bots.snpedia.com/api.php')
         snps = category.Category(site, 'Is_a_snp')
-        snpedia = []
+        snpedia = set() 
         for article in snps.getAllMembersGen(namespaces=[0]):
-            snpedia.append(article.title.lower())
+            snpedia.add(article.title.lower())
         open('snpcache.json', 'w').write(json.dumps(snpedia))
     return snpedia
 
-def download_and_add_snpedia_data(database, max_entries):
+def download_and_add_snpedia_data(database, accepted_rsnumbers):
     print 'downloading snpedia pages and generating text html ...'
 
     conn = sqlite3.connect(database) 
@@ -41,9 +44,9 @@ def download_and_add_snpedia_data(database, max_entries):
     # filter out snp names that aren't rs numbers
     rsnumbers = rs_filter(snpedia)
     
-    # limit size
-    if max_entries > 0:
-        rsnumbers = rsnumbers[:max_entries]
+    # filter out rsnumbers we don't want 
+    if accepted_rsnumbers:
+        rsnumbers = rsnumbers & accepted_rsnumbers
 
     for idx, rs in enumerate(rsnumbers):
         print 'processing snp {0} out of {1} ...'.format(idx + 1, len(rsnumbers))
@@ -175,13 +178,13 @@ def create_hapmap_database():
                 pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
 
                 if re.search(r'genotype', f):
-                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
+                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0].lower(), pop, row[10], row[11], row[13], row[14], row[16], row[17]))
                 else:
-                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
+                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0].lower(), pop, row[10], row[11], row[13], row[14]))
         conn.commit()
         conn.close()
 
-def add_final_hapmap_data(database, max_entries):
+def add_final_hapmap_data(database, accepted_rsnumbers):
     print 'generating hapmap charts ...'
 
     conn = sqlite3.connect(database) 
@@ -195,10 +198,11 @@ def add_final_hapmap_data(database, max_entries):
     html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{{{{hapmapImageSource}}}}"></td></tr></tbody></table>'
     populations = ['ASW','CEU','CHB','CHD','GIH','JPT','LWK','MEX','MKK','TSI','YRI']
 
-    snps = list(hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
+    snps = set(hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
 
-    if max_entries > 0:
-        snps = snps[:max_entries]
+    # filter out rsnumbers we don't want 
+    if accepted_rsnumbers:
+        snps = snps & accepted_rsnumbers
 
     for idx, row in enumerate(snps): 
         if (idx + 1) % 100 == 0:
@@ -259,47 +263,67 @@ def get_omim_text(rsnumbers):
             urllib.urlretrieve(url, 'test.html')
 
 def download_and_add_dbsnp_data(database, max_entries):
-    print 'creating dbsnp sqlite database ...'
+    print 'downloading, parsing and adding dbsnp data ...'
+
     conn = sqlite3.connect(database) 
     c = conn.cursor()
 
     c.execute('''CREATE TABLE dbsnp
-            (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+            (rs text, freq real)''')
 
-    hapmap_files = os.listdir('archive')
-    for idx, f in enumerate(hapmap_files):
-        print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
+    # get index
+    query = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
+    response = urllib.urlopen(query)
+    html = response.read()
+    soup = BeautifulSoup(html)
 
-        reader = csv.reader(open('archive/' + f), delimiter=' ', quotechar='#')
+    # download and parse files 
+    prefix = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
+    filenames = set(a['href'] for a in soup.find_all('a') if re.search(r'\.xml\.gz', a['href']))
+    for idx, filename in enumerate(filenames): 
+        print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
+        urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
+        gunzip('dbsnp_tmp.xml.gz')
 
-        next(reader, None) # skip header
-        for row in reader:
+        soup = BeautifulSoup(open('dbsnp_tmp.xml').read())
+        for rs_entry in soup.find_all('rs'):
 
-            pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
+        print 'creating dbsnp sqlite database ...'
+        
+        hapmap_files = os.listdir('archive')
+        for idx, f in enumerate(hapmap_files):
+            print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
 
-            if re.search(r'genotype', f):
-                c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
-            else:
-                c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
-    conn.commit()
-    conn.close()
+            reader = csv.reader(open('archive/' + f), delimiter=' ', quotechar='#')
 
-def generate_complete_database(database='snp_snip.db', max_entries=0):
+            next(reader, None) # skip header
+            for row in reader:
+
+                pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
+
+                if re.search(r'genotype', f):
+                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
+                else:
+                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
+        conn.commit()
+        conn.close()
+
+def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set()):
     
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    download_and_add_snpedia_data(database, max_entries)
+    download_and_add_snpedia_data(database, accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    download_and_add_hapmap_data(database, max_entries)
+    download_and_add_hapmap_data(database, accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    # download_and_add_dbsnp_data(database, max_entries)
+    download_and_add_dbsnp_data(database, accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        generate_complete_database(max_entries=int(sys.argv[1]))
+        generate_complete_database(accepted_rsnumbers=load_accepted_rsnumbers(sys.argv[1]))
     else:
         generate_complete_database()
 
