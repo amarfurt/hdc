@@ -345,7 +345,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	$scope.authorize = function() {
 		$scope.message = "Authorization in progress...";
 		if (app.type === "oauth2") {
-			var redirectUri = "https://localhost:9000/records/redirect/" + app._id.$oid;
+			var redirectUri = "https://" + window.location.hostname + ":9000/records/redirect/" + app._id.$oid;
 			var parameters = "?response_type=code" + "&client_id=" + app.consumerKey + "&scope=" + app.scopeParameters +
 				"&redirect_uri=" + redirectUri;
 			authWindow = window.open(app.authorizationUrl + encodeURI(parameters));
@@ -357,7 +357,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// authorization granted
 	onAuthorized = function(event) {
-		if (event.origin === "https://localhost:9000" && event.source === authWindow) {
+		if (event.origin === "https://" + window.location.hostname + ":9000" && event.source === authWindow) {
 			$scope.$apply(function() {
 				$scope.message = "User authorization granted. Requesting access token...";
 			});
@@ -373,7 +373,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// request access token
 	requestAccessToken = function(code) {
 		var data = {"code": code};
-		$http.post("https://localhost:5000/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
+		$http.post("https://" + window.location.hostname + ":5000/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
 			success(function() {
 				$scope.authorized = true;
 				$scope.message = "Loading app...";
@@ -384,7 +384,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// load the app into the iframe
 	loadApp = function() {
-		var url = "https://localhost:3000/" + appId + "/#/import/" + userId + "/" + appId + "/abc";
+		var url = "https://" + window.location.hostname + ":3000/" + appId + "/#/import/" + userId + "/" + appId + "/abc";
 		$scope.importUrl = $sce.trustAsResourceUrl(url);
 		$scope.message = null;
 		$scope.loaded = true;
