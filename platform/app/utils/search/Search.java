@@ -43,7 +43,7 @@ public class Search {
 		USER, APP, VISUALIZATION, NEWS
 	}
 
-	private static final String CLUSTER_NAME = "healthdata";
+	private static final String CLUSTER_NAME = "elasticsearch";
 	private static final String PUBLIC = "public"; // public index visible to all users
 	private static final String TITLE = "title";
 	private static final String SUGGEST = "suggest"; // used for autocompletion

@@ -30,7 +30,7 @@
 # multiple clusters on the same network, make sure you're using unique names.
 #
 # cluster.name: elasticsearch
-cluster.name: healthdata
+cluster.name: elasticsearch
 
 #################################### Node #####################################
 
@@ -159,6 +159,7 @@ cluster.name: healthdata
 # Path to log files:
 #
 # path.logs: /path/to/logs
+path.logs: /home/amarfurt/hdc/platform/logs
 
 # Path to where plugins are installed:
 #
