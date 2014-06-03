@@ -64,6 +64,8 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         $scope.snpediaText = null;
         $scope.hapmapChart = null;
         $scope.imageSource = null;
+        $scope.geneId = null;
+        $scope.symbol = null;
 
         $scope.rs = rs;
         $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
@@ -88,6 +90,21 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             }
         }
 
+        $.ajax({
+            url: "http://localhost:8888/?resource=dbsnp_gene_id&rs="+$scope.rs,
+            success: function(data) {
+                $scope.geneId = data;
+            },
+            async: false
+        });
+
+        $.ajax({
+            url: "http://localhost:8888/?resource=dbsnp_symbol&rs="+$scope.rs,
+            success: function(data) {
+                $scope.symbol = data;
+            },
+            async: false
+        });
 
         $.ajax({
             url: "http://localhost:8888/?resource=snpedia_text&rs="+$scope.rs,

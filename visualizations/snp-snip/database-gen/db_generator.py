@@ -245,25 +245,25 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     conn.close()
     hapmap_conn.close()
 
-def download_and_add_hapmap_data(database, max_entries):
+def download_and_add_hapmap_data(database, accepted_rsnumbers):
     download_hapmap_data()
     create_hapmap_database()
-    add_final_hapmap_data(database, max_entries)
+    add_final_hapmap_data(database, accepted_rsnumbers)
 
-def get_omim_text(rsnumbers):
-    for rs in rsnumbers:
-        query = 'http://www.ncbi.nlm.nih.gov/omim/?term='+rs+'&report=uilist&format=text'
-        response = urllib2.urlopen(query)
-        html = response.read()
-        soup = BeautifulSoup(html)
-        entry = soup.pre.text.split('\n')[0]
-        if entry:
-            url = 'http://api.omim.org/api/entry?apiKey=45CB5D7EF90D6522646B46F5095277D7B225F453&include=text&format=html&mimNumber=' + entry
-            print url
-            # urllib.urlretrieve(url, 'snp_db/' + rs + '/omim_entry.html')
-            urllib.urlretrieve(url, 'test.html')
+# def get_omim_text(rsnumbers):
+#     for rs in rsnumbers:
+#         query = 'http://www.ncbi.nlm.nih.gov/omim/?term='+rs+'&report=uilist&format=text'
+#         response = urllib2.urlopen(query)
+#         html = response.read()
+#         soup = BeautifulSoup(html)
+#         entry = soup.pre.text.split('\n')[0]
+#         if entry:
+#             url = 'http://api.omim.org/api/entry?apiKey=45CB5D7EF90D6522646B46F5095277D7B225F453&include=text&format=html&mimNumber=' + entry
+#             print url
+#             # urllib.urlretrieve(url, 'snp_db/' + rs + '/omim_entry.html')
+#             urllib.urlretrieve(url, 'test.html')
 
-def download_and_add_dbsnp_data(database, max_entries):
+def download_and_add_dbsnp_data(database, accepted_rsnumbers):
     print 'downloading, parsing and adding dbsnp data ...'
 
     conn = sqlite3.connect(database) 
@@ -273,7 +273,7 @@ def download_and_add_dbsnp_data(database, max_entries):
             (rs text, gene_id text, symbol text)''')
 
     # get index
-    query = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
+    query = 'http://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
     response = urllib.urlopen(query)
     html = response.read()
     soup = BeautifulSoup(html)
@@ -284,21 +284,47 @@ def download_and_add_dbsnp_data(database, max_entries):
     for idx, filename in enumerate(filenames): 
 
         print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
-        urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
-        gunzip('dbsnp_tmp.xml.gz')
+        # urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
+        # gunzip('dbsnp_tmp.xml.gz')
 
-        parser = ElementTree.iterparse('dbsnp_tmp.xml') 
+        namespace = '{http://www.ncbi.nlm.nih.gov/SNP/docsum}'
+        parser = ElementTree.iterparse('dbsnp_tmp.xml', events=['start', 'end'])
+        inside_rs_element = False
+        children = set() 
         for event, element in parser:
-            if element.tag == 'Rs':
-                rs = element.get('rsId')
-                gene_id = element.find('Assembly').find('Component').find('MapLoc').find('FxnSet').get('geneId')
-                symbol = element.find('Assembly').find('Component').find('MapLoc').find('FxnSet').get('symbol')
-                if not accepted_rsnumbers or rs in accepted_rsnumbers:
-                    c.execute('INSERT INTO dbsnp VALUES (?, ?, ?)', ('rs'+rs, gene_id, symbol))
-            element.clear()
+            if event == 'start' and element.tag == namespace+'Rs':
+                # must remember that we are inside an rs element so prematurely clear child nodes
+                inside_rs_element = True
+            if event == 'end':
+                if element.tag == namespace+'Rs':
+                    rs = 'rs' + element.get('rsId')
+                    if not accepted_rsnumbers or rs in accepted_rsnumbers:
+                        assembly = element.find(namespace+'Assembly')
+                        if assembly is not None:
+                            component = assembly.find(namespace+'Component')
+                            if component is not None:
+                                maploc = component.find(namespace+'MapLoc')
+                                if maploc is not None:
+                                    fxnset = maploc.find(namespace+'FxnSet')
+                                    if fxnset is not None:
+                                        gene_id = fxnset.get('geneId')
+                                        symbol = fxnset.get('symbol')
+                                        c.execute('INSERT INTO dbsnp VALUES (?, ?, ?)', (rs, gene_id, symbol))
 
-        os.remove('dbsnp_tmp.xml')
-        # TODO remove
+                    # leaving the rs element, so the children can now safely be cleared
+                    inside_rs_element = False
+                    for child in children:
+                        child.clear()
+                    children.clear()
+
+                if inside_rs_element:
+                    # can't clear it yet, but must remember to clear later
+                    children.add(element)
+                else:
+                    element.clear()
+
+        # os.remove('dbsnp_tmp.xml')
+        # TODO remove, no break
         break
 
     conn.commit()

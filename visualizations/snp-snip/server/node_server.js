@@ -86,13 +86,40 @@ function onRequest(request, response) {
                 }
             }
         ); 
-    } else {
+    } else if (resource === 'dbsnp_gene_id') {
+        console.log("serving hapmap chart image");
+        db.query(
+            'SELECT gene_id FROM dbsnp WHERE rs = ?',
+            [rsNumber],
+            function (rows) {
+                if (rows[0] && rows[0][0]) {
+                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.end(rows[0][0]);
+                } else {
+                    resourceNotFound(response);
+                }
+            }
+        ); 
+    }  else if (resource === 'dbsnp_symbol') {
+        console.log("serving hapmap chart image");
+        db.query(
+            'SELECT symbol FROM dbsnp WHERE rs = ?',
+            [rsNumber],
+            function (rows) {
+                if (rows[0] && rows[0][0]) {
+                    response.writeHead(200, {"Content-Type": "text/plain"});
+                    response.end(rows[0][0]);
+                } else {
+                    resourceNotFound(response);
+                }
+
+            }
+        ); 
+    }  else {
         resourceNotFound(response);
         response.end();
     }
-
 }
 
 http.createServer(onRequest).listen(8888);
-console.log("server has started.");
-
+console.log("server has started. Listening on port 8888 ...");
