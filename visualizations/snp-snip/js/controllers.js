@@ -109,8 +109,8 @@ var prepareSearchResults = function ($scope, $sce, rs) {
     }
 };
 
-var controllers = angular.module('snpInfoControllers', ['ui.bootstrap', 'compile']);
-controllers.controller('SnpInfoCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
+var controllers = angular.module('snpSnipControllers', ['ui.bootstrap', 'compile']);
+controllers.controller('SnpSnipCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
 function($scope, $sce, $routeParams, $modal, $log) {
 
     $scope.loading = true;

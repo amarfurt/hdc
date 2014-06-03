@@ -12,6 +12,7 @@ import sys
 import csv
 import sqlite3
 from plumbum.cmd import gunzip
+from xml.etree import ElementTree
 
 def load_accepted_rsnumbers(filename):
     return set(rs.lower for rs in open(filename).read().split('\n'))
@@ -269,7 +270,7 @@ def download_and_add_dbsnp_data(database, max_entries):
     c = conn.cursor()
 
     c.execute('''CREATE TABLE dbsnp
-            (rs text, freq real)''')
+            (rs text, gene_id text, symbol text)''')
 
     # get index
     query = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
@@ -281,42 +282,37 @@ def download_and_add_dbsnp_data(database, max_entries):
     prefix = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
     filenames = set(a['href'] for a in soup.find_all('a') if re.search(r'\.xml\.gz', a['href']))
     for idx, filename in enumerate(filenames): 
+
         print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
         urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
         gunzip('dbsnp_tmp.xml.gz')
 
-        soup = BeautifulSoup(open('dbsnp_tmp.xml').read())
-        for rs_entry in soup.find_all('rs'):
+        parser = ElementTree.iterparse('dbsnp_tmp.xml') 
+        for event, element in parser:
+            if element.tag == 'Rs':
+                rs = element.get('rsId')
+                gene_id = element.find('Assembly').find('Component').find('MapLoc').find('FxnSet').get('geneId')
+                symbol = element.find('Assembly').find('Component').find('MapLoc').find('FxnSet').get('symbol')
+                if not accepted_rsnumbers or rs in accepted_rsnumbers:
+                    c.execute('INSERT INTO dbsnp VALUES (?, ?, ?)', ('rs'+rs, gene_id, symbol))
+            element.clear()
 
-        print 'creating dbsnp sqlite database ...'
-        
-        hapmap_files = os.listdir('archive')
-        for idx, f in enumerate(hapmap_files):
-            print 'processing file {0} out of {1} ...'.format(idx + 1, len(hapmap_files))
+        os.remove('dbsnp_tmp.xml')
+        # TODO remove
+        break
 
-            reader = csv.reader(open('archive/' + f), delimiter=' ', quotechar='#')
-
-            next(reader, None) # skip header
-            for row in reader:
-
-                pop = re.search(r'(ASW)|(CEU)|(CHB)|(CHD)|(GIH)|(JPT)|(LWK)|(MEX)|(MKK)|(TSI)|(YRI)', f).group(0)
-
-                if re.search(r'genotype', f):
-                    c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14], row[16], row[17]))
-                else:
-                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0], pop, row[10], row[11], row[13], row[14]))
-        conn.commit()
-        conn.close()
+    conn.commit()
+    conn.close()
 
 def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set()):
     
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    download_and_add_snpedia_data(database, accepted_rsnumbers)
+    # download_and_add_snpedia_data(database, accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    download_and_add_hapmap_data(database, accepted_rsnumbers)
+    # download_and_add_hapmap_data(database, accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
     download_and_add_dbsnp_data(database, accepted_rsnumbers)
