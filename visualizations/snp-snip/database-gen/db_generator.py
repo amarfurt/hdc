@@ -15,7 +15,7 @@ from plumbum.cmd import gunzip
 from xml.etree import ElementTree
 
 def load_accepted_rsnumbers(filename):
-    return set(rs.lower for rs in open(filename).read().split('\n'))
+    return rs_filter(rs.rstrip().lower() for rs in open(filename).read().split('\n'))
 
 def get_snpedia_snp_names():
     # use local cache if possible
@@ -36,6 +36,7 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
     print 'downloading snpedia pages and generating text html ...'
 
     conn = sqlite3.connect(database) 
+    conn.text_factory = str
     c = conn.cursor()
 
     c.execute('CREATE TABLE snpedia (rs text, html text, strand_info text)')
@@ -69,7 +70,7 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
 
 
 def rs_filter(snp_names):
-    return [snp for snp in snp_names if re.match(r'rs\d+', snp)]
+    return set(snp for snp in snp_names if re.match(r'rs\d+', snp))
 
 def extract_snpedia_strand_info(page):
     # the strand info is contained between these unique tags
@@ -284,8 +285,8 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
     for idx, filename in enumerate(filenames): 
 
         print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
-        # urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
-        # gunzip('dbsnp_tmp.xml.gz')
+        urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
+        gunzip('dbsnp_tmp.xml.gz')
 
         namespace = '{http://www.ncbi.nlm.nih.gov/SNP/docsum}'
         parser = ElementTree.iterparse('dbsnp_tmp.xml', events=['start', 'end'])
