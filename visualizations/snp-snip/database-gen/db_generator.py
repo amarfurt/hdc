@@ -19,17 +19,17 @@ def load_accepted_rsnumbers(filename):
 
 def get_snpedia_snp_names():
     # use local cache if possible
-    if os.path.isfile('snpcache.json'):
-        snpedia = json.loads(open('snpcache.json').read())
+    # if os.path.isfile('snpcache.json'):
+    #     snpedia = json.loads(open('snpcache.json').read())
     # otherwise get them from snpedia and create the cache
-    else:
-        print 'creating cache for snps in snpedia ...'
-        site = wiki.Wiki('http://bots.snpedia.com/api.php')
-        snps = category.Category(site, 'Is_a_snp')
-        snpedia = set() 
-        for article in snps.getAllMembersGen(namespaces=[0]):
-            snpedia.add(article.title.lower())
-        open('snpcache.json', 'w').write(json.dumps(snpedia))
+    # else:
+        # print 'creating cache for snps in snpedia ...'
+    site = wiki.Wiki('http://bots.snpedia.com/api.php')
+    snps = category.Category(site, 'Is_a_snp')
+    snpedia = set() 
+    for article in snps.getAllMembersGen(namespaces=[0]):
+        snpedia.add(article.title.lower())
+        # open('snpcache.json', 'w').write(json.dumps(snpedia))
     return snpedia
 
 def download_and_add_snpedia_data(database, accepted_rsnumbers):
@@ -323,9 +323,7 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
                 else:
                     element.clear()
 
-        # os.remove('dbsnp_tmp.xml')
-        # TODO remove, no break
-        break
+        os.remove('dbsnp_tmp.xml')
 
     conn.commit()
     conn.close()
@@ -335,10 +333,10 @@ def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set())
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    # download_and_add_snpedia_data(database, accepted_rsnumbers)
+    download_and_add_snpedia_data(database, accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    # download_and_add_hapmap_data(database, accepted_rsnumbers)
+    download_and_add_hapmap_data(database, accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
     download_and_add_dbsnp_data(database, accepted_rsnumbers)

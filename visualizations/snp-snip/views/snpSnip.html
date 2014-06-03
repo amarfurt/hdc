@@ -93,6 +93,14 @@
             </div>
 
             <div class="panel panel-default">
+                <div class="panel-heading">Basic information about the SNP <font size="1">(Data taken from <a href="http://www.ncbi.nlm.nih.gov/SNP/">dbSNP</a>)</font></div>
+                <div class="panel-body">
+                    <div ng-if="symbol!=null && geneId!=null">SNP {{rs}} is on gene <a href="http://www.ncbi.nlm.nih.gov/gene?cmd=Retrieve&dopt=Graphics&list_uids={{geneId}}">{{symbol}}</a>.</div>
+                    <div ng-if="symbol==null || geneId==null">N/A</div>
+                </div>
+            </div>
+
+            <div class="panel panel-default">
                 <div class="panel-heading">General information about the SNP <font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></div>
                 <div class="panel-body">
                     <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
