@@ -30,6 +30,10 @@ public class AppsAPI extends Controller {
 
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result createRecord(String userIdString, String appIdString) {
+		// allow cross origin request from app server
+		String appServer = Play.application().configuration().getString("apps.server");
+		response().setHeader("Access-Control-Allow-Origin", "https://" + appServer);
+
 		// check whether the request is complete
 		JsonNode json = request().body().asJson();
 		try {
@@ -56,10 +60,6 @@ public class AppsAPI extends Controller {
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
-
-		// allow cross origin request from app server
-		String appServer = Play.application().configuration().getString("apps.server");
-		response().setHeader("Access-Control-Allow-Origin", "https://" + appServer);
 		return ok();
 	}
 
