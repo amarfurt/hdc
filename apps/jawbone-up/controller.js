@@ -27,7 +27,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$routeParams', function(
 			{"name": "Workouts", "title": "Workout: ", "endpoint": "/nudge/api/v.1.1/users/@me/workouts"}
 	];
 	var baseUrl = "https://jawbone.com";
-	var nodeUrl = "https://localhost:5000";
+	var nodeUrl = "https://" + window.location.hostname + ":5000";
 
 	// start the importing of records
 	$scope.startImport = function() {
@@ -73,7 +73,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$routeParams', function(
 				"name": $scope.measure.title + record.title,
 				"description": "jawbone up armband " + $scope.measure.title + record.title
 		};
-		$http.post("https://localhost:9000/" + $routeParams.userId + "/apps/" + $routeParams.appId + "/create", JSON.stringify(data)).
+		$http.post("https://" + window.location.hostname + ":9000/" + $routeParams.userId + "/apps/" + $routeParams.appId + "/create", JSON.stringify(data)).
 			success(function() {
 				$scope.saved += 1;
 				if (!$scope.extracting && !$scope.error && $scope.extracted === $scope.saved) {
