@@ -19,6 +19,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.suggest.SuggestResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -55,7 +57,10 @@ public class Search {
 
 	public static void connect() {
 		// start a client node (holds no data)
-		node = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).node();
+		Settings settings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("transcport.tcp.port", "9300-9400")
+				.put("discovery.zen.ping.multicast.enabled", "false").put("discovery.zen.ping.multicast.enabled", "false")
+				.put("discovery.zen.ping.unicast.hosts", "localhost").build();
+		node = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).settings(settings).node();
 		client = node.client();
 	}
 
@@ -88,10 +93,10 @@ public class Search {
 	public static XContentBuilder getMapping() throws SearchException {
 		if (mapping == null) {
 			try {
-				mapping = jsonBuilder().startObject().startObject("mapping").startObject("properties")
-						.startObject("title").field("type", "string").endObject().startObject("content")
-						.field("type", "string").endObject().startObject("suggest").field("type", "completion")
-						.field("payloads", true).endObject().endObject().endObject().endObject();
+				mapping = jsonBuilder().startObject().startObject("mapping").startObject("properties").startObject("title")
+						.field("type", "string").endObject().startObject("content").field("type", "string").endObject()
+						.startObject("suggest").field("type", "completion").field("payloads", true).endObject().endObject().endObject()
+						.endObject();
 			} catch (IOException e) {
 				throw new SearchException(e);
 			}
@@ -122,8 +127,7 @@ public class Search {
 		}
 
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
-			client.admin().indices().prepareCreate(userId.toString()).addMapping("_default_", getMapping()).execute()
-					.actionGet();
+			client.admin().indices().prepareCreate(userId.toString()).addMapping("_default_", getMapping()).execute().actionGet();
 		}
 	}
 
@@ -164,8 +168,7 @@ public class Search {
 	/**
 	 * Add document to search index. Title is used for autocompletion, content for full-text search.
 	 */
-	public static void add(ObjectId userId, String type, ObjectId modelId, String title, String content)
-			throws SearchException {
+	public static void add(ObjectId userId, String type, ObjectId modelId, String title, String content) throws SearchException {
 		add(userId.toString(), type, modelId.toString(), title, content);
 	}
 
@@ -187,8 +190,8 @@ public class Search {
 			client.prepareIndex(index, type, id)
 					.setSource(
 							jsonBuilder().startObject().field(TITLE, title).startObject(SUGGEST).array("input", split)
-									.field("output", title).startObject("payload").field("type", type).field("id", id)
-									.endObject().endObject().field(CONTENT, content).endObject()).execute().actionGet();
+									.field("output", title).startObject("payload").field("type", type).field("id", id).endObject()
+									.endObject().field(CONTENT, content).endObject()).execute().actionGet();
 		} catch (ElasticSearchException e) {
 			throw new SearchException(e);
 		} catch (IOException e) {
@@ -200,8 +203,7 @@ public class Search {
 		update(userId, type, modelId, title, null);
 	}
 
-	public static void update(ObjectId userId, String type, ObjectId modelId, String title, String content)
-			throws SearchException {
+	public static void update(ObjectId userId, String type, ObjectId modelId, String title, String content) throws SearchException {
 		delete(userId, type, modelId);
 		add(userId, type, modelId, title, content);
 	}
@@ -259,8 +261,8 @@ public class Search {
 		}
 
 		// search for completion suggestions in index
-		SuggestionBuilder<CompletionSuggestionBuilder> suggestionBuilder = new CompletionSuggestionBuilder("suggestion")
-				.text(query).field("suggest");
+		SuggestionBuilder<CompletionSuggestionBuilder> suggestionBuilder = new CompletionSuggestionBuilder("suggestion").text(query).field(
+				"suggest");
 		SuggestResponse response = client.prepareSuggest(index).addSuggestion(suggestionBuilder).execute().actionGet();
 		for (Suggestion<? extends Entry<? extends Option>> suggestion : response.getSuggest()) {
 			for (Entry<? extends Option> entry : suggestion) {
@@ -317,20 +319,17 @@ public class Search {
 		return searchResults.get(getType(type));
 	}
 
-	public static List<SearchResult> searchRecords(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords,
-			String query) {
+	public static List<SearchResult> searchRecords(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords, String query) {
 		// return if not connected
 		if (client == null) {
 			return null;
 		}
 
 		// search in user's records
-		ListenableActionFuture<SearchResponse> privateRecordsQuery = searchPrivateIndex(userId, query, "record")
-				.execute();
+		ListenableActionFuture<SearchResponse> privateRecordsQuery = searchPrivateIndex(userId, query, "record").execute();
 
 		// search in other users' visible records
-		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query)
-				.execute();
+		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query).execute();
 
 		// wait for the results
 		SearchResponse privateRecordsResponse = privateRecordsQuery.actionGet();
@@ -350,8 +349,7 @@ public class Search {
 	/**
 	 * Search in all the user's data and all visible records.
 	 */
-	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords,
-			String query) {
+	public static Map<String, List<SearchResult>> search(ObjectId userId, Map<String, Set<ObjectId>> visibleRecords, String query) {
 		// return if not connected
 		if (client == null) {
 			return null;
@@ -361,8 +359,7 @@ public class Search {
 		ListenableActionFuture<SearchResponse> privateIndexQuery = searchPrivateIndex(userId, query).execute();
 
 		// search in other users' visible records
-		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query)
-				.execute();
+		ListenableActionFuture<SearchResponse> visibleRecordsQuery = searchVisibleRecords(visibleRecords, query).execute();
 
 		// search in public index
 		ListenableActionFuture<SearchResponse> publicIndexQuery = searchPublicIndex(query).execute();
@@ -373,8 +370,7 @@ public class Search {
 		SearchResponse publicIndexResponse = publicIndexQuery.actionGet();
 
 		// construct response
-		Map<String, List<SearchResult>> searchResults = getSearchResults(privateIndexResponse, visibleRecordsResponse,
-				publicIndexResponse);
+		Map<String, List<SearchResult>> searchResults = getSearchResults(privateIndexResponse, visibleRecordsResponse, publicIndexResponse);
 
 		// sort the results of the records according to its score
 		// rest is already sorted
@@ -394,8 +390,7 @@ public class Search {
 	}
 
 	private static SearchRequestBuilder searchPublicIndex(String query) {
-		SearchRequestBuilder builder = client.prepareSearch(PUBLIC).setQuery(
-				QueryBuilders.multiMatchQuery(query, TITLE, CONTENT));
+		SearchRequestBuilder builder = client.prepareSearch(PUBLIC).setQuery(QueryBuilders.multiMatchQuery(query, TITLE, CONTENT));
 		return addHighlighting(builder);
 	}
 
