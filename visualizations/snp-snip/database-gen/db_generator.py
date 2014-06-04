@@ -39,6 +39,7 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
     conn.text_factory = str
     c = conn.cursor()
 
+    c.execute('DROP TABLE IF EXISTS snpedia')
     c.execute('CREATE TABLE snpedia (rs text, html text, strand_info text)')
 
     # get the names of all snps in snpedia
@@ -162,9 +163,11 @@ def create_hapmap_database():
         conn = sqlite3.connect('hapmap.db') 
         c = conn.cursor()
 
+        c.execute('DROP TABLE IF EXISTS genotype')
         c.execute('''CREATE TABLE genotype
                 (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
 
+        c.execute('DROP TABLE IF EXISTS allele')
         c.execute('''CREATE TABLE allele
                 (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
 
@@ -194,23 +197,22 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     c = conn.cursor()
     hapmap_c = hapmap_conn.cursor()
 
+    c.execute('DROP TABLE IF EXISTS hapmap')
     c.execute('CREATE TABLE hapmap (rs text, html text, image blob)')
 
     url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
     html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{{{{hapmapImageSource}}}}"></td></tr></tbody></table>'
     populations = ['ASW','CEU','CHB','CHD','GIH','JPT','LWK','MEX','MKK','TSI','YRI']
 
-    snps = set(hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
+    snps = set(row[0] for row in hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
 
     # filter out rsnumbers we don't want 
     if accepted_rsnumbers:
         snps = snps & accepted_rsnumbers
 
-    for idx, row in enumerate(snps): 
+    for idx, rs in enumerate(snps): 
         if (idx + 1) % 100 == 0:
             print '{0} out of {1} snps processed ...'.format(idx + 1, len(snps))
-
-        rs = row[0] 
 
         result = list(hapmap_c.execute('SELECT * FROM genotype WHERE rs = ?', (rs,)))
 
@@ -270,6 +272,7 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
     conn = sqlite3.connect(database) 
     c = conn.cursor()
 
+    c.execute('DROP TABLE IF EXISTS dbsnp')
     c.execute('''CREATE TABLE dbsnp
             (rs text, gene_id text, symbol text)''')
 
