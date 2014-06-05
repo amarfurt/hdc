@@ -58,8 +58,8 @@ function onRequest(request, response) {
                 }
             }
         ); 
-    } else if (resource === 'hapmap_chart_html') {
-        console.log("serving hapmap chart html");
+    } else if (resource === 'hapmap_chart') {
+        console.log("serving hapmap chart");
         db.query(
             'SELECT html FROM hapmap WHERE rs = ?',
             [rsNumber],
@@ -72,21 +72,7 @@ function onRequest(request, response) {
                 }
             }
         ); 
-    } else if (resource === 'hapmap_chart_image') {
-        console.log("serving hapmap chart image");
-        db.query(
-            'SELECT hex(image) FROM hapmap WHERE rs = ?',
-            [rsNumber],
-            function (rows) {
-                if (rows[0] && rows[0][0]) {
-                    response.writeHead(200, {"Content-type" : "image/png"});
-                    response.end(hex2bin(rows[0][0]), 'binary');
-                } else {
-                    resourceNotFound(response);
-                }
-            }
-        ); 
-    } else if (resource === 'dbsnp_gene_id') {
+    }  else if (resource === 'dbsnp_gene_id') {
         console.log("serving hapmap chart image");
         db.query(
             'SELECT gene_id FROM dbsnp WHERE rs = ?',

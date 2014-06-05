@@ -112,7 +112,7 @@
                 <div class="panel-heading">Genotype frequencies in different populations <font size="1">(Data taken from <a href="http://www.hapmap.ncbi.nlm.nih.gov">HapMap</a>)</font></div>
                 <div class="panel-body">
                     <div ng-if="hapmapChart!=null">
-                        <div compile="hapmapChart"></div>
+                        <div ng-bind-html="hapmapChart"></div>
                         <br/>
                         <p>
                             <font size="1">

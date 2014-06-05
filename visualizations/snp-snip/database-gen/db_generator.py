@@ -12,7 +12,7 @@ import sys
 import csv
 import sqlite3
 from plumbum.cmd import gunzip
-from xml.etree import ElementTree
+from lxml import etree
 
 def load_accepted_rsnumbers(filename):
     return rs_filter(rs.rstrip().lower() for rs in open(filename).read().split('\n'))
@@ -198,10 +198,10 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     hapmap_c = hapmap_conn.cursor()
 
     c.execute('DROP TABLE IF EXISTS hapmap')
-    c.execute('CREATE TABLE hapmap (rs text, html text, image blob)')
+    c.execute('CREATE TABLE hapmap (rs text, html text)')
 
     url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
-    html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{{{{hapmapImageSource}}}}"></td></tr></tbody></table>'
+    html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
     populations = ['ASW','CEU','CHB','CHD','GIH','JPT','LWK','MEX','MKK','TSI','YRI']
 
     snps = set(row[0] for row in hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
@@ -235,14 +235,13 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
 
         # prepare html
         row = result[0]
-
-        html = html_template.format(row[2], row[4], row[6])
+        html = html_template.format(row[2], row[4], row[6], url)
 
         # prepare image
-        image = urllib.urlopen(url).read()
+        # image = urllib.urlopen(url).read()
 
-        # insert both into the database 
-        c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
+        # c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
+        c.execute('INSERT INTO hapmap VALUES (?, ?)', (rs, html))
 
     conn.commit()
     conn.close()
@@ -285,24 +284,27 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
     # download and parse files 
     prefix = 'ftp://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
     filenames = set(a['href'] for a in soup.find_all('a') if re.search(r'\.xml\.gz', a['href']))
+    namespace = '{http://www.ncbi.nlm.nih.gov/SNP/docsum}'
     for idx, filename in enumerate(filenames): 
 
         print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
-        urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
-        gunzip('dbsnp_tmp.xml.gz')
 
-        namespace = '{http://www.ncbi.nlm.nih.gov/SNP/docsum}'
-        parser = ElementTree.iterparse('dbsnp_tmp.xml', events=['start', 'end'])
+        urllib.urlretrieve(prefix + filename, 'dbsnp_tmp.xml.gz')
+        os.system('gunzip dbsnp_tmp.xml.gz')
+
+        context = etree.iterparse('dbsnp_tmp.xml', events=['start', 'end'])
+        context = iter(context)
+        _, root = context.next()
         inside_rs_element = False
         children = set() 
-        for event, element in parser:
+        for event, element in context:
             if event == 'start' and element.tag == namespace+'Rs':
                 # must remember that we are inside an rs element so prematurely clear child nodes
                 inside_rs_element = True
             if event == 'end':
                 if element.tag == namespace+'Rs':
                     rs = 'rs' + element.get('rsId')
-                    if not accepted_rsnumbers or rs in accepted_rsnumbers:
+                    if (not accepted_rsnumbers) or (rs in accepted_rsnumbers):
                         assembly = element.find(namespace+'Assembly')
                         if assembly is not None:
                             component = assembly.find(namespace+'Component')
@@ -326,10 +328,12 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
                     children.add(element)
                 else:
                     element.clear()
+                    if element.getparent() is root:
+                        root.remove(element)
 
+        conn.commit()
         os.remove('dbsnp_tmp.xml')
 
-    conn.commit()
     conn.close()
 
 def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set()):
@@ -337,10 +341,10 @@ def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set())
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    download_and_add_snpedia_data(database, accepted_rsnumbers)
+    # download_and_add_snpedia_data(database, accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    download_and_add_hapmap_data(database, accepted_rsnumbers)
+    # download_and_add_hapmap_data(database, accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
     download_and_add_dbsnp_data(database, accepted_rsnumbers)

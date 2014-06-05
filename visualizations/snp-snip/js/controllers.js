@@ -63,7 +63,6 @@ var prepareSearchResults = function ($scope, $sce, rs) {
         $scope.orientation = null;
         $scope.snpediaText = null;
         $scope.hapmapChart = null;
-        $scope.imageSource = null;
         $scope.geneId = null;
         $scope.symbol = null;
 
@@ -114,12 +113,10 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             async: false
         });
         
-        
         $.ajax({
-            url: "http://localhost:8888/?resource=hapmap_chart_html&rs="+$scope.rs,
+            url: "http://localhost:8888/?resource=hapmap_chart&rs="+$scope.rs,
             success: function(data) {
-                $scope.hapmapChart = data;
-                $scope.hapmapImageSource = "http://localhost:8888/?resource=hapmap_chart_image&rs="+$scope.rs;
+                $scope.hapmapChart = $sce.trustAsHtml(data);
             },
             async: false
         });
