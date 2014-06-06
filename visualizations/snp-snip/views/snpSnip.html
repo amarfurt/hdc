@@ -85,7 +85,7 @@
             <br/>
 
             <div class="jumbotron">
-                <h2>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <div ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}}).</div><span ng-if="!data[rs].userHas" class="label label-default">unknown</span></h2>
+                <h2>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-if="!data[rs].userHas" class="label label-default">unknown</span></h2>
             </div>
 
             <div ng-repeat="resource in data[rs].resources">

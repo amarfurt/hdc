@@ -8,7 +8,6 @@ function validRs(rs) {
     return rs.match(/^rs\d+$/);
 }
 
-
 function getGenomeDataFromUrl($scope, $routeParams) {
 
 	// parse Base64 encoded uri and get the file
@@ -77,7 +76,6 @@ function prepareSearchResults($scope, $sce, rs) {
 
             $scope.data[rs].resources = Object.keys($scope.data[rs].response);
 
-            alert(Object.keys(moduleHandlers).length);
             // prepare the data received from the server
             for (resource in $scope.data[rs].response) {
                 if (moduleHandlers.hasOwnProperty(resource)) {
