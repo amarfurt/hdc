@@ -8,26 +8,6 @@ function validRs(rs) {
     return rs.match(/^rs\d+$/);
 }
 
-function snpediaHandler($scope, $sce, snpediaData) {
-    $scope.data[$scope.rs].snpediaText = $sce.trustAsHtml(snpediaData[0]);
-    $scope.data[$scope.rs].snpediaOrientation = snpediaData[1];
-    
-}
-
-function hapmapHandler($scope, $sce, hapmapData) {
-    $scope.data[$scope.rs].hapmapChart = $sce.trustAsHtml(hapmapData[0]);
-}
-
-function dbsnpHandler($scope, $sce, dbsnpData) {
-    $scope.data[$scope.rs].dbsnpGeneId = dbsnpData[0];
-    $scope.data[$scope.rs].dbsnpSymbol = dbsnpData[1];
-}
-
-var dataHandlers = {
-    'snpedia' : snpediaHandler,
-    'hapmap' : hapmapHandler,
-    'dbsnp' : dbsnpHandler
-};
 
 function getGenomeDataFromUrl($scope, $routeParams) {
 
@@ -61,6 +41,8 @@ function getGenomeDataFromUrl($scope, $routeParams) {
     $scope.loadedSnpsCount = Object.keys($scope.snpMap).length; 
 }
 
+var moduleHandlers = {};
+
 function prepareSearchResults($scope, $sce, rs) {
 
     $scope.invalidInput = !validRs(rs);
@@ -84,27 +66,24 @@ function prepareSearchResults($scope, $sce, rs) {
         if (!$scope.data.hasOwnProperty(rs)) {
             $scope.data[rs] = {};
 
-            var data = {};
-
             // get all data from the node server
             $.ajax({
                     url: "http://localhost:8888/?rs="+rs,
                     success: function(response) {
-                        data = response;
+                        $scope.data[rs].response = response;
                     },
                     async: false
             });
 
+            $scope.data[rs].resources = Object.keys($scope.data[rs].response);
+
+            alert(Object.keys(moduleHandlers).length);
             // prepare the data received from the server
-            for (resource in data) {
-                if (dataHandlers.hasOwnProperty(resource)) {
-                    dataHandlers[resource]($scope, $sce, data[resource]);
-                    delete data[resource];
+            for (resource in $scope.data[rs].response) {
+                if (moduleHandlers.hasOwnProperty(resource)) {
+                    moduleHandlers[resource]($scope, $sce, $scope.data[rs].response[resource]);
                 }
             }
-
-            // TODO
-            // default for unhandled data
 
             // prepare personal genome data
             $scope.data[rs].userHas = $scope.snpMap.hasOwnProperty(rs);
@@ -147,7 +126,7 @@ function($scope, $sce, $routeParams, $modal, $log) {
         prepareSearchResults($scope, $sce, rs);
     };
 
-    $scope.open = function () {
+    $scope.help = function () {
 
         var modalInstance = $modal.open({
           templateUrl: 'views/help.html',

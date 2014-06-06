@@ -43,6 +43,11 @@ function onRequest(request, response) {
     }
 
     async.parallel(tasks, function(err, results) {
+        for {resource in results) {
+            if (results[resource] == null) {
+                delete results[resource];
+            }
+        }
         console.log(JSON.stringify(results));
         response.end(JSON.stringify(results));
     });

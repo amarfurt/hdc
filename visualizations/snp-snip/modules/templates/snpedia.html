@@ -1,0 +1,9 @@
+<div>
+    <h4>General information about the SNP <font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></h4>
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <div ng-if="data[rs].snpedia" ng-bind-html="data[rs].snpediaText"></div>
+            <div ng-if="!data[rs].snpedia">N/A</div>
+        </div>
+    </div>
+</div>

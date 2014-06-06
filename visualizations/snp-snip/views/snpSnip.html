@@ -17,7 +17,7 @@
 
         <form>
             <label>Search for a SNP</label>
-            <a ng-click="open()">Help</a>
+            <a ng-click="help()">Help</a>
             <div class="input-group">
                 <span class="input-group-btn">
                     <button type="submit" class="btn btn-default" ng-click="searchUpdate(input.rs)" type="button">Go!</button>
@@ -84,45 +84,14 @@
 
             <br/>
 
-            <div class="panel panel-default">
-                <div class="panel-heading">Your genotype</div>
-                <div class="panel-body">
-                    <div ng-if="data[rs].userHas">Your genotype for SNP {{rs}} is {{data[rs].genotype}} (Orientation: {{data[rs].orientation}}).</div>
-                    <div ng-if="!data[rs].userHas">N/A</div>
-                </div>
+            <div class="jumbotron">
+                <h2>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <div ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}}).</div><span ng-if="!data[rs].userHas" class="label label-default">unknown</span></h2>
             </div>
 
-            <div class="panel panel-default">
-                <div class="panel-heading">Basic information about the SNP <font size="1">(Data taken from <a href="http://www.ncbi.nlm.nih.gov/SNP/">dbSNP</a>)</font></div>
-                <div class="panel-body">
-                    <div ng-if="data[rs].dbsnpSymbol!=null && data[rs].dbsnpGeneId!=null">SNP {{rs}} is on gene <a href="http://www.ncbi.nlm.nih.gov/gene?cmd=Retrieve&dopt=Graphics&list_uids={{data[rs].dbsnpGeneId}}">{{data[rs].dbsnpSymbol}}</a>.</div>
-                    <div ng-if="data[rs].dbsnpSymbol==null || data[rs].dbsnpGeneId==null">N/A</div>
-                </div>
+            <div ng-repeat="resource in data[rs].resources">
+                <div ng-include="'modules/templates/'+resource+'.html'"></div>
             </div>
 
-            <div class="panel panel-default">
-                <div class="panel-heading">General information about the SNP <font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></div>
-                <div class="panel-body">
-                    <div ng-if="data[rs].snpediaText!=null" ng-bind-html="data[rs].snpediaText"></div>
-                    <div ng-if="data[rs].snpediaText==null">N/A</div>
-                </div>
-            </div>
-
-            <div class="panel panel-default">
-                <div class="panel-heading">Genotype frequencies in different populations <font size="1">(Data taken from <a href="http://www.hapmap.ncbi.nlm.nih.gov">HapMap</a>)</font></div>
-                <div class="panel-body">
-                    <div ng-if="data[rs].hapmapChart!=null">
-                        <div ng-bind-html="data[rs].hapmapChart"></div>
-                        <br/>
-                        <p>
-                            <font size="1">
-                                ASW (A): African ancestry in Southwest USA<br/>CEU (C): Utah residents with Northern and Western European ancestry from the CEPH collection<br/>CHB (H): Han Chinese in Beijing, China<br/>CHD (D): Chinese in Metropolitan Denver, Colorado<br/>GIH (G): Gujarati Indians in Houston, Texas<br/>JPT (J): Japanese in Tokyo, Japan<br/>LWK (L): Luhya in Webuye, Kenya<br/>MEX (M): Mexican ancestry in Los Angeles, California<br/>MKK (K): Maasai in Kinyawa, Kenya<br/>TSI (T): Toscans in Italy<br/>YRI (Y): Yoruba in Ibadan, Nigeria (West Africa)
-                            </font> 
-                        </p>
-                    </div>
-                    <div ng-if="data[rs].hapmapChart==null">N/A</div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
