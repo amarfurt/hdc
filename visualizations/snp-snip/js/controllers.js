@@ -65,21 +65,23 @@ function prepareSearchResults($scope, $sce, rs) {
         if (!$scope.data.hasOwnProperty(rs)) {
             $scope.data[rs] = {};
 
+            var response;
+
             // get all data from the node server
             $.ajax({
                     url: "http://localhost:8888/?rs="+rs,
-                    success: function(response) {
-                        $scope.data[rs].response = response;
+                    success: function(data) {
+                        response = data;
                     },
                     async: false
             });
 
-            $scope.data[rs].resources = Object.keys($scope.data[rs].response);
+            $scope.data[rs].resources = Object.keys(response);
 
             // prepare the data received from the server
-            for (resource in $scope.data[rs].response) {
+            for (resource in response) {
                 if (moduleHandlers.hasOwnProperty(resource)) {
-                    moduleHandlers[resource]($scope, $sce, $scope.data[rs].response[resource]);
+                    moduleHandlers[resource]($scope, response[resource]);
                 }
             }
 
@@ -104,6 +106,9 @@ controllers.controller('SnpSnipCtrl', ['$scope', '$sce', '$routeParams', '$modal
 function($scope, $sce, $routeParams, $modal, $log) {
 
     $scope.loading = true;
+
+    // convenient way access them in module handlers
+    $scope.angular = {'sce': $sce, 'routeParams': $routeParams, 'modal': $modal, 'log': $log};
 
     $scope.snpMap = {};
     $scope.searches = [];
