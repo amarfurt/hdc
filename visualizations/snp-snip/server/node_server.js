@@ -48,7 +48,6 @@ function onRequest(request, response) {
                 delete results[resource];
             }
         }
-        console.log(JSON.stringify(results));
         response.end(JSON.stringify(results));
     });
 }
