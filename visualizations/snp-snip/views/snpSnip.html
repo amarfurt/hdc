@@ -20,7 +20,7 @@
             <a ng-click="help()">Help</a>
             <div class="input-group">
                 <span class="input-group-btn">
-                    <button type="submit" class="btn btn-default" ng-click="searchUpdate(input.rs)" type="button">Go!</button>
+                    <button type="submit" class="btn btn-default" ng-click="input.rs && searchUpdate(input.rs)" type="button">Go!</button>
                 </span>
                 <input type="text" class="form-control" ng-model="input.rs" placeholder="rs-number (e.g. rs53576)">
             </div>
@@ -85,7 +85,7 @@
             <br/>
 
             <div class="jumbotron">
-                <h2>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-if="!data[rs].userHas" class="label label-default">unknown</span></h2>
+                <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-if="!data[rs].userHas" class="label label-default">unknown</span>.</h4>
             </div>
 
             <div ng-repeat="resource in data[rs].resources">
