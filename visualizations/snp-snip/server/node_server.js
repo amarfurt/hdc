@@ -3,38 +3,49 @@ var fs = require('fs');
 var url = require('url');
 var dblite = require('dblite');
 var querystring = require('querystring');
+var async = require('async');
 
 function onRequest(request, response) {
-    // TODO just for testing, remove later
+    // TODO cors just for testing, remove later
     response.setHeader("Access-Control-Allow-Origin", "*");
+    response.setHeader('content-type', 'application/json');
 
     var query = url.parse(request.url).query; 
     var rsNumber = querystring.parse(query).rs;
     
-    var data = {}
-
-    var files = fs.readdirSync();
+    var files = fs.readdirSync('.').filter(function(filename){return /^\w+\.db$/.test(filename)});
+    var tasks = {};
 
     for (i in files) {
-        m = file[i].match(/^(\w+)\.db$/);
-        if (m) {
-            var db = dblite(m[0]);
-            var resource = m[1]; 
-            db.query(
-                'SELECT * FROM main WHERE rs = ?',
-                [rsNumber],
-                function (rows) {
-                    if (rows) {
-                        // splice to remove the rs column
-                        data[resource] = rows[0].splice(0,1);
+
+        // oh god why
+        var resource = files[i].match(/^(\w+)\.db$/)[1];
+        tasks[resource] = function(filename) { 
+            return function(callback) {
+                dblite(filename).query(
+                    'SELECT * FROM main WHERE rs = ?',
+                    [rsNumber],
+                    function(rows) {
+                        if (rows && rows[0]) {
+
+                            // remove the rs column
+                            rows[0].shift();
+
+                            callback(null, rows[0]); 
+                        } else {
+                            callback(null, null);
+                        }
                     }
-                }
-            ); 
-        }
+                );
+            };
+        }(files[i]);
+
     }
 
-    response.contentType('application/json');
-    response.end(JSON.stringify(data));
+    async.parallel(tasks, function(err, results) {
+        console.log(JSON.stringify(results));
+        response.end(JSON.stringify(results));
+    });
 }
     
 http.createServer(onRequest).listen(8888);

@@ -1,6 +1,6 @@
 function changeOrientation(genotype) {
-    swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'}
-    types = genotype.split('');
+    var swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'};
+    var types = genotype.split('');
     return swap[types[0]]+swap[types[1]];
 }
 
@@ -23,7 +23,7 @@ function dbsnpHandler($scope, $sce, dbsnpData) {
     $scope.data[$scope.rs].dbsnpSymbol = dbsnpData[1];
 }
 
-var = dataHandlers {
+var dataHandlers = {
     'snpedia' : snpediaHandler,
     'hapmap' : hapmapHandler,
     'dbsnp' : dbsnpHandler
@@ -58,7 +58,7 @@ function getGenomeDataFromUrl($scope, $routeParams) {
 	}
 
     // set scope variables for the loading message
-    $scope.loaded_snps_count = Object.keys($scope.snpMap).length; 
+    $scope.loadedSnpsCount = Object.keys($scope.snpMap).length; 
 }
 
 function prepareSearchResults($scope, $sce, rs) {
@@ -88,9 +88,9 @@ function prepareSearchResults($scope, $sce, rs) {
 
             // get all data from the node server
             $.ajax({
-                    url: "http://localhost:8888/?rs="+$scope.rs,
+                    url: "http://localhost:8888/?rs="+rs,
                     success: function(response) {
-                        data = JSON.parse(response);
+                        data = response;
                     },
                     async: false
             });
@@ -109,7 +109,7 @@ function prepareSearchResults($scope, $sce, rs) {
             // prepare personal genome data
             $scope.data[rs].userHas = $scope.snpMap.hasOwnProperty(rs);
 
-            if ($scope.userHas) {
+            if ($scope.data[rs].userHas) {
                 if ($scope.data[rs].snpediaOrientation === "minus") {
                     $scope.data[rs].orientation = "minus";
                     $scope.data[rs].genotype = changeOrientation($scope.snpMap[rs]);

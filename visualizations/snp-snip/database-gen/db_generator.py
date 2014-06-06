@@ -40,7 +40,7 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
     c = conn.cursor()
 
     c.execute('DROP TABLE IF EXISTS main')
-    c.execute('CREATE TABLE main (rs text, html text, strand_info text)')
+    c.execute('CREATE TABLE main (rs text PRIMARY KEY, html text, strand_info text)')
 
     # get the names of all snps in snpedia
     snpedia = get_snpedia_snp_names()
@@ -165,11 +165,11 @@ def create_hapmap_database():
 
         c.execute('DROP TABLE IF EXISTS genotype')
         c.execute('''CREATE TABLE genotype
-                (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
+                (rs text PRIMARY KEY, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
 
         c.execute('DROP TABLE IF EXISTS allele')
         c.execute('''CREATE TABLE allele
-                (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+                (rs text PRIMARY KEY, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
 
         hapmap_files = os.listdir('hapmap_archive')
         for idx, f in enumerate(hapmap_files):
@@ -198,7 +198,7 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     hapmap_c = hapmap_conn.cursor()
 
     c.execute('DROP TABLE IF EXISTS main')
-    c.execute('CREATE TABLE main (rs text, html text)')
+    c.execute('CREATE TABLE main (rs text PRIMARY KEY, html text)')
 
     url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
     html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
@@ -273,7 +273,7 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
 
     c.execute('DROP TABLE IF EXISTS main')
     c.execute('''CREATE TABLE main
-            (rs text, gene_id text, symbol text)''')
+            (rs text PRIMARY KEY, gene_id text, symbol text)''')
 
     # get index
     query = 'http://ftp.ncbi.nlm.nih.gov/snp/organisms/human_9606_b141_GRCh38/XML/'
@@ -341,13 +341,13 @@ def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set())
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    # download_and_add_snpedia_data('snpedia.db', accepted_rsnumbers)
+    download_and_add_snpedia_data('snpedia.db', accepted_rsnumbers)
 
     # download, process and add the data from hapmap
     download_and_add_hapmap_data('hapmap.db', accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    # download_and_add_dbsnp_data('dbsnp.db', accepted_rsnumbers)
+    download_and_add_dbsnp_data('dbsnp.db', accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
