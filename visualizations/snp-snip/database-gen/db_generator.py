@@ -39,8 +39,8 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
     conn.text_factory = str
     c = conn.cursor()
 
-    c.execute('DROP TABLE IF EXISTS snpedia')
-    c.execute('CREATE TABLE snpedia (rs text, html text, strand_info text)')
+    c.execute('DROP TABLE IF EXISTS main')
+    c.execute('CREATE TABLE main (rs text, html text, strand_info text)')
 
     # get the names of all snps in snpedia
     snpedia = get_snpedia_snp_names()
@@ -64,7 +64,7 @@ def download_and_add_snpedia_data(database, accepted_rsnumbers):
                 continue
             break
 
-        c.execute('INSERT INTO snpedia VALUES (?, ?, ?)', (rs, extract_snpedia_text(html), extract_snpedia_strand_info(html)))
+        c.execute('INSERT INTO main VALUES (?, ?, ?)', (rs, extract_snpedia_text(html), extract_snpedia_strand_info(html)))
 
     conn.commit()
     conn.close()
@@ -158,9 +158,9 @@ def download_hapmap_data():
             gunzip('hapmap_archive/' + filename)
 
 def create_hapmap_database():
-    if not os.path.isfile('hapmap.db'):
+    if not os.path.isfile('hapmap_tmp.db'):
         print 'creating intermediate hapmap database ...'
-        conn = sqlite3.connect('hapmap.db') 
+        conn = sqlite3.connect('hapmap_tmp.db') 
         c = conn.cursor()
 
         c.execute('DROP TABLE IF EXISTS genotype')
@@ -193,12 +193,12 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     print 'generating hapmap charts ...'
 
     conn = sqlite3.connect(database) 
-    hapmap_conn = sqlite3.connect('hapmap.db') 
+    hapmap_conn = sqlite3.connect('hapmap_tmp.db') 
     c = conn.cursor()
     hapmap_c = hapmap_conn.cursor()
 
-    c.execute('DROP TABLE IF EXISTS hapmap')
-    c.execute('CREATE TABLE hapmap (rs text, html text)')
+    c.execute('DROP TABLE IF EXISTS main')
+    c.execute('CREATE TABLE main (rs text, html text)')
 
     url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
     html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
@@ -241,7 +241,7 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
         # image = urllib.urlopen(url).read()
 
         # c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
-        c.execute('INSERT INTO hapmap VALUES (?, ?)', (rs, html))
+        c.execute('INSERT INTO main VALUES (?, ?)', (rs, html))
 
     conn.commit()
     conn.close()
@@ -271,8 +271,8 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
     conn = sqlite3.connect(database) 
     c = conn.cursor()
 
-    c.execute('DROP TABLE IF EXISTS dbsnp')
-    c.execute('''CREATE TABLE dbsnp
+    c.execute('DROP TABLE IF EXISTS main')
+    c.execute('''CREATE TABLE main
             (rs text, gene_id text, symbol text)''')
 
     # get index
@@ -315,7 +315,7 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
                                     if fxnset is not None:
                                         gene_id = fxnset.get('geneId')
                                         symbol = fxnset.get('symbol')
-                                        c.execute('INSERT INTO dbsnp VALUES (?, ?, ?)', (rs, gene_id, symbol))
+                                        c.execute('INSERT INTO main VALUES (?, ?, ?)', (rs, gene_id, symbol))
 
                     # leaving the rs element, so the children can now safely be cleared
                     inside_rs_element = False
@@ -341,13 +341,13 @@ def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set())
     print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    # download_and_add_snpedia_data(database, accepted_rsnumbers)
+    # download_and_add_snpedia_data('snpedia.db', accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    # download_and_add_hapmap_data(database, accepted_rsnumbers)
+    download_and_add_hapmap_data('hapmap.db', accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    download_and_add_dbsnp_data(database, accepted_rsnumbers)
+    # download_and_add_dbsnp_data('dbsnp.db', accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

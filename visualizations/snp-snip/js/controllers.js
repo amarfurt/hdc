@@ -1,10 +1,35 @@
-var changeOrientation = function(genotype) {
+function changeOrientation(genotype) {
     swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'}
     types = genotype.split('');
     return swap[types[0]]+swap[types[1]];
 }
 
-var getGenomeDataFromUrl = function($scope, $routeParams) {
+function validRs(rs) {
+    return rs.match(/^rs\d+$/);
+}
+
+function snpediaHandler($scope, $sce, snpediaData) {
+    $scope.data[$scope.rs].snpediaText = $sce.trustAsHtml(snpediaData[0]);
+    $scope.data[$scope.rs].snpediaOrientation = snpediaData[1];
+    
+}
+
+function hapmapHandler($scope, $sce, hapmapData) {
+    $scope.data[$scope.rs].hapmapChart = $sce.trustAsHtml(hapmapData[0]);
+}
+
+function dbsnpHandler($scope, $sce, dbsnpData) {
+    $scope.data[$scope.rs].dbsnpGeneId = dbsnpData[0];
+    $scope.data[$scope.rs].dbsnpSymbol = dbsnpData[1];
+}
+
+var = dataHandlers {
+    'snpedia' : snpediaHandler,
+    'hapmap' : hapmapHandler,
+    'dbsnp' : dbsnpHandler
+};
+
+function getGenomeDataFromUrl($scope, $routeParams) {
 
 	// parse Base64 encoded uri and get the file
 	if ($routeParams.records) {
@@ -34,17 +59,15 @@ var getGenomeDataFromUrl = function($scope, $routeParams) {
 
     // set scope variables for the loading message
     $scope.loaded_snps_count = Object.keys($scope.snpMap).length; 
-};
-
-var validRs = function (rs) {
-    return rs.match(/^rs\d+$/);
 }
 
-var prepareSearchResults = function ($scope, $sce, rs) {
+function prepareSearchResults($scope, $sce, rs) {
 
     $scope.invalidInput = !validRs(rs);
 
     if (validRs(rs)) {
+
+        $scope.rs = rs;
 
         // tabs
         var index = $scope.searches.map(function(search){return search.rs}).indexOf(rs);
@@ -57,73 +80,49 @@ var prepareSearchResults = function ($scope, $sce, rs) {
             $scope.searches[index].active = true;
         }
 
-        // search results
-        $scope.rs = null;
-        $scope.genotype = null; 
-        $scope.orientation = null;
-        $scope.snpediaText = null;
-        $scope.hapmapChart = null;
-        $scope.geneId = null;
-        $scope.symbol = null;
+        // get the required data if searching for this rs for the first time
+        if (!$scope.data.hasOwnProperty(rs)) {
+            $scope.data[rs] = {};
 
-        $scope.rs = rs;
-        $scope.userHas = $scope.snpMap.hasOwnProperty($scope.rs);
+            var data = {};
 
-        if ($scope.userHas) {
-
-            var strandInfo;
+            // get all data from the node server
             $.ajax({
-                url: "http://localhost:8888/?resource=snpedia_strand_info&rs="+$scope.rs,
-                success: function(data) {
-                    strandInfo = data;
-                },
-                async: false
+                    url: "http://localhost:8888/?rs="+$scope.rs,
+                    success: function(response) {
+                        data = JSON.parse(response);
+                    },
+                    async: false
             });
 
-            if (strandInfo === "minus") {
-                $scope.orientation = "minus";
-                $scope.genotype = changeOrientation($scope.snpMap[$scope.rs]);
-            } else {
-                $scope.orientation = "plus";
-                $scope.genotype = $scope.snpMap[$scope.rs];
+            // prepare the data received from the server
+            for (resource in data) {
+                if (dataHandlers.hasOwnProperty(resource)) {
+                    dataHandlers[resource]($scope, $sce, data[resource]);
+                    delete data[resource];
+                }
+            }
+
+            // TODO
+            // default for unhandled data
+
+            // prepare personal genome data
+            $scope.data[rs].userHas = $scope.snpMap.hasOwnProperty(rs);
+
+            if ($scope.userHas) {
+                if ($scope.data[rs].snpediaOrientation === "minus") {
+                    $scope.data[rs].orientation = "minus";
+                    $scope.data[rs].genotype = changeOrientation($scope.snpMap[rs]);
+                } else {
+                    $scope.data[rs].orientation = "plus";
+                    $scope.data[rs].genotype = $scope.snpMap[rs];
+                }
             }
         }
-
-        $.ajax({
-            url: "http://localhost:8888/?resource=dbsnp_gene_id&rs="+$scope.rs,
-            success: function(data) {
-                $scope.geneId = data;
-            },
-            async: false
-        });
-
-        $.ajax({
-            url: "http://localhost:8888/?resource=dbsnp_symbol&rs="+$scope.rs,
-            success: function(data) {
-                $scope.symbol = data;
-            },
-            async: false
-        });
-
-        $.ajax({
-            url: "http://localhost:8888/?resource=snpedia_text&rs="+$scope.rs,
-            success: function(data) {
-                $scope.snpediaText = $sce.trustAsHtml(data);
-            },
-            async: false
-        });
-        
-        $.ajax({
-            url: "http://localhost:8888/?resource=hapmap_chart&rs="+$scope.rs,
-            success: function(data) {
-                $scope.hapmapChart = $sce.trustAsHtml(data);
-            },
-            async: false
-        });
     }
-};
+}
 
-var controllers = angular.module('snpSnipControllers', ['ui.bootstrap', 'compile']);
+var controllers = angular.module('snpSnipControllers', ['ui.bootstrap']);
 controllers.controller('SnpSnipCtrl', ['$scope', '$sce', '$routeParams', '$modal', '$log',
 function($scope, $sce, $routeParams, $modal, $log) {
 
@@ -131,6 +130,7 @@ function($scope, $sce, $routeParams, $modal, $log) {
 
     $scope.snpMap = {};
     $scope.searches = [];
+    $scope.data = {};
 
     getGenomeDataFromUrl($scope, $routeParams);
 

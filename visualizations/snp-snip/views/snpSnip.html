@@ -87,32 +87,32 @@
             <div class="panel panel-default">
                 <div class="panel-heading">Your genotype</div>
                 <div class="panel-body">
-                    <div ng-if="userHas">Your genotype for SNP {{rs}} is {{genotype}} (Orientation: {{orientation}}).</div>
-                    <div ng-if="!userHas">N/A</div>
+                    <div ng-if="data[rs].userHas">Your genotype for SNP {{rs}} is {{data[rs].genotype}} (Orientation: {{data[rs].orientation}}).</div>
+                    <div ng-if="!data[rs].userHas">N/A</div>
                 </div>
             </div>
 
             <div class="panel panel-default">
                 <div class="panel-heading">Basic information about the SNP <font size="1">(Data taken from <a href="http://www.ncbi.nlm.nih.gov/SNP/">dbSNP</a>)</font></div>
                 <div class="panel-body">
-                    <div ng-if="symbol!=null && geneId!=null">SNP {{rs}} is on gene <a href="http://www.ncbi.nlm.nih.gov/gene?cmd=Retrieve&dopt=Graphics&list_uids={{geneId}}">{{symbol}}</a>.</div>
-                    <div ng-if="symbol==null || geneId==null">N/A</div>
+                    <div ng-if="data[rs].dbsnpSymbol!=null && data[rs].dbsnpGeneId!=null">SNP {{rs}} is on gene <a href="http://www.ncbi.nlm.nih.gov/gene?cmd=Retrieve&dopt=Graphics&list_uids={{data[rs].dbsnpGeneId}}">{{data[rs].dbsnpSymbol}}</a>.</div>
+                    <div ng-if="data[rs].dbsnpSymbol==null || data[rs].dbsnpGeneId==null">N/A</div>
                 </div>
             </div>
 
             <div class="panel panel-default">
                 <div class="panel-heading">General information about the SNP <font size="1">(Text taken directly from <a href="http://www.snpedia.com">SNPedia</a>)</font></div>
                 <div class="panel-body">
-                    <div ng-if="snpediaText!=null" ng-bind-html="snpediaText"></div>
-                    <div ng-if="snpediaText==null">N/A</div>
+                    <div ng-if="data[rs].snpediaText!=null" ng-bind-html="data[rs].snpediaText"></div>
+                    <div ng-if="data[rs].snpediaText==null">N/A</div>
                 </div>
             </div>
 
             <div class="panel panel-default">
                 <div class="panel-heading">Genotype frequencies in different populations <font size="1">(Data taken from <a href="http://www.hapmap.ncbi.nlm.nih.gov">HapMap</a>)</font></div>
                 <div class="panel-body">
-                    <div ng-if="hapmapChart!=null">
-                        <div ng-bind-html="hapmapChart"></div>
+                    <div ng-if="data[rs].hapmapChart!=null">
+                        <div ng-bind-html="data[rs].hapmapChart"></div>
                         <br/>
                         <p>
                             <font size="1">
@@ -120,7 +120,7 @@
                             </font> 
                         </p>
                     </div>
-                    <div ng-if="hapmapChart==null">N/A</div>
+                    <div ng-if="data[rs].hapmapChart==null">N/A</div>
                 </div>
             </div>
         </div>
