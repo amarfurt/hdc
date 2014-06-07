@@ -162,10 +162,10 @@ def create_hapmap_database():
                 (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
         c.execute('CREATE INDEX idx_genotype_rs ON genotype (rs)')
 
-        c.execute('DROP TABLE IF EXISTS allele')
-        c.execute('''CREATE TABLE allele
-                (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
-        c.execute('CREATE INDEX idx_allele_rs ON allele (rs)')
+        # c.execute('DROP TABLE IF EXISTS allele')
+        # c.execute('''CREATE TABLE allele
+        #         (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+        # c.execute('CREATE INDEX idx_allele_rs ON allele (rs)')
 
         hapmap_files = os.listdir('hapmap_archive')
         for idx, f in enumerate(hapmap_files):
@@ -181,7 +181,8 @@ def create_hapmap_database():
                 if re.search(r'genotype', f):
                     c.execute('INSERT INTO genotype VALUES (?, ?, ?, ?, ?, ?, ?, ?)', (row[0].lower(), pop, row[10], row[11], row[13], row[14], row[16], row[17]))
                 else:
-                    c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0].lower(), pop, row[10], row[11], row[13], row[14]))
+                    pass
+                    # c.execute('INSERT INTO allele VALUES (?, ?, ?, ?, ?, ?)', (row[0].lower(), pop, row[10], row[11], row[13], row[14]))
         conn.commit()
         conn.close()
 
