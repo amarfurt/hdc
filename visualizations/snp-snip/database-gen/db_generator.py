@@ -10,7 +10,6 @@ from bs4 import Comment
 import sys
 import csv
 import sqlite3
-from plumbum.cmd import gunzip
 from lxml import etree
 
 def load_accepted_rsnumbers(filename):
@@ -150,7 +149,7 @@ def download_hapmap_data():
         for idx, filename in enumerate(filenames): 
             print 'processing file {0} out of {1} ...'.format(idx + 1, len(filenames))
             urllib.urlretrieve(prefix + filename, 'hapmap_archive/' + filename)
-            gunzip('hapmap_archive/' + filename)
+            os.system('gunzip hapmap_archive/' + filename)
 
 def create_hapmap_database():
     if not os.path.isfile('hapmap_tmp.db'):
