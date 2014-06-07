@@ -2,7 +2,6 @@
 
 from wikitools import wiki, category
 import os
-import json
 import re
 import urllib2
 import urllib
@@ -18,24 +17,20 @@ def load_accepted_rsnumbers(filename):
     return rs_filter(rs.rstrip().lower() for rs in open(filename).read().split('\n'))
 
 def get_snpedia_snp_names():
-    # use local cache if possible
-    # if os.path.isfile('snpcache.json'):
-    #     snpedia = json.loads(open('snpcache.json').read())
-    # otherwise get them from snpedia and create the cache
-    # else:
-        # print 'creating cache for snps in snpedia ...'
+
     site = wiki.Wiki('http://bots.snpedia.com/api.php')
     snps = category.Category(site, 'Is_a_snp')
     snpedia = set() 
+
     for article in snps.getAllMembersGen(namespaces=[0]):
         snpedia.add(article.title.lower())
-        # open('snpcache.json', 'w').write(json.dumps(snpedia))
+
     return snpedia
 
-def download_and_add_snpedia_data(database, accepted_rsnumbers):
+def download_and_add_snpedia_data(accepted_rsnumbers):
     print 'downloading snpedia pages and generating text html ...'
 
-    conn = sqlite3.connect(database) 
+    conn = sqlite3.connect('snpedia.db') 
     conn.text_factory = str
     c = conn.cursor()
 
@@ -189,10 +184,10 @@ def create_hapmap_database():
         conn.commit()
         conn.close()
 
-def add_final_hapmap_data(database, accepted_rsnumbers):
+def add_final_hapmap_data(accepted_rsnumbers):
     print 'generating hapmap charts ...'
 
-    conn = sqlite3.connect(database) 
+    conn = sqlite3.connect('hapmap.db') 
     hapmap_conn = sqlite3.connect('hapmap_tmp.db') 
     c = conn.cursor()
     hapmap_c = hapmap_conn.cursor()
@@ -247,31 +242,14 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
 
         c.execute('INSERT INTO main VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', parameters)
 
-        # parameters.append('|'.join(reversed(populations)))
-
-        # url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
-        # html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
-
-        # url = url_template.format(*format_parameters)
-
-        # prepare html
-        # row = result[0]
-        # html = html_template.format(row[2], row[4], row[6], url)
-
-        # prepare image
-        # image = urllib.urlopen(url).read()
-
-        # c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
-        # c.execute('INSERT INTO main VALUES (?, ?)', (rs, html))
-
     conn.commit()
     conn.close()
     hapmap_conn.close()
 
-def download_and_add_hapmap_data(database, accepted_rsnumbers):
+def download_and_add_hapmap_data(accepted_rsnumbers):
     download_hapmap_data()
     create_hapmap_database()
-    add_final_hapmap_data(database, accepted_rsnumbers)
+    add_final_hapmap_data(accepted_rsnumbers)
 
 # def get_omim_text(rsnumbers):
 #     for rs in rsnumbers:
@@ -286,10 +264,10 @@ def download_and_add_hapmap_data(database, accepted_rsnumbers):
 #             # urllib.urlretrieve(url, 'snp_db/' + rs + '/omim_entry.html')
 #             urllib.urlretrieve(url, 'test.html')
 
-def download_and_add_dbsnp_data(database, accepted_rsnumbers):
+def download_and_add_dbsnp_data(accepted_rsnumbers):
     print 'downloading, parsing and adding dbsnp data ...'
 
-    conn = sqlite3.connect(database) 
+    conn = sqlite3.connect('dbsnp.db') 
     c = conn.cursor()
 
     c.execute('DROP TABLE IF EXISTS main')
@@ -360,18 +338,18 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
 
     conn.close()
 
-def generate_complete_database(database='snp_snip.db', accepted_rsnumbers=set()):
+def generate_complete_database(accepted_rsnumbers=set()):
     
-    print 'generating database ' + database + ' in ' + os.getcwd() + ' ...'
+    print 'generating databases in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    download_and_add_snpedia_data('snpedia.db', accepted_rsnumbers)
+    download_and_add_snpedia_data(accepted_rsnumbers)
 
     # download, process and add the data from hapmap
-    download_and_add_hapmap_data('hapmap.db', accepted_rsnumbers)
+    download_and_add_hapmap_data(accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    download_and_add_dbsnp_data('dbsnp.db', accepted_rsnumbers)
+    download_and_add_dbsnp_data(accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
