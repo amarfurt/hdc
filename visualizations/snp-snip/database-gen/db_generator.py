@@ -159,11 +159,13 @@ def create_hapmap_database():
 
         c.execute('DROP TABLE IF EXISTS genotype')
         c.execute('''CREATE TABLE genotype
-                (rs text PRIMARY KEY, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
+                (rs text, pop text, ref_allele_homo text, ref_allele_homo_freq real, ref_allele_hetero text, ref_allele_hetero_freq real, other_allele_homo text, other_allele_homo_freq real)''')
+        c.execute('CREATE INDEX idx_genotype_rs ON genotype (rs)')
 
         c.execute('DROP TABLE IF EXISTS allele')
         c.execute('''CREATE TABLE allele
-                (rs text PRIMARY KEY, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+                (rs text, pop text, ref_allele text, ref_allele_freq real, other_allele text, other_allele_freq real)''')
+        c.execute('CREATE INDEX idx_allele_rs ON allele (rs)')
 
         hapmap_files = os.listdir('hapmap_archive')
         for idx, f in enumerate(hapmap_files):
@@ -342,13 +344,13 @@ def generate_complete_database(accepted_rsnumbers=set()):
     print 'generating databases in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    download_and_add_snpedia_data(accepted_rsnumbers)
+    # download_and_add_snpedia_data(accepted_rsnumbers)
 
     # download, process and add the data from hapmap
     download_and_add_hapmap_data(accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    download_and_add_dbsnp_data(accepted_rsnumbers)
+    # download_and_add_dbsnp_data(accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
