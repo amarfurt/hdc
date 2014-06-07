@@ -198,10 +198,19 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
     hapmap_c = hapmap_conn.cursor()
 
     c.execute('DROP TABLE IF EXISTS main')
-    c.execute('CREATE TABLE main (rs text PRIMARY KEY, html text)')
+    c.execute('''CREATE TABLE main (rs text PRIMARY KEY, genotype1 text, genotype2 text, genotype3 text,
+            pop1 text, pop1_freq1 real, pop1_freq2 real, pop1_freq3 real,
+            pop2 text, pop2_freq1 real, pop2_freq2 real, pop2_freq3 real,
+            pop3 text, pop3_freq1 real, pop3_freq2 real, pop3_freq3 real,
+            pop4 text, pop4_freq1 real, pop4_freq2 real, pop4_freq3 real,
+            pop5 text, pop5_freq1 real, pop5_freq2 real, pop5_freq3 real,
+            pop6 text, pop6_freq1 real, pop6_freq2 real, pop6_freq3 real,
+            pop7 text, pop7_freq1 real, pop7_freq2 real, pop7_freq3 real,
+            pop8 text, pop8_freq1 real, pop8_freq2 real, pop8_freq3 real,
+            pop9 text, pop9_freq1 real, pop9_freq2 real, pop9_freq3 real,
+            pop10 text, pop10_freq1 real, pop10_freq2 real, pop10_freq3 real,
+            pop11 text, pop11_freq1 real, pop11_freq2 real, pop11_freq3 real)''')
 
-    url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
-    html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
     populations = ['ASW','CEU','CHB','CHD','GIH','JPT','LWK','MEX','MKK','TSI','YRI']
 
     snps = set(row[0] for row in hapmap_c.execute('SELECT DISTINCT rs FROM genotype'))
@@ -224,24 +233,36 @@ def add_final_hapmap_data(database, accepted_rsnumbers):
             else:
                 data.append([rs, pop, "", 0, "", 0, "", 0])
 
-        # prepare url 
-        format_parameters = []
-        for i in [3, 5, 7]:
-            for row in data:
-                format_parameters.append(row[i]*100)
-        format_parameters.append('|'.join(reversed(populations)))
+        parameters = [rs]
+        # get the three genotypes
+        row = result[0]
+        parameters.append(row[2])
+        parameters.append(row[4])
+        parameters.append(row[6])
+        # get the frequencies for each population as percentages
+        for row in data:
+            parameters.append(row[1])
+            for i in [3, 5, 7]:
+                parameters.append(row[i]*100)
 
-        url = url_template.format(*format_parameters)
+        c.execute('INSERT INTO main VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', parameters)
+
+        # parameters.append('|'.join(reversed(populations)))
+
+        # url_template = "http://chart.apis.google.com/chart?cht=bhs&chd=t:{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}|{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21}|{22},{23},{24},{25},{26},{27},{28},{29},{30},{31},{32}&chs=275x200&chbh=8,5&chxl=0:|1:|{33}||&chxt=x,y&chco=CD853F,30FF30,0000FF,FF00FF&chls=1,1,0|1,1,0|1,1,0|1,1,0"
+        # html_template = '<table><tbody><tr><th class="text-center"><span style="font-size:1.25em"><span style="color:#CD853F">({0})</span><span style="color:#20D020">({1})</span><span style="color:#0000FF">({2})</span></span> </th></tr><tr><td colspan="3"><img src="{3}"></td></tr></tbody></table>'
+
+        # url = url_template.format(*format_parameters)
 
         # prepare html
-        row = result[0]
-        html = html_template.format(row[2], row[4], row[6], url)
+        # row = result[0]
+        # html = html_template.format(row[2], row[4], row[6], url)
 
         # prepare image
         # image = urllib.urlopen(url).read()
 
         # c.execute('INSERT INTO hapmap VALUES (?, ?, ?)', (rs, html, sqlite3.Binary(image)))
-        c.execute('INSERT INTO main VALUES (?, ?)', (rs, html))
+        # c.execute('INSERT INTO main VALUES (?, ?)', (rs, html))
 
     conn.commit()
     conn.close()
@@ -315,7 +336,10 @@ def download_and_add_dbsnp_data(database, accepted_rsnumbers):
                                     if fxnset is not None:
                                         gene_id = fxnset.get('geneId')
                                         symbol = fxnset.get('symbol')
-                                        c.execute('INSERT INTO main VALUES (?, ?, ?)', (rs, gene_id, symbol))
+                                        try:
+                                            c.execute('INSERT INTO main VALUES (?, ?, ?)', (rs, gene_id, symbol))
+                                        except sqlite3.IntegrityError:
+                                            pass
 
                     # leaving the rs element, so the children can now safely be cleared
                     inside_rs_element = False
