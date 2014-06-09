@@ -1,13 +1,3 @@
-function changeOrientation(genotype) {
-    var swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'};
-    var types = genotype.split('');
-    return swap[types[0]]+swap[types[1]];
-}
-
-function validRs(rs) {
-    return rs.match(/^rs\d+$/);
-}
-
 function getGenomeDataFromUrl($scope, $routeParams) {
 
 	// parse Base64 encoded uri and get the file
@@ -44,13 +34,11 @@ function getGenomeDataFromUrl($scope, $routeParams) {
 
 }
 
-var modules = {};
-
 function prepareSearchResults($scope, $sce, rs) {
 
-    $scope.invalidInput = !validRs(rs);
+    $scope.invalidInput = !$scope.isValidRs(rs);
 
-    if (validRs(rs)) {
+    if ($scope.isValidRs(rs)) {
 
         $scope.rs = rs;
 
@@ -77,8 +65,20 @@ function prepareSearchResults($scope, $sce, rs) {
                     success: function(response) {
                         $scope.$apply(function() {
 
-                            $scope.data[rs].resources = Object.keys(response).sort(function(r1, r2){return (modules[r1].position < modules[r2].position) ? -1 : 1});
-                            var resources = Object.keys(response).sort(function(r1, r2){return (modules[r1].priority < modules[r2].priority) ? 1 : -1});
+                            $scope.data[rs].resources = Object.keys(response).sort(function(r1, r2){
+                                if (!(modules[r1] && modules[r2])) {
+                                    return 0;
+                                } else {
+                                    return (modules[r1].position < modules[r2].position) ? -1 : 1;
+                                }
+                            });
+                            var resources = Object.keys(response).sort(function(r1, r2){
+                                if (!(modules[r1] && modules[r2])) {
+                                    return 0;
+                                } else {
+                                    return (modules[r1].priority < modules[r2].priority) ? 1 : -1;
+                                }
+                            });
 
                             // prepare the data received from the server
                             for (i in resources) {
@@ -93,7 +93,7 @@ function prepareSearchResults($scope, $sce, rs) {
                             if ($scope.data[rs].userHas) {
                                 if ($scope.data[rs].snpediaOrientation === "minus") {
                                     $scope.data[rs].orientation = "minus";
-                                    $scope.data[rs].genotype = changeOrientation($scope.snpMap[rs]);
+                                    $scope.data[rs].genotype = $scope.changeOrientation($scope.snpMap[rs]);
                                 } else {
                                     $scope.data[rs].orientation = "plus";
                                     $scope.data[rs].genotype = $scope.snpMap[rs];
@@ -145,5 +145,15 @@ function($scope, $sce, $routeParams, $modal, $log) {
                 $log.info('Modal dismissed at: ' + new Date());
         });
     };
+
+    $scope.changeOrientation = function(genotype) {
+        var swap = {'A' : 'T', 'T' : 'A', 'C' : 'G', 'G' : 'C'};
+        var types = genotype.split('');
+        return swap[types[0]]+swap[types[1]];
+    }
+
+    $scope.isValidRs = function(rs) {
+        return rs.match(/^rs\d+$/);
+    }
 
 }]);

@@ -1,3 +1,5 @@
+var modules = {}; // will hold the handlers for modules defined in modules/js/handlers.js
+
 var hdcSnpSnip = angular.module('hdcSnpSnip', [
   'ngRoute',
   'snpSnipControllers'
