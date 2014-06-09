@@ -7,12 +7,19 @@
       Loaded SNP genotypes: {{importCount}}
     </div>
 
-    <div ng-show="!imported" class="alert alert-warning alert-dismissable">
+    <div ng-show="importFailed" class="alert alert-danger alert-dismissable">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <strong>Record import failed!</strong>
       You can still browse the SNP database but there will be no information on your personal genome.
     </div>
 
+    <div ng-show="!imported && !importFailed" class="alert alert-warning alert-dismissable">
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      <strong>Loading records ...</strong>
+      You can already browse the SNP database but there will be no information on your personal genome.
+    </div>
+
+<div ng-disabled="!imported && !importFailed">
     <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
 
     <form>
@@ -20,9 +27,9 @@
         <a href="" ng-click="help()">Help</a>
         <div class="input-group">
             <span class="input-group-btn">
-                <button type="submit" class="btn btn-default" ng-click="input.rs && searchUpdate(input.rs)" type="button">Go!</button>
+                <button type="submit" class="btn btn-default" ng-click="input.rs && searchUpdate(element.find('rs').value)" type="button">Go!</button>
             </span>
-            <input type="text" class="form-control" ng-model="input.rs" ng-disabled="!imported" placeholder="rs-number (e.g. rs53576)">
+            <input type="text" class="form-control" id="rs" placeholder="rs-number (e.g. rs53576)">
         </div>
     </form>
 
@@ -87,8 +94,8 @@
 
         <br/>
 
-        <div class="jumbotron">
-            <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!data[rs].userHas" class="label label-default">unknown</span>.</h4>
+        <div ng-show="data[rs].userHas" class="jumbotron">
+            <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font>.</h4>
         </div>
 
         <div ng-repeat="resource in data[rs].resources">
@@ -96,4 +103,5 @@
         </div>
 
     </div>
+</div>
 </div>
