@@ -231,11 +231,9 @@ def add_final_hapmap_data(accepted_rsnumbers):
                 data.append([rs, pop, "", 0, "", 0, "", 0])
 
         parameters = [rs]
-        # get the three genotypes
+        # get the three genotypes in the right format
         row = result[0]
-        parameters.append(row[2])
-        parameters.append(row[4])
-        parameters.append(row[6])
+        parameters.extend(''.join(row[i].split('/')) for i in [2,4,6])
         # get the frequencies for each population as percentages
         for row in data:
             parameters.append(row[1])
@@ -345,13 +343,13 @@ def generate_complete_database(accepted_rsnumbers=set()):
     print 'generating databases in ' + os.getcwd() + ' ...'
 
     # download, process and add the data from snpedia 
-    # download_and_add_snpedia_data(accepted_rsnumbers)
+    download_and_add_snpedia_data(accepted_rsnumbers)
 
     # download, process and add the data from hapmap
     download_and_add_hapmap_data(accepted_rsnumbers)
 
     # download, process and add the data from dbsnp
-    # download_and_add_dbsnp_data(accepted_rsnumbers)
+    download_and_add_dbsnp_data(accepted_rsnumbers)
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
