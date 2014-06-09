@@ -2,7 +2,7 @@
     <h4>Genotype frequencies in different populations <font size="1">(Data taken from <a href="http://www.hapmap.ncbi.nlm.nih.gov">HapMap</a>)</font> <a href="" popover="filler filler filler" popover-trigger="mouseenter">?</a></h4>
     <div class="panel panel-default">
         <div class="panel-body">
-            <div ng-if="data[rs].hapmap">
+            <div ng-show="data[rs].hapmap">
                 <div ng-bind-html="data[rs].hapmapChart"></div>
                 <br/>
                 <p>
@@ -11,7 +11,7 @@
                     </font> 
                 </p>
             </div>
-            <div ng-if="!data[rs].hapmap">N/A</div>
+            <div ng-show="!data[rs].hapmap">N/A</div>
         </div>
     </div>
-<div>
+</div>

@@ -44,7 +44,7 @@ function getGenomeDataFromUrl($scope, $routeParams) {
 
 }
 
-var moduleHandlers = {};
+var modules = {};
 
 function prepareSearchResults($scope, $sce, rs) {
 
@@ -77,12 +77,13 @@ function prepareSearchResults($scope, $sce, rs) {
                     success: function(response) {
                         $scope.$apply(function() {
 
-                            $scope.data[rs].resources = Object.keys(response);
+                            $scope.data[rs].resources = Object.keys(response).sort(function(r1, r2){return (modules[r1].position < modules[r2].position) ? -1 : 1});
+                            var resources = Object.keys(response).sort(function(r1, r2){return (modules[r1].priority < modules[r2].priority) ? 1 : -1});
 
                             // prepare the data received from the server
-                            for (resource in response) {
-                                if (moduleHandlers.hasOwnProperty(resource)) {
-                                    moduleHandlers[resource]($scope, response[resource]);
+                            for (i in resources) {
+                                if (modules.hasOwnProperty(resources[i])) {
+                                    modules[resources[i]].handler($scope, response[resources[i]]);
                                 }
                             }
 
