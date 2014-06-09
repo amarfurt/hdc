@@ -8,9 +8,18 @@
 
     <div ng-if="!loading">
 
-        <div class="alert alert-success alert-dismissable">
+        <div ng-show="imported" class="alert alert-success alert-dismissable">
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-          Successfully loaded genotypes of {{loadedSnpsCount}} SNPs from you personal genome data.
+          <strong>Record import successful!</strong><br/>
+          Date of generation: {{importDate}}<br/>
+          Build: <a href={{importBuildUrl}}>{{importBuild}}</a><br/>
+          Loaded SNP genotypes: {{importCount}}
+        </div>
+
+        <div ng-show="!imported" class="alert alert-warning alert-dismissable">
+          <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+          <strong>Record import failed!</strong>
+          You can still browse the SNP database but there will be no information on your personal genome.
         </div>
 
         <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
@@ -26,9 +35,12 @@
             </div>
         </form>
 
-        <alert ng-if="invalidInput" type="danger">Please enter a SNP-identifier in the format rs+number (example: rs1000113)</alert>
+        <div ng-show="invalidInput" class="alert alert-danger">
+          <strong>Invalid input!</strong>
+          Please enter a SNP-identifier in the format rs+number (example: rs1000113)
+        </div>
 
-        <div ng-if="searches.length === 0">
+        <div ng-show="searches.length === 0">
             <br/>
             <h4><span class="mw-headline" id="Popular">Popular searches <font size="1">(List taken from <a href="http://www.snpedia.com">SNPedia</a>)</font></span></h4>
             <ul>
@@ -73,7 +85,7 @@
             </ul>
         </div>
 
-        <div ng-if="searches.length > 0">
+        <div ng-show="searches.length > 0">
             <br/>
 
             <tabset>
@@ -85,7 +97,7 @@
             <br/>
 
             <div class="jumbotron">
-                <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-if="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-if="!data[rs].userHas" class="label label-default">unknown</span>.</h4>
+                <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!data[rs].userHas" class="label label-default">unknown</span>.</h4>
             </div>
 
             <div ng-repeat="resource in data[rs].resources">
