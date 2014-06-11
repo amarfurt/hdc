@@ -1,0 +1,9 @@
+{
+  "_default_": {
+    "properties": {
+      "title": { "type": "string" },
+      "content": { "type": "string" },
+      "suggest": { "type": "completion", "payloads": true }
+    }
+  }
+}

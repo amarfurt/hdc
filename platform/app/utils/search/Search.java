@@ -13,7 +13,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.bson.types.ObjectId;
-import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.action.ListenableActionFuture;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,7 +21,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.text.Text;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
@@ -53,7 +51,6 @@ public class Search {
 
 	private static Node node;
 	private static Client client;
-	private static XContentBuilder mapping;
 
 	public static void connect() {
 		// start a client node (holds no data)
@@ -86,22 +83,8 @@ public class Search {
 
 		// check whether the public index exists and create it otherwise
 		if (!client.admin().indices().prepareExists(PUBLIC).execute().actionGet().isExists()) {
-			client.admin().indices().prepareCreate(PUBLIC).addMapping("_default_", getMapping()).execute().actionGet();
+			client.admin().indices().prepareCreate(PUBLIC).execute().actionGet();
 		}
-	}
-
-	public static XContentBuilder getMapping() throws SearchException {
-		if (mapping == null) {
-			try {
-				mapping = jsonBuilder().startObject().startObject("mapping").startObject("properties").startObject("title")
-						.field("type", "string").endObject().startObject("content").field("type", "string").endObject()
-						.startObject("suggest").field("type", "completion").field("payloads", true).endObject().endObject().endObject()
-						.endObject();
-			} catch (IOException e) {
-				throw new SearchException(e);
-			}
-		}
-		return mapping;
 	}
 
 	/**
@@ -113,7 +96,7 @@ public class Search {
 			return;
 		}
 
-		client.admin().indices().prepareDelete().execute().actionGet();
+		client.admin().indices().prepareDelete("_all").execute().actionGet();
 		client.admin().indices().prepareClearCache().execute().actionGet();
 	}
 
@@ -127,7 +110,7 @@ public class Search {
 		}
 
 		if (!client.admin().indices().prepareExists(userId.toString()).execute().actionGet().isExists()) {
-			client.admin().indices().prepareCreate(userId.toString()).addMapping("_default_", getMapping()).execute().actionGet();
+			client.admin().indices().prepareCreate(userId.toString()).execute().actionGet();
 		}
 	}
 
@@ -192,8 +175,6 @@ public class Search {
 							jsonBuilder().startObject().field(TITLE, title).startObject(SUGGEST).array("input", split)
 									.field("output", title).startObject("payload").field("type", type).field("id", id).endObject()
 									.endObject().field(CONTENT, content).endObject()).execute().actionGet();
-		} catch (ElasticSearchException e) {
-			throw new SearchException(e);
 		} catch (IOException e) {
 			throw new SearchException(e);
 		}
@@ -414,7 +395,7 @@ public class Search {
 		String[] indicesArray = new String[queriedIndices.size()];
 		SearchRequestBuilder builder = client.prepareSearch(queriedIndices.toArray(indicesArray))
 				.setQuery(QueryBuilders.multiMatchQuery(query, TITLE, CONTENT))
-				.setFilter(FilterBuilders.idsFilter("record").ids(recordIds));
+				.setPostFilter(FilterBuilders.idsFilter("record").ids(recordIds));
 		return addHighlighting(builder);
 	}
 
