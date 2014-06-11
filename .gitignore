@@ -1,1 +1,9 @@
 /.settings
+logs
+activator*
+elasticsearch*
+mongodb*
+lighttpd*
+node*
+ssl-certificate
+

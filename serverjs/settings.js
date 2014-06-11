@@ -11,9 +11,10 @@ var localhost = "localhost";
 var nodePort = 5000;
 
 // ssl certificate
+var path = fs.realpathSync(".");
 var sslOptions = {
-		key: fs.readFileSync("/home/amarfurt/ssl-certificate/server.key"),
-		cert: fs.readFileSync("/home/amarfurt/ssl-certificate/server.crt")
+		key: fs.readFileSync(path + "/ssl-certificate/server.key"),
+		cert: fs.readFileSync(path + "/ssl-certificate/server.crt")
 }
 
 // export settings

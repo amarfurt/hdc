@@ -145,6 +145,7 @@ cluster.name: elasticsearch
 # Path to directory where to store index data allocated for this node.
 #
 # path.data: /path/to/data
+path.data: /home/amarfurt/hdc/elasticsearch-data
 #
 # Can optionally include more than one location, causing data to be striped across
 # the locations (a la RAID 0) on a file level, favouring locations with most free
@@ -159,7 +160,7 @@ cluster.name: elasticsearch
 # Path to log files:
 #
 # path.logs: /path/to/logs
-path.logs: /home/amarfurt/hdc/platform/logs
+path.logs: /home/amarfurt/hdc/logs
 
 # Path to where plugins are installed:
 #
