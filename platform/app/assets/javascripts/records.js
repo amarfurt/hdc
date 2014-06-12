@@ -373,7 +373,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// request access token
 	requestAccessToken = function(code) {
 		var data = {"code": code};
-		$http.post("https://" + window.location.hostname + ":5000/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
+		$http.post("https://" + window.location.hostname + ":5000/oauth2/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
 			success(function() {
 				$scope.authorized = true;
 				$scope.message = "Loading app...";
