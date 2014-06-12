@@ -46,7 +46,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$routeParams', function(
 	
 	// import records
 	importRecords = function(endpoint) {
-		$http.get(nodeUrl + "/data/" + $routeParams.userId + "/" + $routeParams.appId + "/" + encodeURIComponent(endpoint)).
+		$http.get(nodeUrl + "/oauth2/data/" + $routeParams.userId + "/" + $routeParams.appId + "/" + encodeURIComponent(endpoint)).
 		success(function(response) {
 			$scope.extracted += response.data.items.length;
 			response.data.items.forEach(saveRecord);
