@@ -67,9 +67,29 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		$http(jsRoutes.controllers.Visualizations.getUrl(space.visualization.$oid)).
 			success(function(url) {
 				space.baseUrl = url;
-				loadBaseRecords(space); // chain because callback is async
+				if (url.indexOf(":id") > -1) {
+					loadMetaData(space);
+				} else {
+					// old format; will be removed in future version
+					loadBaseRecords(space); // chain because callback is async
+				}
 			}).
 			error(function(err) { $scope.error = "Failed to load space '" + space.name + "': " + err; });
+	}
+	
+	// load meta data of base records
+	loadMetaData = function(space) {
+		var properties = {"_id": space.records};
+		var fields = ["app", "owner", "creator", "created"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
+			success(function(records) {
+				$scope.error = null;
+				space.baseRecords = records;
+				prepareRecords(space.baseRecords);
+				spaceChanged(space); // chain because callback is async
+			}).
+			error(function(err) { $scope.error = "Failed to load meta data of records in space '" + space.name + "': " + err; });
 	}
 	
 	// load records for given space
@@ -98,7 +118,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 	// either the records of a space have changed or another space became active
 	spaceChanged = function(space) {
 		initFilterService(space, $scope.userId);
-		reloadSpace(space);
+		reloadVisualization(space);
 	}
 	
 	// initialize filter service
@@ -106,9 +126,9 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		$scope.filterChanged = function(serviceId) {
 			var activeSpace = _.find($scope.spaces, function(space) { return space.active; });
 			if (serviceId === 0) {
-				reloadSpace(activeSpace);
+				reloadVisualization(activeSpace);
 			} else {
-				reloadSpace(activeSpace.copy);
+				reloadVisualization(activeSpace.copy);
 			}
 		}
 		filterService.init(space.name, space.serviceId, space.baseRecords, userId, $scope.filterChanged);
@@ -118,11 +138,31 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		$scope.removeFilter = filterService.removeFilter;
 	}
 	
-	// reload the space
-	reloadSpace = function(space) {
+	// reload the visualization
+	reloadVisualization = function(space) {
 		var filteredRecords = $filter("recordFilter")(space.baseRecords, space.serviceId);
-		var filteredData = _.map(filteredRecords, function(record) { return record.data; });
-		var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
+		if (space.baseUrl.indexOf(":id") > -1) {
+			cacheRecords(space, filteredRecords);
+		} else {
+			var filteredData = _.map(filteredRecords, function(record) { return record.data; });
+			var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
+			reloadIframe(space, completedUrl);
+		}
+	}
+	
+	// put the records into the cache for the visualization to load
+	cacheRecords = function(space, records) {
+		var ids = _.map(records, function(record) { return record._id; });
+		$http.post(jsRoutes.controllers.Records.cacheRecords().url, JSON.stringify({"records": ids})).
+			success(function(cacheEntryId) {
+				var completedUrl = space.baseUrl.replace(":id", cacheEntryId.$oid);
+				reloadIframe(space, completedUrl);
+			}).
+			error(function(err) { $scope.error = "Failed to put records for space '" + space.name + "': " + err; });
+	}
+	
+	// reload the iframe displaying the visualization
+	reloadIframe = function(space, completedUrl) {
 		space.trustedUrl = $sce.trustAsResourceUrl(completedUrl);
 		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
 	}

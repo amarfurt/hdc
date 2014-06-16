@@ -6,7 +6,7 @@ var hdcRunAggregator = angular.module('hdcRunAggregator', [
 hdcRunAggregator.config(['$routeProvider',
   function($routeProvider) {
     $routeProvider.
-      when('/:records', {
+      when('/:cacheId', {
         templateUrl: 'views/runaggregator.html',
         controller: 'RunAggregatorCtrl'
       });
