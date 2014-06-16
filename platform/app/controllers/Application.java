@@ -158,6 +158,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.get(),
 				controllers.routes.javascript.Records.getVisibleRecords(),
 				controllers.routes.javascript.Records.getDetailsUrl(),
+				controllers.routes.javascript.Records.cacheRecords(),
 				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),

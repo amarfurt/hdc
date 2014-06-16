@@ -1,40 +1,23 @@
 var controllers = angular.module('runAggregatorCtrls', []);
 
-controllers.controller('RunAggregatorCtrl', ['$scope', '$routeParams',
-	function($scope, $routeParams) {
+controllers.controller('RunAggregatorCtrl', ['$scope', '$http', '$routeParams',
+	function($scope, $http, $routeParams) {
 		
 		// init
 		$scope.loading = true;
+		$scope.error = null;
 		$scope.distance = 0;
 		$scope.time = 0;
 		$scope.speed = 0;
 		
-		// parse Base64 encoded JSON records
-		var records = JSON.parse(atob($routeParams.records));
-		for (var i = 0; i < records.length; i++) {
-			var data = JSON.parse(records[i]).data;
-			if (data) {
-				var distanceEnd = data.lastIndexOf("km");
-				var timeEnd = data.lastIndexOf("h");
-				if (distanceEnd !== -1 && timeEnd !== -1) {
-					var curDistance = data.substring(0, distanceEnd).trim();
-					curDistance = curDistance.substring(curDistance.lastIndexOf(" ") + 1);
-					var curTime = data.substring(0, timeEnd).trim();
-					curTime = curTime.substring(curTime.lastIndexOf(" ") + 1);
-					var distance = parseFloat(curDistance);
-					var time = parseFloat(curTime);
-					if (!isNaN(distance) && !isNaN(time)) {
-						$scope.distance += distance;
-						$scope.time += time;
-					}
-				}
-			}
-		}
-		if ($scope.time > 0) {
-			$scope.speed = $scope.distance / $scope.time;
-		}
-		$scope.distance = $scope.distance.toFixed(2);
-		$scope.time = $scope.time.toFixed(2);
-		$scope.speed = $scope.speed.toFixed(2);
-		$scope.loading = false;
-	}]);
+		// get the preprocessed metrics from the node server
+		$http.get("https://" + window.location.hostname + ":5000/run-aggregator/" + $routeParams.cacheId).
+			success(function(metrics) {
+				$scope.distance = metrics.distance.toFixed(2);
+				$scope.time = metrics.time.toFixed(2);
+				$scope.speed = metrics.speed.toFixed(2);
+				$scope.loading = false;
+			}).
+			error(function(err) { $scope.error = "Failed to load records: " + err; });
+
+}]);

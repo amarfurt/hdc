@@ -26,6 +26,7 @@ PUT     /messages/:id/:from/:to     controllers.Messages.move(id: String, from: 
 GET     /records                    controllers.Records.index()
 POST    /records/get                controllers.Records.get()
 GET     /records/visible            controllers.Records.getVisibleRecords()
+POST    /records/cache              controllers.Records.cacheRecords()
 GET     /records/:id                controllers.Records.details(id: String)
 GET     /records/create/:appId      controllers.Records.create(appId: String)
 GET     /records/import/:appId      controllers.Records.importRecords(appId: String)
@@ -99,3 +100,5 @@ POST    /:userId/apps/:appId/create controllers.AppsAPI.createRecord(userId: Str
 GET     /:userId/apps/:appId/tokens controllers.AppsAPI.getTokens(userId: String, appId: String)
 POST    /:userId/apps/:appId/tokens controllers.AppsAPI.setTokens(userId: String, appId: String)
 POST    /apps/:appId/details        controllers.AppsAPI.getAppDetails(appId: String)
+# Visualizations Public API
+GET     /cache/:cacheId             controllers.VisualizationsAPI.popRecords(cacheId: String)

@@ -2,12 +2,14 @@ package controllers;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import models.App;
+import models.CacheEntry;
 import models.Circle;
 import models.ModelException;
 import models.Record;
@@ -45,7 +47,7 @@ public class Records extends Controller {
 	public static Result index() {
 		return ok(records.render());
 	}
-	
+
 	public static Result filter(String filters) {
 		return index();
 	}
@@ -57,11 +59,11 @@ public class Records extends Controller {
 	public static Result create(String appIdString) {
 		return ok(createrecords.render());
 	}
-	
+
 	public static Result importRecords(String appIdString) {
 		return ok(importrecords.render());
 	}
-	
+
 	public static Result onAuthorized(String appIdString) {
 		return ok(authorized.render());
 	}
@@ -93,8 +95,7 @@ public class Records extends Controller {
 		// get own records
 		ObjectId userId = new ObjectId(request().username());
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
-		Set<String> fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name")
-				.get();
+		Set<String> fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name").get();
 		List<Record> records;
 		try {
 			records = new ArrayList<Record>(Record.getAll(properties, fields));
@@ -115,8 +116,7 @@ public class Records extends Controller {
 		for (String userIdString : user.visible.keySet()) {
 			visibleRecordIds.addAll(user.visible.get(userIdString));
 		}
-		Map<String, Set<ObjectId>> visibleRecords = new ChainedMap<String, Set<ObjectId>>()
-				.put("_id", visibleRecordIds).get();
+		Map<String, Set<ObjectId>> visibleRecords = new ChainedMap<String, Set<ObjectId>>().put("_id", visibleRecordIds).get();
 		try {
 			records.addAll(Record.getAll(visibleRecords, fields));
 		} catch (ModelException e) {
@@ -155,6 +155,29 @@ public class Records extends Controller {
 		return ok("https://" + appServer + "/" + record.app.toString() + "/" + detailsUrl);
 	}
 
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result cacheRecords() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "records");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// create cache entry
+		CacheEntry entry = new CacheEntry();
+		entry._id = new ObjectId();
+		entry.expires = new Date().getTime() + 10 * 1000; // expires in 10 seconds
+		entry.items = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("records")));
+		try {
+			CacheEntry.add(entry);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok(Json.toJson(entry._id));
+	}
+
 	public static Result search(String query) {
 		// get the visible records
 		ObjectId userId = new ObjectId(request().username());
@@ -175,10 +198,8 @@ public class Records extends Controller {
 		}
 
 		// get records
-		Map<String, Set<ObjectId>> recordProperties = new ChainedMap<String, Set<ObjectId>>().put("_id", recordIds)
-				.get();
-		fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name").add("data")
-				.get();
+		Map<String, Set<ObjectId>> recordProperties = new ChainedMap<String, Set<ObjectId>>().put("_id", recordIds).get();
+		fields = new ChainedSet<String>().add("app").add("owner").add("creator").add("created").add("name").add("data").get();
 		List<Record> records;
 		try {
 			records = new ArrayList<Record>(Record.getAll(recordProperties, fields));
@@ -246,10 +267,8 @@ public class Records extends Controller {
 		}
 
 		// extract circle ids from posted data
-		Set<ObjectId> startedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json
-				.get("started")));
-		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json
-				.get("stopped")));
+		Set<ObjectId> startedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("started")));
+		Set<ObjectId> stoppedCircleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("stopped")));
 
 		// get all circles
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
