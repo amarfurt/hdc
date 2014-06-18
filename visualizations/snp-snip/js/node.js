@@ -4,10 +4,9 @@ var url = require('url');
 var dblite = require('dblite');
 var querystring = require('querystring');
 var async = require('async');
-var atob = require('atob');
 var csv = require('fast-csv');
 
-function onRequest(request, response) {
+var process = function(request, response) {
 
     // TODO cors just for testing, remove later
     response.setHeader("Access-Control-Allow-Origin", "*");
@@ -16,12 +15,12 @@ function onRequest(request, response) {
 
     var query = url.parse(request.url).query; 
 
-    if (querystring.parse(query).url) {
-        // handle request for parsing the 23andme file
+    if (querystring.parse(query).id) {
+        // handle request for retrieving and parsing the 23andme file
 
-        var encodedUrl = querystring.parse(query).url;
+        var cacheId = querystring.parse(query).id;
 
-        http.get(atob(encodedUrl), function(resp){
+        http.get("https://localhost:5000/snp-snip/" + cacheId), function(resp){
             var data = "";
             resp.on("data", function(chunk){
                 data += chunk;
@@ -90,5 +89,4 @@ function onRequest(request, response) {
     }
 }
     
-http.createServer(onRequest).listen(8888);
-console.log("server has started. Listening on port 8888 ...");
+exports.process = process;

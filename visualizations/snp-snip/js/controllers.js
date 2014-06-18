@@ -1,10 +1,10 @@
 function getGenomeDataFromUrl($scope, $routeParams) {
 
 	// parse Base64 encoded uri and get the file
-	if ($routeParams.records) {
+	if ($routeParams.cacheId) {
 		
         $.ajax({
-            url: "http://localhost:8888/?url="+$routeParams.records,
+            url: "http://localhost:8888/?id="+$routeParams.cacheId,
             success: function(data) {
                 $scope.$apply(function(){
                     $scope.snpMap = data.snpMap;
