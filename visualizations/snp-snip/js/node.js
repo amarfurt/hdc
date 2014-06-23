@@ -20,7 +20,7 @@ var process = function(request, response) {
 
         var cacheId = querystring.parse(query).id;
 
-        http.get("https://localhost:5000/snp-snip/" + cacheId), function(resp){
+        http.get("https://localhost:5000/snp-snip/" + cacheId, function(resp){
             var data = "";
             resp.on("data", function(chunk){
                 data += chunk;
