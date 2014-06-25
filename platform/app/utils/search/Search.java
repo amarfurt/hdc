@@ -55,8 +55,7 @@ public class Search {
 	public static void connect() {
 		// start a client node (holds no data)
 		Settings settings = ImmutableSettings.settingsBuilder().put("http.enabled", "false").put("transcport.tcp.port", "9300-9400")
-				.put("discovery.zen.ping.multicast.enabled", "false").put("discovery.zen.ping.multicast.enabled", "false")
-				.put("discovery.zen.ping.unicast.hosts", "localhost").build();
+				.put("discovery.zen.ping.multicast.enabled", "false").put("discovery.zen.ping.unicast.hosts", "localhost").build();
 		node = NodeBuilder.nodeBuilder().clusterName(CLUSTER_NAME).client(true).settings(settings).node();
 		client = node.client();
 	}
