@@ -7,6 +7,7 @@ var async = require('async');
 var csv = require('fast-csv');
 
 var process = function(request, response) {
+    console.log('shitfelix');
 
     // TODO cors just for testing, remove later
     response.setHeader("Access-Control-Allow-Origin", "*");
@@ -20,7 +21,7 @@ var process = function(request, response) {
 
         var cacheId = querystring.parse(query).id;
 
-        http.get("https://localhost:5000/snp-snip/" + cacheId, function(resp){
+        http.get("http://localhost:9001/cache/" + cacheId, function(resp){
             var data = "";
             resp.on("data", function(chunk){
                 data += chunk;
@@ -48,8 +49,11 @@ var process = function(request, response) {
     } else {
         // handle request for data about a SNP
         var rsNumber = querystring.parse(query).rs;
+
+        console.log('felix');
+        console.log(rsNumber);
         
-        var files = fs.readdirSync('.').filter(function(filename){return /^\w+\.db$/.test(filename)});
+        var files = fs.readdirSync('../visualizations/snp-snip/databases').filter(function(filename){return /^\w+\.db$/.test(filename)});
         var tasks = {};
 
         for (i in files) {
@@ -58,7 +62,7 @@ var process = function(request, response) {
             var resource = files[i].match(/^(\w+)\.db$/)[1];
             tasks[resource] = function(filename) { 
                 return function(callback) {
-                    dblite(filename).query(
+                    dblite('../visualizations/snp-snip/databases/'+filename).query(
                         'SELECT * FROM main WHERE rs = ?',
                         [rsNumber],
                         function(rows) {
@@ -84,6 +88,7 @@ var process = function(request, response) {
                     delete results[resource];
                 }
             }
+            console.log(JSON.stringify(results));
             response.end(JSON.stringify(results));
         });
     }

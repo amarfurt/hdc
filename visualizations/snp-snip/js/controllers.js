@@ -4,7 +4,7 @@ function getGenomeDataFromUrl($scope, $routeParams) {
 	if ($routeParams.cacheId) {
 		
         $.ajax({
-            url: "http://localhost:8888/?id="+$routeParams.cacheId,
+            url: "https://localhost:5000/snp-snip/?id="+$routeParams.cacheId,
             success: function(data) {
                 $scope.$apply(function(){
                     $scope.snpMap = data.snpMap;
@@ -61,7 +61,7 @@ function prepareSearchResults($scope, $sce, rs) {
 
             // get all data from the node server
             $.ajax({
-                    url: "http://localhost:8888/?rs="+rs,
+                    url: "https://localhost:5000/snp-snip/?rs="+rs,
                     success: function(response) {
                         $scope.$apply(function() {
 
