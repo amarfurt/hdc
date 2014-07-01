@@ -7,7 +7,6 @@ var async = require('async');
 var csv = require('fast-csv');
 
 var process = function(request, response) {
-    console.log('shitfelix');
 
     // TODO cors just for testing, remove later
     response.setHeader("Access-Control-Allow-Origin", "*");
@@ -50,8 +49,6 @@ var process = function(request, response) {
         // handle request for data about a SNP
         var rsNumber = querystring.parse(query).rs;
 
-        console.log('felix');
-        console.log(rsNumber);
         
         var files = fs.readdirSync('../visualizations/snp-snip/databases').filter(function(filename){return /^\w+\.db$/.test(filename)});
         var tasks = {};
@@ -88,7 +85,6 @@ var process = function(request, response) {
                     delete results[resource];
                 }
             }
-            console.log(JSON.stringify(results));
             response.end(JSON.stringify(results));
         });
     }
