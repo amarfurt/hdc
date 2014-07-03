@@ -8,7 +8,7 @@ var hdcSnpSnip = angular.module('hdcSnpSnip', [
 hdcSnpSnip.config(['$routeProvider',
 	function($routeProvider) {
     $routeProvider.
-		when('/:records', {
+		when('/:cacheId', {
 			templateUrl: 'views/snpSnip.html',
 			controller: 'SnpSnipCtrl'
 		}).when('/', {

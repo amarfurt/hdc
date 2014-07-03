@@ -16,6 +16,7 @@ var process = function(request, response) {
     var query = url.parse(request.url).query; 
 
     if (querystring.parse(query).id) {
+        console.log(querystring.parse(query).id);
         // handle request for retrieving and parsing the 23andme file
 
         var cacheId = querystring.parse(query).id;
@@ -27,7 +28,13 @@ var process = function(request, response) {
             }).on('end', function(){
 
                 // extract and remove the comment at the top 
-                var comment = data.match(/^\s*#.*$/gm).join('');
+                m = data.match(/^\s*#.*$/gm);
+                var comment;
+                if (m) {
+                    comment = m.join('');
+                } else {
+                    comment = '';
+                }
                 data = data.replace(/^\s*#.*$/gm, '');
 
                 var snpMap = {};
