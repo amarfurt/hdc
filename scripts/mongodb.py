@@ -1,0 +1,57 @@
+'''
+Configuration of MongoDB.
+
+@author amarfurt
+'''
+
+import os
+from product import Product
+from command import Command
+
+class MongoDB(Product):
+
+	def __init__(self, parentDir):
+		self.parent = parentDir
+		self.base = os.path.join(self.parent, 'mongodb')
+		self.data = os.path.join(self.base, 'data')
+		self.bin = os.path.join(self.base, 'bin')
+
+	def setup(self, version):
+		print 'Setting up MongoDB...'
+		print 'Downloading binaries...'
+		Command.execute('wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-{0}.tgz'.format(version), self.parent)
+		print 'Extracting...'
+		Command.execute('tar xzf mongodb-linux-x86_64-{0}.tgz'.format(version), self.parent)
+		print 'Setting symlink...'
+		Command.execute('ln -s mongodb-linux-x86_64-{0} mongodb'.format(version), self.parent)
+		print 'Creating required folders...'
+		if not os.path.exists(self.data):
+			os.mkdir(self.data)
+		print 'Writing config file...'
+		with open(os.path.join(self.parent, 'config', 'mongod.conf'), 'r') as configFile:
+			config = configFile.read()
+			config = config.replace('MONGODB_DATA_PATH', self.data)
+			config = config.replace('MONGODB_LOG_PATH', os.path.join(self.parent, 'logs', 'mongod.log'))
+		with open(os.path.join(self.base, 'mongod.conf'), 'w') as configFile:
+			configFile.write(config)
+		print 'Cleaning up...'
+		Command.execute('rm mongodb-linux-x86_64-{0}.tgz'.format(version), self.parent)
+
+	def start(self):
+		print 'Starting MongoDB...'
+		Command.execute('{0} --config {1}'.format(os.path.join(self.bin, 'mongod'), 
+			os.path.join(self.base, 'mongod.conf')), self.parent)
+
+	def stop(self):
+		print 'Shutting down MongoDB...'
+		Command.execute('pkill mongod')
+
+	def reset(self):
+		print 'Reimporting data from dump...'
+		Command.execute('{0} --drop --db healthdata {1}'.format(os.path.join(self.bin, 'mongorestore'), 
+			os.path.join(self.parent, 'dump', 'mongodb', 'healthdata')), self.parent)
+
+	def dump(self):
+		print 'Dumping database...'
+		Command.execute('{0} --db healthdata --out {1}'.format(os.path.join(self.bin, 'mongodump'), 
+			os.path.join(self.parent, 'dump', 'mongodb')), self.parent)

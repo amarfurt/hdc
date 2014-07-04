@@ -1,0 +1,28 @@
+{
+  "name" : "snapshot",
+  "index_version" : 3,
+  "start_time" : 1405069850868,
+  "time" : 177,
+  "number_of_files" : 4,
+  "total_size" : 3841,
+  "files" : [ {
+    "name" : "__0",
+    "physical_name" : "_0.cfs",
+    "length" : 2791,
+    "checksum" : "eqb20k"
+  }, {
+    "name" : "__1",
+    "physical_name" : "_0.cfe",
+    "length" : 653,
+    "checksum" : "vbovrb"
+  }, {
+    "name" : "__2",
+    "physical_name" : "_0.si",
+    "length" : 282,
+    "checksum" : "pde82b"
+  }, {
+    "name" : "__3",
+    "physical_name" : "segments_3",
+    "length" : 115
+  } ]
+}

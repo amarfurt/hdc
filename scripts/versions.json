@@ -1,0 +1,7 @@
+{
+    "activator": "1.2.2",
+    "mongodb": "2.6.1",
+    "elasticsearch": "1.2.1",
+    "node": "0.10.29",
+    "lighttpd": "1.4.33"
+}

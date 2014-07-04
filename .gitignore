@@ -1,9 +1,15 @@
 /.settings
-logs
-activator*
-elasticsearch*
-mongodb*
-lighttpd*
-node*
-ssl-certificate
+logs/
+activator
+activator*/
+elasticsearch
+elasticsearch*/
+!dump/elasticsearch/
+mongodb
+mongodb*/
+!dump/mongodb/
+lighttpd
+node
+node*/
+ssl-certificate/
 

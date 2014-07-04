@@ -1,0 +1,27 @@
+{
+	"mongodb": {
+		"module": "scripts.mongodb",
+		"class": "MongoDB",
+		"startOrder": 1
+	},
+	"elasticsearch": {
+		"module": "scripts.elasticsearch",
+		"class": "ElasticSearch",
+		"startOrder": 1
+	},
+	"lighttpd": {
+		"module": "scripts.lighttpd",
+		"class": "Lighttpd",
+		"startOrder": 1
+	},
+	"node": {
+		"module": "scripts.node",
+		"class": "Node",
+		"startOrder": 1
+	},
+	"activator": {
+		"module": "scripts.activator",
+		"class": "Activator",
+		"startOrder": 2
+	}
+}

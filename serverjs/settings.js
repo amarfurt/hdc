@@ -7,14 +7,12 @@ var fs = require("fs");
 
 // settings
 var localhost = "localhost";
-// var localhost = "129.132.227.148";
 var nodePort = 5000;
 
 // ssl certificate
-var path = fs.realpathSync(".");
 var sslOptions = {
-		key: fs.readFileSync(path + "/ssl-certificate/server.key"),
-		cert: fs.readFileSync(path + "/ssl-certificate/server.crt")
+		key: fs.readFileSync("NODE_SSL_SERVER_KEY"),
+		cert: fs.readFileSync("NODE_SSL_SERVER_CERT")
 }
 
 // export settings
