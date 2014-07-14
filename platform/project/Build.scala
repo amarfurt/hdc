@@ -2,7 +2,6 @@ import sbt._
 import Keys._
 import play.Play.autoImport._
 import PlayKeys._
-// import play.twirl.sbt.Import._
 
 object ApplicationBuild extends Build {
 
@@ -12,8 +11,6 @@ object ApplicationBuild extends Build {
   val appDependencies = Seq(
     // Add your project dependencies here
     javaCore,
-    javaJdbc,
-    javaEbean,
     "org.mongodb" % "mongo-java-driver" % "2.12.2",
     "org.elasticsearch" % "elasticsearch" % "1.2.1"
   )

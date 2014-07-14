@@ -1,0 +1,63 @@
+'''
+Created on Jun 25, 2014
+
+Main file from where the different scripts are called.
+
+@author amarfurt
+'''
+
+import os, sys, json, importlib
+from scripts.sslcert import SSLCertificate
+
+def instantiate(modules, name, *args):
+	''' Imports the module and instantiates the class '''
+	mod = importlib.import_module(modules[name]['module'])
+	cls = getattr(mod, modules[name]['class'])
+	return cls(*args)
+
+def main(command, product=None):
+	# base directory is project home (current working directory)
+	baseDir = os.getcwd()
+
+	# get used modules
+	with open('scripts/modules.json', 'r') as reader:
+		modules = json.load(reader, 'utf8')
+
+	# load specified (otherwise all) modules and instantiate respective classes
+	instances = []
+	if product in modules:
+		instances.append((product, instantiate(modules, product, baseDir)))
+	else:
+		# append instances in correct starting order
+		for productName in sorted(modules, key=lambda name: modules[name]['startOrder']):
+			instances.append((productName, instantiate(modules, productName, baseDir)))
+
+	# possibly execute general operations
+	args = []
+	if command == 'setup':
+		# create logs directory
+		logDir = os.path.join(baseDir, 'logs')
+		if not os.path.exists(logDir):
+			os.mkdir(logDir)
+
+		# create SSL certificate
+		if not product:
+			SSLCertificate(baseDir).create()
+
+		# get product versions
+		with open('scripts/versions.json', 'r') as reader:
+			versions = json.load(reader, 'utf8')
+			args.append(versions)
+
+
+	# execute given method for each instance
+	for productName, instance in instances:
+		try:
+			method = getattr(instance, command)
+		except:
+			print "Class " + instance.__class__.__name__ + " has no method " + command
+		else:
+			curArgs = [arg[productName] for arg in args]
+			method(*curArgs)
+
+main(*sys.argv[1:])
