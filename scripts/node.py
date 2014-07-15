@@ -29,8 +29,8 @@ class Node(Product):
 		print 'Setting paths in settings file...'
 		with open(os.path.join(self.code, 'settings.js'), 'r') as configFile:
 			config = configFile.read()
-			config = config.replace('NODE_SSL_SERVER_KEY', os.path.join(self.ssl, 'server.key'))
-			config = config.replace('NODE_SSL_SERVER_CERT', os.path.join(self.ssl, 'server.crt'))
+			config = config.replace('NODE_SSL_SERVER_KEY', os.path.join(self.ssl, 'server.pem'))
+			config = config.replace('NODE_SSL_SERVER_CERT', os.path.join(self.ssl, 'server.pem'))
 		with open(os.path.join(self.code, 'settings.js'), 'w') as configFile:
 			configFile.write(config)
 		print 'Cleaning up...'

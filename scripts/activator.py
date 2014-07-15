@@ -4,7 +4,7 @@ Configuration of Activator for the Play Framework.
 @author amarfurt
 '''
 
-import os
+import os, getpass
 from product import Product
 from command import Command
 from sslcert import SSLCertificate
@@ -32,9 +32,10 @@ class Activator(Product):
 
 	def start(self):
 		print 'Starting Activator...'
+		password = getpass.getpass("Please enter the password for the Java KeyStore: ")
 		# Command.execute(self.bin + ' start', self.platform)
-		Command.execute('{0} run -Dhttp.port=9001 -Dhttps.port=9000 -Dhttps.keyStore={1} -Dhttps.keyStorePassword=secret'
-			.format(self.bin, self.keystore), self.code)
+		Command.execute('{0} run -Dhttp.port=9001 -Dhttps.port=9000 -Dhttps.keyStore={1} -Dhttps.keyStorePassword={2}'
+			.format(self.bin, self.keystore, password), self.code)
 
 	def stop(self):
 		print 'Shutting down Activator...'

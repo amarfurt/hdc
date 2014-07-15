@@ -7,7 +7,6 @@ Main file from where the different scripts are called.
 '''
 
 import os, sys, json, importlib
-from scripts.sslcert import SSLCertificate
 
 def instantiate(modules, name, *args):
 	''' Imports the module and instantiates the class '''
@@ -40,24 +39,24 @@ def main(command, product=None):
 		if not os.path.exists(logDir):
 			os.mkdir(logDir)
 
-		# create SSL certificate
-		if not product:
-			SSLCertificate(baseDir).create()
-
 		# get product versions
 		with open('scripts/versions.json', 'r') as reader:
 			versions = json.load(reader, 'utf8')
 			args.append(versions)
 
-
 	# execute given method for each instance
 	for productName, instance in instances:
 		try:
 			method = getattr(instance, command)
-		except:
-			print "Class " + instance.__class__.__name__ + " has no method " + command
+		except AttributeError:
+			print "[ERROR]: Class '" + instance.__class__.__name__ + "'' has no method '" + command + "'."
+			continue
 		else:
-			curArgs = [arg[productName] for arg in args]
-			method(*curArgs)
+			curArgs = [arg[productName] for arg in args if productName in arg]
+			try:
+				method(*curArgs)
+			except:
+				print "[ERROR]: '" + command + "' failed for '" + productName + "'."
+				continue
 
 main(*sys.argv[1:])

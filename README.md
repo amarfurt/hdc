@@ -10,6 +10,7 @@ The main.py python script covers the basic tasks: setup, start, stop and resetti
 - Python 2.7
 - curl
 - openssl (built on or after Apr 7, 2014)
+- keytool
 
 The script is called with
 ```
