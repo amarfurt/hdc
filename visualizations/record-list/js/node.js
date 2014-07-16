@@ -85,7 +85,7 @@ var process = function(request, response) {
 					}
 					ok(response, origin, JSON.stringify(records));
 				} else {
-					badRequest(response, origin, "Failed to get the records: " + json.error);
+					badRequest(response, origin, json.error);
 				}
 			});
 		});
