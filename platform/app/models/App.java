@@ -32,7 +32,7 @@ public class App extends Plugin implements Comparable<App> {
 		return this.name.compareTo(other.name);
 	}
 
-	public static boolean exists(Map<String, ? extends Object> properties) {
+	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
 		return Model.exists(collection, properties);
 	}
 

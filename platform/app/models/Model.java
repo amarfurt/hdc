@@ -37,8 +37,12 @@ public abstract class Model {
 		}
 	}
 
-	public static boolean exists(String collection, Map<String, ? extends Object> properties) {
-		return Database.exists(collection, properties);
+	public static boolean exists(String collection, Map<String, ? extends Object> properties) throws ModelException {
+		try {
+			return Database.exists(collection, properties);
+		} catch (DatabaseException e) {
+			throw new ModelException(e);
+		}
 	}
 
 	public static <T extends Model> T get(Class<T> modelClass, String collection,

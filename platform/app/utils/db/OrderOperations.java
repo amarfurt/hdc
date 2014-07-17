@@ -6,7 +6,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
+import com.mongodb.MongoException;
 
 public class OrderOperations {
 
@@ -68,8 +68,11 @@ public class OrderOperations {
 		}
 		DBObject update = new BasicDBObject("$inc", new BasicDBObject("order", increment));
 		DBCollection coll = Database.getCollection(collection);
-		WriteResult result = coll.updateMulti(query, update);
-		DatabaseException.throwIfPresent(result.getLastError().getErrorMessage());
+		try {
+			coll.updateMulti(query, update);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
+		}
 	}
 
 }

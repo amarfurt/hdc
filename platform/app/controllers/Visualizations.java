@@ -90,7 +90,12 @@ public class Visualizations extends Controller {
 		ObjectId visualizationId = new ObjectId(visualizationIdString);
 		Map<String, Object> properties = new ChainedMap<String, Object>().put("_id", userId)
 				.put("visualizations", visualizationId).get();
-		boolean isInstalled = User.exists(properties);
+		boolean isInstalled;
+		try {
+			isInstalled = User.exists(properties);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
 		return ok(Json.toJson(isInstalled));
 	}
 

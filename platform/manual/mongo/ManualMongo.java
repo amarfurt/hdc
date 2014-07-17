@@ -8,7 +8,7 @@ import utils.db.Database;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
+import com.mongodb.MongoException;
 
 /**
  * Manually insert documents into MongoDB.
@@ -23,12 +23,12 @@ public class ManualMongo {
 		start(fakeApplication(fakeGlobal()));
 		Database.connect();
 		DBCollection coll = Database.getCollection(collection);
-		WriteResult wr = coll.updateMulti(new BasicDBObject(), new BasicDBObject("$set", new BasicDBObject(field, value)));
-		if (wr.getLastError().getErrorMessage() == null) {
-			System.out.println("Successful.");
-		} else {
-			System.out.println("Error: " + wr.getLastError().getErrorMessage());
+		try {
+			coll.updateMulti(new BasicDBObject(), new BasicDBObject("$set", new BasicDBObject(field, value)));
+		} catch (MongoException e) {
+			System.out.println("Error: " + e.getMessage());
 		}
+		System.out.println("Successful.");
 	}
 
 }

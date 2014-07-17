@@ -78,8 +78,12 @@ public class Application extends Controller {
 		String firstName = json.get("firstName").asText();
 		String lastName = json.get("lastName").asText();
 		String password = json.get("password").asText();
-		if (User.exists(new ChainedMap<String, String>().put("email", email).get())) {
-			return badRequest("A user with this email address already exists.");
+		try {
+			if (User.exists(new ChainedMap<String, String>().put("email", email).get())) {
+				return badRequest("A user with this email address already exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// create the user

@@ -27,7 +27,7 @@ public class Space extends Model implements Comparable<Space> {
 		return this.order - o.order;
 	}
 
-	public static boolean exists(Map<String, ? extends Object> properties) {
+	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
 		return Model.exists(collection, properties);
 	}
 

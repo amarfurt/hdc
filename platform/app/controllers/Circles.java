@@ -74,8 +74,12 @@ public class Circles extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		String name = json.get("name").asText();
-		if (Circle.exists(new ChainedMap<String, Object>().put("owner", userId).put("name", name).get())) {
-			return badRequest("A circle with this name already exists.");
+		try {
+			if (Circle.exists(new ChainedMap<String, Object>().put("owner", userId).put("name", name).get())) {
+				return badRequest("A circle with this name already exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// create new circle
@@ -98,8 +102,12 @@ public class Circles extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId circleId = new ObjectId(circleIdString);
-		if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
-			return badRequest("No circle with this id exists.");
+		try {
+			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
+				return badRequest("No circle with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// get the circle's members and shared records
@@ -140,8 +148,12 @@ public class Circles extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId circleId = new ObjectId(circleIdString);
-		if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
-			return badRequest("No circle with this id exists.");
+		try {
+			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
+				return badRequest("No circle with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// add users to circle (implicit: if not already present)
@@ -169,8 +181,12 @@ public class Circles extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId circleId = new ObjectId(circleIdString);
-		if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
-			return badRequest("No circle with this id exists.");
+		try {
+			if (!Circle.exists(new ChainedMap<String, ObjectId>().put("_id", circleId).put("owner", userId).get())) {
+				return badRequest("No circle with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// remove member from circle (implicit: if present)

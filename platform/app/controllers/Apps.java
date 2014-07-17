@@ -93,7 +93,12 @@ public class Apps extends Controller {
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId appId = new ObjectId(appIdString);
 		Map<String, Object> properties = new ChainedMap<String, Object>().put("_id", userId).put("apps", appId).get();
-		boolean isInstalled = User.exists(properties);
+		boolean isInstalled;
+		try {
+			isInstalled = User.exists(properties);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
 		return ok(Json.toJson(isInstalled));
 	}
 

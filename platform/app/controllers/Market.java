@@ -55,8 +55,12 @@ public class Market extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		String name = json.get("name").asText();
-		if (App.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
-			return badRequest("An app with the same name already exists.");
+		try {
+			if (App.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
+				return badRequest("An app with the same name already exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// create new app
@@ -106,8 +110,12 @@ public class Market extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		String name = json.get("name").asText();
-		if (Visualization.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
-			return badRequest("A visualization with the same name already exists.");
+		try {
+			if (Visualization.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
+				return badRequest("A visualization with the same name already exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// create new visualization

@@ -126,9 +126,12 @@ public class Messages extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId messageId = new ObjectId(messageIdString);
-		if (!User
-				.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages." + from, messageId).get())) {
-			return badRequest("No message with this id exists.");
+		try {
+			if (!User.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages." + from, messageId).get())) {
+				return badRequest("No message with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// update the respective message folders
@@ -149,8 +152,12 @@ public class Messages extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId messageId = new ObjectId(messageIdString);
-		if (!User.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages.trash", messageId).get())) {
-			return badRequest("No message with this id exists.");
+		try {
+			if (!User.exists(new ChainedMap<String, ObjectId>().put("_id", userId).put("messages.trash", messageId).get())) {
+				return badRequest("No message with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// remove message from trash folder and user's search index
@@ -170,8 +177,12 @@ public class Messages extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId messageId = new ObjectId(messageIdString);
-		if (!Message.exists(new ChainedMap<String, ObjectId>().put("_id", messageId).get())) {
-			return badRequest("No message with this id exists.");
+		try {
+			if (!Message.exists(new ChainedMap<String, ObjectId>().put("_id", messageId).get())) {
+				return badRequest("No message with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// remove the message from the user's inbox

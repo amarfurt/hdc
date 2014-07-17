@@ -75,8 +75,12 @@ public class Spaces extends Controller {
 		ObjectId userId = new ObjectId(request().username());
 		String name = json.get("name").asText();
 		String visualizationIdString = json.get("visualization").asText();
-		if (Space.exists(new ChainedMap<String, Object>().put("owner", userId).put("name", name).get())) {
-			return badRequest("A space with this name already exists.");
+		try {
+			if (Space.exists(new ChainedMap<String, Object>().put("owner", userId).put("name", name).get())) {
+				return badRequest("A space with this name already exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// create new space
@@ -99,8 +103,12 @@ public class Spaces extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId spaceId = new ObjectId(spaceIdString);
-		if (!Space.exists(new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId).get())) {
-			return badRequest("No space with this id exists.");
+		try {
+			if (!Space.exists(new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId).get())) {
+				return badRequest("No space with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// delete space
@@ -127,8 +135,12 @@ public class Spaces extends Controller {
 		ObjectId spaceId = new ObjectId(spaceIdString);
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId)
 				.get();
-		if (!Space.exists(properties)) {
-			return badRequest("No space with this id exists.");
+		try {
+			if (!Space.exists(properties)) {
+				return badRequest("No space with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// add records to space (implicit: if not already present)

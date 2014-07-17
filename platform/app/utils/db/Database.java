@@ -17,7 +17,8 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.WriteResult;
+import com.mongodb.MongoException;
+import com.mongodb.WriteConcern;
 
 public class Database {
 
@@ -32,6 +33,7 @@ public class Database {
 		int port = Play.application().configuration().getInt("mongo.port");
 		try {
 			mongoClient = new MongoClient(host, port);
+			mongoClient.setWriteConcern(WriteConcern.ACKNOWLEDGED);
 		} catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -97,11 +99,12 @@ public class Database {
 		DBObject dbObject;
 		try {
 			dbObject = DatabaseConversion.toDBObject(modelObject);
+			getCollection(collection).insert(dbObject);
 		} catch (DatabaseConversionException e) {
 			throw new DatabaseException(e);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
 		}
-		WriteResult writeResult = getCollection(collection).insert(dbObject);
-		DatabaseException.throwIfPresent(writeResult.getLastError().getErrorMessage());
 	}
 
 	/**
@@ -109,29 +112,38 @@ public class Database {
 	 */
 	public static void delete(String collection, Map<String, ? extends Object> properties) throws DatabaseException {
 		DBObject query = toDBObject(properties);
-		WriteResult writeResult = getCollection(collection).remove(query);
-		DatabaseException.throwIfPresent(writeResult.getLastError().getErrorMessage());
+		try {
+			getCollection(collection).remove(query);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
+		}
 	}
 
 	/**
 	 * Check whether a document exists that has the given properties.
 	 */
-	public static boolean exists(String collection, Map<String, ? extends Object> properties) {
+	public static boolean exists(String collection, Map<String, ? extends Object> properties) throws DatabaseException {
 		DBObject query = toDBObject(properties);
 		DBObject projection = new BasicDBObject("_id", 1);
-		return getCollection(collection).findOne(query, projection) != null;
+		try {
+			return getCollection(collection).findOne(query, projection) != null;
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
+		}
 	}
 
 	/**
 	 * Return the given fields of the object that has the given properties.
 	 */
-	public static <T extends Model> T get(Class<T> modelClass, String collection,
-			Map<String, ? extends Object> properties, Set<String> fields) throws DatabaseException {
+	public static <T extends Model> T get(Class<T> modelClass, String collection, Map<String, ? extends Object> properties,
+			Set<String> fields) throws DatabaseException {
 		DBObject query = toDBObject(properties);
 		DBObject projection = toDBObject(fields);
-		DBObject dbObject = getCollection(collection).findOne(query, projection);
 		try {
+			DBObject dbObject = getCollection(collection).findOne(query, projection);
 			return DatabaseConversion.toModel(modelClass, dbObject);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
 		} catch (DatabaseConversionException e) {
 			throw new DatabaseException(e);
 		}
@@ -140,14 +152,16 @@ public class Database {
 	/**
 	 * Return the given fields of all objects that have the given properties.
 	 */
-	public static <T extends Model> Set<T> getAll(Class<T> modelClass, String collection,
-			Map<String, ? extends Object> properties, Set<String> fields) throws DatabaseException {
+	public static <T extends Model> Set<T> getAll(Class<T> modelClass, String collection, Map<String, ? extends Object> properties,
+			Set<String> fields) throws DatabaseException {
 		DBObject query = toDBObject(properties);
 		DBObject projection = toDBObject(fields);
-		DBCursor cursor = getCollection(collection).find(query, projection);
-		Set<DBObject> dbObjects = CollectionConversion.toSet(cursor);
 		try {
+			DBCursor cursor = getCollection(collection).find(query, projection);
+			Set<DBObject> dbObjects = CollectionConversion.toSet(cursor);
 			return DatabaseConversion.toModel(modelClass, dbObjects);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
 		} catch (DatabaseConversionException e) {
 			throw new DatabaseException(e);
 		}
@@ -159,8 +173,11 @@ public class Database {
 	public static void set(String collection, ObjectId modelId, String field, Object value) throws DatabaseException {
 		DBObject query = new BasicDBObject("_id", modelId);
 		DBObject update = new BasicDBObject("$set", new BasicDBObject(field, value));
-		WriteResult writeResult = getCollection(collection).update(query, update);
-		DatabaseException.throwIfPresent(writeResult.getLastError().getErrorMessage());
+		try {
+			getCollection(collection).update(query, update);
+		} catch (MongoException e) {
+			throw new DatabaseException(e);
+		}
 	}
 
 	/**

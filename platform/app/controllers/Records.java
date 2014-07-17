@@ -262,8 +262,12 @@ public class Records extends Controller {
 		// validate request: record
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId recordId = new ObjectId(recordIdString);
-		if (!Record.exists(new ChainedMap<String, ObjectId>().put("_id", recordId).put("owner", userId).get())) {
-			return badRequest("No record with this id exists.");
+		try {
+			if (!Record.exists(new ChainedMap<String, ObjectId>().put("_id", recordId).put("owner", userId).get())) {
+				return badRequest("No record with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// extract circle ids from posted data

@@ -104,8 +104,12 @@ public class News extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId newsItemId = new ObjectId(newsItemIdString);
-		if (!NewsItem.exists(new ChainedMap<String, ObjectId>().put("_id", newsItemId).put("creator", userId).get())) {
-			return badRequest("No news item with this id exists.");
+		try {
+			if (!NewsItem.exists(new ChainedMap<String, ObjectId>().put("_id", newsItemId).put("creator", userId).get())) {
+				return badRequest("No news item with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
 		}
 
 		// delete news item

@@ -35,7 +35,7 @@ public class User extends Model implements Comparable<User> {
 		return this.name.compareTo(o.name);
 	}
 
-	public static boolean exists(Map<String, ? extends Object> properties) {
+	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
 		return Model.exists(collection, properties);
 	}
 
