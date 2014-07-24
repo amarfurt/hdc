@@ -7,6 +7,7 @@ Manage, understand, and leverage your health data.
 Scripts
 -------
 The main.py python script covers the basic tasks: setup, start, stop and resetting the database to an example state. It's been tested under Ubuntu. Required software:
+- JDK 1.7+ (required by ElasticSearch)
 - Python 2.7
 - curl
 - openssl (built on or after Apr 7, 2014)
