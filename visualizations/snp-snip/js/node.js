@@ -16,42 +16,75 @@ var process = function(request, response) {
     var query = url.parse(request.url).query; 
 
     if (querystring.parse(query).id) {
-        console.log(querystring.parse(query).id);
         // handle request for retrieving and parsing the 23andme file
 
         var cacheId = querystring.parse(query).id;
 
         http.get("http://localhost:9001/cache/" + cacheId, function(resp){
-            var data = "";
+            var json = "";
             resp.on("data", function(chunk){
-                data += chunk;
+                json += chunk;
             }).on('end', function(){
 
-                // extract and remove the comment at the top 
-                m = data.match(/^\s*#.*$/gm);
-                var comment;
-                if (m) {
-                    comment = m.join('');
-                } else {
-                    comment = '';
+                var records = {};
+                try { 
+                    records = JSON.parse(json);
+                } catch (exception) {
                 }
-                data = data.replace(/^\s*#.*$/gm, '');
 
-                var snpMap = {};
-                csv
-                  .fromString(data, {delimiter: '\t'})
-                  .on("record", function(row){
-                      if (/^rs\d+$/.test(row[0]) && /^[ATCG]{2}$/.test(row[3])) {
-                          snpMap[row[0]] = row[3];
-                      }
-                  })
-                  .on("end", function(){
-                      result = {'snpMap': snpMap, 'comment': comment};
-                      response.end(JSON.stringify(result));
-                  });
+                var tasks = {};
+                for (i in records) {
+                    tasks[JSON.parse(records[i].data).title] = function(record) {
+
+                        return function(callback) {
+
+                            var name;
+                            var content;
+
+                            try {
+                                name = JSON.parse(record.data).title;
+                                content = JSON.parse(record.data).data;
+                            } catch (exception) {
+                            }
+
+                            if (!content) {
+                                content = '';
+                            }
+
+                            // extract and remove the comment at the top 
+                            m = content.match(/^\s*#.*$/gm);
+                            var comment;
+                            if (m) {
+                                comment = m.join('');
+                            } else {
+                                comment = '';
+                            }
+                            content = content.replace(/^\s*#.*$/gm, '');
+
+                            var snpMap = {};
+                            csv
+                              .fromString(content, {delimiter: '\t'})
+                              .on("record", function(row){
+                                  if (/^rs\d+$/.test(row[0]) && /^[ATCG]{2}$/.test(row[3])) {
+                                      snpMap[row[0]] = row[3];
+                                  }
+                              })
+                              .on("end", function(){
+                                  callback(null, {'snpMap': snpMap, 'comment': comment});
+                              });
+
+                        };
+                    }(records[i]);
+                }
+
+
+                async.parallel(tasks, function(err, results) {
+                    response.end(JSON.stringify(results));
+                });
+
             });
         });
-
+                
     } else {
         // handle request for data about a SNP
         var rsNumber = querystring.parse(query).rs;

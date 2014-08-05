@@ -2,25 +2,30 @@
     <div ng-if="imported" class="alert alert-success alert-dismissable">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
       <strong>Record import successful!</strong><br/>
-      Date of generation: {{importDate}}<br/>
-      Build: <a href={{importBuildUrl}}>{{importBuild}}</a><br/>
-      Loaded SNP genotypes: {{importCount}}
+      {{recordCount}} records have been imported.
     </div>
 
     <div ng-show="importFailed" class="alert alert-danger alert-dismissable">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      <strong>Record import failed!</strong>
-      You can still browse the SNP database but there will be no information on your personal genome.
+      <strong>Record import failed!</strong><br/>
+      No records were imported. You can still browse the SNP database but there will be no information on your personal genome.
     </div>
 
     <div ng-show="!imported && !importFailed" class="alert alert-warning alert-dismissable">
       <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-      <strong>Loading records ...</strong>
+      <strong>Loading records ...</strong><br/>
       You can already browse the SNP database but there will be no information on your personal genome.
     </div>
 
-<div ng-disabled="!imported && !importFailed">
     <img src="img/SNP_snip_logo.png" alt="image of SNP snip logo not found"><br><br>		
+
+    <div ng-show="recordCount" class="jumbotron">
+        <label>Select record:</label><select ng-model="selectedRecordName" ng-options="recordName for recordName in recordNames"></select>
+        <h4>Current Record:</h4>
+        Date of generation: {{records[selectedRecordName].date}}<br/>
+        Build: <a href={{records[selectedRecordName].buildUrl}}>{{records[selectedRecordName].build}}</a><br/>
+        Loaded SNP genotypes: {{records[selectedRecordName].count}}
+    </div>
 
     <form>
         <label>Search for a SNP</label>
@@ -94,8 +99,8 @@
 
         <br/>
 
-        <div ng-show="data[rs].userHas" class="jumbotron">
-            <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font>.</h4>
+        <div class="jumbotron">
+            <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!data[rs].userHas">not available</span>.</h4>
         </div>
 
         <div ng-repeat="resource in data[rs].resources">
