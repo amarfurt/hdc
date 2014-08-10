@@ -99,10 +99,6 @@
 
         <br/>
 
-        <div class="jumbotron">
-            <h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="data[rs].userHas"><span class="label label-default">{{data[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!data[rs].userHas">not available</span>.</h4>
-        </div>
-
         <div ng-repeat="resource in data[rs].resources">
             <div ng-include="'modules/templates/'+resource+'.html'"></div>
         </div>

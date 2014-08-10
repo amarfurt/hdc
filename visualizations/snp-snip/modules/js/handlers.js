@@ -1,5 +1,23 @@
-modules['dbsnp'] = {
+modules['_genotype'] = {
     position: 0,
+    priority: 0,
+    handler: function($scope, genotypes) {
+
+        if ($scope.data[$scope.rs].snpediaOrientation === "minus") {
+            $scope.data[$scope.rs].orientation = "minus";
+            for (i in genotypes) {
+                genotypes[i] = $scope.changeOrientation(genotypes[i]);
+            }
+        } else {
+            $scope.data[$scope.rs].orientation = "plus";
+        }
+
+        $scope.data[$scope.rs].genotypes = genotypes;
+    }
+};
+
+modules['dbsnp'] = {
+    position: 1,
     priority: 0, 
     handler: function($scope, dbsnpData) {
 
@@ -12,7 +30,7 @@ modules['dbsnp'] = {
 };
 
 modules['snpedia'] = {
-    position: 1,
+    position: 2,
     priority: 1, 
     handler: function($scope, snpediaData) {
 
@@ -25,7 +43,7 @@ modules['snpedia'] = {
 };
 
 modules['hapmap'] = {
-    position: 2,
+    position: 3,
     priority: 0, 
     handler: function($scope, hapmapData) {
 
