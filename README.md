@@ -3,6 +3,7 @@ Health Data Cooperative (HDC)
 
 Manage, understand, and leverage your health data.
 
+[![Build Status](https://drone.io/github.com/amarfurt/hdc/status.png)](https://drone.io/github.com/amarfurt/hdc/latest)
 
 Scripts
 -------
