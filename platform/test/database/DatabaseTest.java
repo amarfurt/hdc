@@ -9,6 +9,7 @@ import static play.test.Helpers.start;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import models.Circle;
@@ -96,8 +97,10 @@ public class DatabaseTest {
 		user.password = User.encrypt("password");
 		user.visible = new HashMap<String, Set<ObjectId>>();
 		user.apps = new HashSet<ObjectId>();
+		user.tokens = new HashMap<String, Map<String, String>>();
 		user.visualizations = new HashSet<ObjectId>();
 		user.messages = new HashMap<String, Set<ObjectId>>();
+		user.login = DateTimeUtils.now();
 		user.news = new HashSet<ObjectId>();
 		user.pushed = new HashSet<ObjectId>();
 		user.shared = new HashSet<ObjectId>();
