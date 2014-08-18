@@ -1,0 +1,32 @@
+<div ng-controller="CreateCtrl">
+	<div class="col-xs-10 col-xs-offset-2 page-header">
+		<h1>Create a new file record</h1>
+	</div>
+	<div class="col-xs-10 col-xs-offset-2">
+		<div class="alert alert-success alert-dismissable" ng-show="success">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			{{success}}
+		</div>
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
+			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+			<p>{{error}}</p>
+		</div>
+	</div>
+	<form class="form-horizontal">
+		<div class="form-group" ng-class="{'has-error': errors.title}">
+			<label for="title" class="col-xs-2 control-label">Title</label>
+			<div class="col-xs-10">
+				<input type="text" id="title" class="form-control" placeholder="Title" autofocus ng-model="title">
+			</div>
+		</div>
+		<div class="form-group" ng-class="{'has-error': errors.file}">
+			<label for="file" class="col-xs-2 control-label">File</label>
+			<div class="col-xs-10">
+                <input type="file" id="file" onchange="angular.element(this).scope().file = this.files[0]">
+			</div>
+		</div>
+		<div class="col-xs-10 col-xs-offset-2">
+			<a href="" class="btn btn-primary" ng-class="{disabled: loading}" ng-click="validate()">Create</a>
+		</div>
+	</form>
+</div>
