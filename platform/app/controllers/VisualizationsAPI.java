@@ -40,7 +40,7 @@ public class VisualizationsAPI extends Controller {
 			}
 
 			// remove used entry from cache
-			CacheEntry.delete(cacheId);
+			// TODO CacheEntry.delete(cacheId);
 
 			// get record data
 			Map<String, Set<ObjectId>> recordProperties = new ChainedMap<String, Set<ObjectId>>().put("_id", entry.items).get();
