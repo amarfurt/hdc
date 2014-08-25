@@ -1,5 +1,5 @@
 {
-    "activator": "1.2.2",
+    "activator": "1.2.10",
     "mongodb": "2.6.1",
     "elasticsearch": "1.2.1",
     "node": "0.10.29",

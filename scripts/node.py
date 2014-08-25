@@ -38,8 +38,8 @@ class Node(Product):
 
 	def start(self):
 		print 'Starting Node...'
-		Command.execute(self.bin + ' ' + os.path.join(self.code, 'server.js') + ' &> ' + 
-			os.path.join(self.parent, 'logs', 'node.log') + ' &', self.parent)
+		Command.execute('{0} {1} &'.format(self.bin, os.path.join(self.code, 'server.js')), self.parent, 
+			redirect=os.path.join(self.parent, 'logs', 'node.log'))
 
 	def stop(self):
 		print 'Shutting down Node...'
