@@ -12,7 +12,7 @@ var utils = require("./utils");
 
 // get access token from database
 var getAccessToken = function(response, origin, params) {
-	var request = http.request("http://" + settings.localhost + ":9001/" + params.userId + "/apps/" + params.appId + "/tokens", function(getResponse) {
+	var request = http.request("http://localhost:9001/" + params.userId + "/apps/" + params.appId + "/tokens", function(getResponse) {
 		utils.parseRequestBody(getResponse, function(json) {
 			if (json.accessToken) {
 				params.accessToken = json.accessToken;
@@ -52,7 +52,7 @@ var getAppDetails = function(response, origin, params) {
 		"properties": {"_id": {"$oid": params.appId}},
 		"fields": ["name", "type", "accessTokenUrl", "consumerKey", "consumerSecret"]
 	});
-	var options = url.parse("http://" + settings.localhost + ":9001/apps/" + params.appId + "/details");
+	var options = url.parse("http://localhost:9001/apps/" + params.appId + "/details");
 	options.method = "POST";
 	options.headers = {
 			"Content-Type": "application/json",
@@ -110,7 +110,7 @@ var requestAccessToken = function(response, origin, params) {
 var saveTokens = function(response, origin, params) {
 	// construct header and data
 	var data = JSON.stringify(params.tokens);
-	var options = url.parse("http://" + settings.localhost + ":9001/" + params.userId + "/apps/" + params.appId + "/tokens");
+	var options = url.parse("http://localhost:9001/" + params.userId + "/apps/" + params.appId + "/tokens");
 	options.method = "POST";
 	options.headers = {
 			"Content-Type": "application/json",
