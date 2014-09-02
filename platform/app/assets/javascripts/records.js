@@ -290,7 +290,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	$scope.loading = true;
 	$scope.authorized = false;
 	$scope.finished = false;
-	var app = null;
+	var app = {};
 	var authWindow = null;
 	var userId = null;
 	
@@ -330,7 +330,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// get the app information
 	loadAppDetails = function() {
 		var properties = {"_id": {"$oid": appId}};
-		var fields = ["name", "type", "authorizationUrl", "consumerKey", "scopeParameters"];
+		var fields = ["filename", "name", "type", "authorizationUrl", "consumerKey", "scopeParameters"];
 		var data = {"properties": properties, "fields": fields};
 		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
 			success(function(apps) {
@@ -384,9 +384,26 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// load the app into the iframe
 	loadApp = function() {
-		var url = "https://" + window.location.hostname + ":3000/" + appId + "/#/import/" + userId + "/" + appId + "/abc";
-		$scope.importUrl = $sce.trustAsResourceUrl(url);
-		$scope.message = null;
-		$scope.loaded = true;
+		if (!app.filename) {
+			getFilename();
+		} else {
+			var url = "https://" + window.location.hostname + ":3000/" + app.filename + "/#/import/" + userId + "/" + appId + "/abc";
+			$scope.importUrl = $sce.trustAsResourceUrl(url);
+			$scope.message = null;
+			$scope.loaded = true;
+		}
+	}
+	
+	// get the app's filename
+	getFilename = function() {
+		var properties = {"_id": {"$oid": appId}};
+		var fields = ["filename"];
+		var data = {"properties": properties, "fields": fields};
+		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
+			success(function(apps) {
+				app.filename = apps[0].filename;
+				loadApp();
+			}).
+			error(function(err) { $scope.error = "Failed to load app: " + err; });
 	}
 }]);

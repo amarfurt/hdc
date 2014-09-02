@@ -140,7 +140,7 @@ public class Records extends Controller {
 
 		// get app
 		properties = new ChainedMap<String, ObjectId>().put("_id", record.app).get();
-		fields = new ChainedSet<String>().add("detailsUrl").get();
+		fields = new ChainedSet<String>().add("filename").add("detailsUrl").get();
 		App app;
 		try {
 			app = App.get(properties, fields);
@@ -152,7 +152,7 @@ public class Records extends Controller {
 		String appServer = Play.application().configuration().getString("apps.server");
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
-		return ok("https://" + appServer + "/" + record.app.toString() + "/" + detailsUrl);
+		return ok("https://" + appServer + "/" + app.filename + "/" + detailsUrl);
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)

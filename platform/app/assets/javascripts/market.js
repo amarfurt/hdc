@@ -41,7 +41,7 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 	// register app
 	$scope.registerApp = function(type) {
 		// check required fields
-		if (!$scope.app.name || !$scope.app.description || !$scope.app.detailsUrl) {
+		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description || !$scope.app.detailsUrl) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		} else if (type === "create" && !$scope.app.createUrl) {
@@ -79,7 +79,7 @@ market.controller('RegisterVisualizationCtrl', ['$scope', '$http', function($sco
 	
 	// register visualization
 	$scope.registerVisualization = function() {
-		if (!$scope.visualization.name || !$scope.visualization.description || !$scope.visualization.url) {
+		if (!$scope.visualization.filename || !$scope.visualization.name || !$scope.visualization.description || !$scope.visualization.url) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		}

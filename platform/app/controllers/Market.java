@@ -40,11 +40,11 @@ public class Market extends Controller {
 		JsonNode json = request().body().asJson();
 		try {
 			if (type.equals("create")) {
-				JsonValidation.validate(json, "name", "description", "createUrl", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "createUrl", "detailsUrl");
 			} else if (type.equals("oauth1")) {
-				JsonValidation.validate(json, "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "detailsUrl");
 			} else if (type.equals("oauth2")) {
-				JsonValidation.validate(json, "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "consumerSecret", "scopeParameters", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "consumerSecret", "scopeParameters", "detailsUrl");
 			} else {
 				return badRequest("Unknown app type.");
 			}
@@ -54,9 +54,12 @@ public class Market extends Controller {
 
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
+		String filename = json.get("filename").asText();
 		String name = json.get("name").asText();
 		try {
-			if (App.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
+			if (App.exists(new ChainedMap<String, Object>().put("filename", filename).get())) {
+				return badRequest("An app with the same filename already exists.");
+			} else if (App.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
 				return badRequest("An app with the same name already exists.");
 			}
 		} catch (ModelException e) {
@@ -67,6 +70,7 @@ public class Market extends Controller {
 		App app = new App();
 		app._id = new ObjectId();
 		app.creator = userId;
+		app.filename = filename;
 		app.name = name;
 		app.description = json.get("description").asText();
 		app.spotlighted = false;
@@ -102,16 +106,19 @@ public class Market extends Controller {
 		// validate json
 		JsonNode json = request().body().asJson();
 		try {
-			JsonValidation.validate(json, "name", "description", "url");
+			JsonValidation.validate(json, "filename", "name", "description", "url");
 		} catch (JsonValidationException e) {
 			return badRequest(e.getMessage());
 		}
 
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
+		String filename = json.get("filename").asText();
 		String name = json.get("name").asText();
 		try {
-			if (Visualization.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
+			if (Visualization.exists(new ChainedMap<String, String>().put("filename", filename).get())) {
+				return badRequest("A visualization with the same filename already exists.");
+			} else if (Visualization.exists(new ChainedMap<String, Object>().put("creator", userId).put("name", name).get())) {
 				return badRequest("A visualization with the same name already exists.");
 			}
 		} catch (ModelException e) {
@@ -122,6 +129,7 @@ public class Market extends Controller {
 		Visualization visualization = new Visualization();
 		visualization._id = new ObjectId();
 		visualization.creator = userId;
+		visualization.filename = filename;
 		visualization.name = name;
 		visualization.description = json.get("description").asText();
 		visualization.spotlighted = false;

@@ -102,7 +102,7 @@ public class Visualizations extends Controller {
 	public static Result getUrl(String visualizationIdString) {
 		ObjectId visualizationId = new ObjectId(visualizationIdString);
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", visualizationId).get();
-		Set<String> fields = new ChainedSet<String>().add("url").get();
+		Set<String> fields = new ChainedSet<String>().add("filename").add("url").get();
 		Visualization visualization;
 		try {
 			visualization = Visualization.get(properties, fields);
@@ -110,7 +110,7 @@ public class Visualizations extends Controller {
 			return badRequest(e.getMessage());
 		}
 		String visualizationServer = Play.application().configuration().getString("visualizations.server");
-		String url = "https://" + visualizationServer + "/" + visualizationId + "/" + visualization.url;
+		String url = "https://" + visualizationServer + "/" + visualization.filename + "/" + visualization.url;
 		return ok(url);
 	}
 

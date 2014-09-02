@@ -18,9 +18,15 @@
 			<div id="create" class="tab-pane fade active in">
 				<form class="form-horizontal" ng-submit="registerApp('create')">
 					<div class="form-group">
+						<label for="filename" class="col-md-2 control-label">Filename</label>
+						<div class="col-md-10">
+							<input type="text" id="filename" class="form-control" placeholder="Filename" ng-model="app.filename" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
 						<label for="name" class="col-md-2 control-label">Name</label>
 						<div class="col-md-10">
-							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name">
 						</div>
 					</div>
 					<div class="form-group">

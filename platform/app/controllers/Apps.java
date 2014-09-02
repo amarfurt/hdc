@@ -106,7 +106,7 @@ public class Apps extends Controller {
 		// get app
 		ObjectId appId = new ObjectId(appIdString);
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
-		Set<String> fields = new ChainedSet<String>().add("createUrl").get();
+		Set<String> fields = new ChainedSet<String>().add("filename").add("createUrl").get();
 		App app;
 		try {
 			app = App.get(properties, fields);
@@ -122,7 +122,7 @@ public class Apps extends Controller {
 		// put together url to load in iframe
 		String appServer = Play.application().configuration().getString("apps.server");
 		String createUrl = app.createUrl.replace(":replyTo", encodedReplyTo);
-		String url = "https://" + appServer + "/" + appIdString + "/" + createUrl;
+		String url = "https://" + appServer + "/" + app.filename + "/" + createUrl;
 		return ok(url);
 	}
 
