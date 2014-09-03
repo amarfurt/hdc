@@ -21,7 +21,7 @@ public abstract class Model {
 		return false;
 	}
 
-	public static <T extends Model> void insert(String collection, T modelObject) throws ModelException {
+	protected static <T extends Model> void insert(String collection, T modelObject) throws ModelException {
 		try {
 			Database.insert(collection, modelObject);
 		} catch (DatabaseException e) {
@@ -29,7 +29,7 @@ public abstract class Model {
 		}
 	}
 
-	public static void delete(String collection, Map<String, ? extends Object> properties) throws ModelException {
+	protected static void delete(String collection, Map<String, ? extends Object> properties) throws ModelException {
 		try {
 			Database.delete(collection, properties);
 		} catch (DatabaseException e) {
@@ -37,7 +37,7 @@ public abstract class Model {
 		}
 	}
 
-	public static boolean exists(String collection, Map<String, ? extends Object> properties) throws ModelException {
+	protected static boolean exists(String collection, Map<String, ? extends Object> properties) throws ModelException {
 		try {
 			return Database.exists(collection, properties);
 		} catch (DatabaseException e) {
@@ -45,7 +45,7 @@ public abstract class Model {
 		}
 	}
 
-	public static <T extends Model> T get(Class<T> modelClass, String collection,
+	protected static <T extends Model> T get(Class<T> modelClass, String collection,
 			Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		try {
 			return Database.get(modelClass, collection, properties, fields);
@@ -54,7 +54,7 @@ public abstract class Model {
 		}
 	}
 
-	public static <T extends Model> Set<T> getAll(Class<T> modelClass, String collection,
+	protected static <T extends Model> Set<T> getAll(Class<T> modelClass, String collection,
 			Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		try {
 			return Database.getAll(modelClass, collection, properties, fields);
@@ -63,7 +63,7 @@ public abstract class Model {
 		}
 	}
 
-	public static void set(String collection, ObjectId modelId, String field, Object value) throws ModelException {
+	protected static void set(String collection, ObjectId modelId, String field, Object value) throws ModelException {
 		try {
 			Database.set(collection, modelId, field, value);
 		} catch (DatabaseException e) {
