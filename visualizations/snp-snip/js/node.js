@@ -70,7 +70,7 @@ var process = function(request, response) {
                                   }
                               })
                               .on("end", function(){
-                                  callback(null, {'snpMap': snpMap, 'comment': comment, 'count': Object.keys(snpMap).length});
+                                  callback(null, {'snpMap': snpMap, 'comment': comment});
                               });
 
                         };
@@ -79,25 +79,7 @@ var process = function(request, response) {
 
 
                 async.parallel(tasks, function(err, results) {
-
-                    var snpMaps = {};
-                    for (i in results) {
-                        snpMaps[i] = results[i].snpMap;
-                        delete results[i].snpMap;
-                    }
-
-                    var db = dblite('../visualizations/snp-snip/databases/_genotype.db');
-                    db.query('CREATE TABLE IF NOT EXISTS main (id INTEGER PRIMARY KEY, snpMaps TEXT)');
-                    db.query('INSERT INTO main (snpMaps) VALUES (?)', [JSON.stringify(snpMaps)]);
-                    db.query('SELECT last_insert_rowid()', function(rows) {
-                        if (rows && rows[0]) {
-
-                            results['_id'] = rows[0][0];
-                            response.end(JSON.stringify(results));
-                        }
-                    });
-                    db.close();
-
+                    response.end(JSON.stringify(results));
                 });
 
             });
@@ -106,38 +88,10 @@ var process = function(request, response) {
     } else {
         // handle request for data about a SNP
         var rsNumber = querystring.parse(query).rs;
-        var sessionId = querystring.parse(query).sessionId;
 
         
-        var files = fs.readdirSync('../visualizations/snp-snip/databases').filter(function(filename){return /^\w+\.db$/.test(filename) && !/^_.*$/.test(filename)});
+        var files = fs.readdirSync('../visualizations/snp-snip/databases').filter(function(filename){return /^\w+\.db$/.test(filename)});
         var tasks = {};
-
-        tasks['_genotype'] = function(callback) {
-            dblite('../visualizations/snp-snip/databases/_genotype.db').query(
-                'SELECT * FROM main WHERE id = ?',
-                [sessionId],
-                function(rows) {
-                    if (rows && rows[0]) {
-
-                        // remove the id column
-                        rows[0].shift();
-
-                        var snpMaps = JSON.parse(rows[0][0]);
-                        var genotypes = {};
-
-                        for (i in snpMaps) {
-                            if (snpMaps[i].hasOwnProperty(rsNumber)) {
-                                genotypes[i] = snpMaps[i][rsNumber];
-                            }
-                        }
-
-                        callback(null, genotypes); 
-                    } else {
-                        callback(null, null);
-                    }
-                }
-            );
-        };
 
         for (i in files) {
 
@@ -170,7 +124,6 @@ var process = function(request, response) {
                     delete results[resource];
                 }
             }
-            console.log(JSON.stringify(results));
             response.end(JSON.stringify(results));
         });
     }
