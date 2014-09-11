@@ -22,9 +22,13 @@ public class Record extends Model implements Comparable<Record> {
 	public String data; // arbitrary string data
 
 	@Override
-	public int compareTo(Record o) {
-		// newest first
-		return -this.created.compareTo(o.created);
+	public int compareTo(Record other) {
+		if (this.created != null && other.created != null) {
+			// newest first
+			return -this.created.compareTo(other.created);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {

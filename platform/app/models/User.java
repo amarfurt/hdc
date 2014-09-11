@@ -31,8 +31,12 @@ public class User extends Model implements Comparable<User> {
 	public Set<ObjectId> shared; // records shared by users (since last login)
 
 	@Override
-	public int compareTo(User o) {
-		return this.name.compareTo(o.name);
+	public int compareTo(User other) {
+		if (this.name != null && other.name != null) {
+			return this.name.compareTo(other.name);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {

@@ -17,8 +17,12 @@ public class Visualization extends Plugin implements Comparable<Visualization> {
 	public String url;
 
 	@Override
-	public int compareTo(Visualization o) {
-		return this.name.compareTo(o.name);
+	public int compareTo(Visualization other) {
+		if (this.name != null && other.name != null) {
+			return this.name.compareTo(other.name);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
@@ -29,8 +33,7 @@ public class Visualization extends Plugin implements Comparable<Visualization> {
 		return Model.get(Visualization.class, collection, properties, fields);
 	}
 
-	public static Set<Visualization> getAll(Map<String, ? extends Object> properties, Set<String> fields)
-			throws ModelException {
+	public static Set<Visualization> getAll(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		return Model.getAll(Visualization.class, collection, properties, fields);
 	}
 

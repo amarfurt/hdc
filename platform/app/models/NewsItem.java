@@ -21,9 +21,13 @@ public class NewsItem extends Model implements Comparable<NewsItem> {
 	public boolean broadcast; // broadcast to all users
 
 	@Override
-	public int compareTo(NewsItem o) {
+	public int compareTo(NewsItem other) {
+		if (this.created != null && other.created != null) {
 		// newest first
-		return -this.created.compareTo(o.created);
+		return -this.created.compareTo(other.created);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
@@ -34,8 +38,7 @@ public class NewsItem extends Model implements Comparable<NewsItem> {
 		return Model.get(NewsItem.class, collection, properties, fields);
 	}
 
-	public static Set<NewsItem> getAll(Map<String, ? extends Object> properties, Set<String> fields)
-			throws ModelException {
+	public static Set<NewsItem> getAll(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		return Model.getAll(NewsItem.class, collection, properties, fields);
 	}
 

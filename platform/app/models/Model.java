@@ -20,6 +20,13 @@ public abstract class Model {
 		}
 		return false;
 	}
+	
+	/**
+	 * Fallback method for comparison of models.
+	 */
+	public int compareTo(Model other) {
+		return this._id.compareTo(other._id);
+	}
 
 	protected static <T extends Model> void insert(String collection, T modelObject) throws ModelException {
 		try {

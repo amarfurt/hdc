@@ -20,9 +20,13 @@ public class Message extends Model implements Comparable<Message> {
 	public String content;
 
 	@Override
-	public int compareTo(Message o) {
-		// newest first
-		return -this.created.compareTo(o.created);
+	public int compareTo(Message other) {
+		if (this.created != null && other.created != null) {
+			// newest first
+			return -this.created.compareTo(other.created);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
@@ -33,8 +37,7 @@ public class Message extends Model implements Comparable<Message> {
 		return Model.get(Message.class, collection, properties, fields);
 	}
 
-	public static Set<Message> getAll(Map<String, ? extends Object> properties, Set<String> fields)
-			throws ModelException {
+	public static Set<Message> getAll(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		return Model.getAll(Message.class, collection, properties, fields);
 	}
 

@@ -29,7 +29,11 @@ public class App extends Plugin implements Comparable<App> {
 
 	@Override
 	public int compareTo(App other) {
-		return this.name.compareTo(other.name);
+		if (this.name != null && other.name != null) {
+			return this.name.compareTo(other.name);
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {

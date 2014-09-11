@@ -24,7 +24,11 @@ public class Circle extends Model implements Comparable<Circle> {
 
 	@Override
 	public int compareTo(Circle other) {
-		return this.order - other.order;
+		if (this.order > 0 && other.order > 0) {
+			return this.order - other.order;
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
@@ -35,8 +39,7 @@ public class Circle extends Model implements Comparable<Circle> {
 		return Model.get(Circle.class, collection, properties, fields);
 	}
 
-	public static Set<Circle> getAll(Map<String, ? extends Object> properties, Set<String> fields)
-			throws ModelException {
+	public static Set<Circle> getAll(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		return Model.getAll(Circle.class, collection, properties, fields);
 	}
 

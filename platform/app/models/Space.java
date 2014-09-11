@@ -23,8 +23,12 @@ public class Space extends Model implements Comparable<Space> {
 	public Set<ObjectId> records;
 
 	@Override
-	public int compareTo(Space o) {
-		return this.order - o.order;
+	public int compareTo(Space other) {
+		if (this.order > 0 && other.order > 0) {
+			return this.order - other.order;
+		} else {
+			return super.compareTo(other);
+		}
 	}
 
 	public static boolean exists(Map<String, ? extends Object> properties) throws ModelException {
