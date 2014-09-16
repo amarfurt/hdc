@@ -162,7 +162,6 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.get(),
 				controllers.routes.javascript.Records.getVisibleRecords(),
 				controllers.routes.javascript.Records.getDetailsUrl(),
-				controllers.routes.javascript.Records.cacheRecords(),
 				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
@@ -177,6 +176,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Spaces.add(),
 				controllers.routes.javascript.Spaces.delete(),
 				controllers.routes.javascript.Spaces.addRecords(),
+				controllers.routes.javascript.Spaces.getToken(),
 				// Users
 				controllers.routes.javascript.Users.get(),
 				controllers.routes.javascript.Users.getCurrentUser(),

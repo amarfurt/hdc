@@ -9,10 +9,9 @@
 			<h1>My spaces</h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error || filterError">
+		<div class="alert alert-danger alert-dismissable" ng-show="error">
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 			<p ng-show="error">{{error}}</p>
-			<p ng-show="filterError">{{filterError}}</p>
 		</div>
 		
 		<!-- Spaces -->
@@ -35,32 +34,13 @@
 						<div ng-class="{'col-lg-6': space.compare}">
 							<!-- Visualization -->
 							<p ng-hide="space.trustedUrl">Loading space...</p>
-							<iframe id="iframe-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
-							
-							<!-- Filters -->
-							<div id="{{space.name}}-0" ng-show="space.baseRecords.length > 0">
-								@filters(0)
-							</div>
-						</div>
-						<div class="col-lg-6" ng-show="space.compare">
-							<!-- Visualization -->
-							<p ng-hide="space.copy.trustedUrl">Loading space...</p>
-							<iframe id="iframe-copy-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
-							
-							<!-- Filters -->
-							<div id="{{space.name}}-1" ng-show="space.copy.baseRecords.length > 0">
-								@filters(1)
+							<div id="iframe-placeholder-{{space._id.$oid}}">
+								<iframe id="iframe-{{space._id.$oid}}" height="420px" width="100%" ng-show="space.trustedUrl"></iframe>
 							</div>
 						</div>
 					</div>
 					
 					<!-- Space controls -->
-					<button class="btn btn-default" ng-hide="space.compare" ng-click="startCompare(space)">
-						<span class="glyphicon glyphicon-adjust"></span> Compare
-					</button>
-					<button class="btn btn-default" ng-show="space.compare" ng-click="endCompare(space)">
-						<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
-					</button>
 					<button data-toggle="modal" data-target="#recordModal-{{space._id.$oid}}" class="btn btn-primary">
 						<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
 					</button>
@@ -154,6 +134,5 @@
 
 	<!-- Load spaces controller -->
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/filters.js")"></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>
 }

@@ -1,6 +1,5 @@
-var spaces = angular.module('spaces', ['filters', 'date']);
-spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterService', 'dateService', 
-                                 function($scope, $http, $sce, $filter, filterService, dateService) {
+var spaces = angular.module('spaces', ['date']);
+spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', 'dateService', function($scope, $http, $sce, dateService) {
 	
 	// init
 	$scope.error = null;
@@ -48,17 +47,9 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		_.each($scope.spaces, function(space) { space.active = false; });
 		space.active = true;
 		
-		var compareActive = _.find($scope.spaces, function(space) { return space.compare; });
-		if (compareActive) {
-			$scope.endCompare(compareActive);
-		}
-	
-		// load url, records and visualization
-		if (!space.baseUrl) {
-			space.serviceId = 0;
+		// lazily load url, authToken and visualization
+		if (!space.trustedUrl) {
 			loadBaseUrl(space);
-		} else {
-			spaceChanged(space);
 		}
 	}
 	
@@ -67,128 +58,31 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 		$http(jsRoutes.controllers.Visualizations.getUrl(space.visualization.$oid)).
 			success(function(url) {
 				space.baseUrl = url;
-				if (url.indexOf(":id") > -1) {
-					loadMetaData(space);
-				} else {
-					// old format; will be removed in future version
-					loadBaseRecords(space); // chain because callback is async
-				}
+				getAuthToken(space);
 			}).
 			error(function(err) { $scope.error = "Failed to load space '" + space.name + "': " + err; });
 	}
 	
-	// load meta data of base records
-	loadMetaData = function(space) {
-		var properties = {"_id": space.records};
-		var fields = ["app", "owner", "creator", "created"];
-		var data = {"properties": properties, "fields": fields};
-		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
-			success(function(records) {
-				$scope.error = null;
-				space.baseRecords = records;
-				prepareRecords(space.baseRecords);
-				spaceChanged(space); // chain because callback is async
+	// get the authorization token for the current space
+	getAuthToken = function(space) {
+		$http(jsRoutes.controllers.Spaces.getToken(space._id.$oid)).
+			success(function(authToken) {
+				space.completedUrl = space.baseUrl.replace(":authToken", authToken);
+				reloadIframe(space);
 			}).
-			error(function(err) { $scope.error = "Failed to load meta data of records in space '" + space.name + "': " + err; });
-	}
-	
-	// load records for given space
-	loadBaseRecords = function(space) {
-		var properties = {"_id": space.records};
-		var fields = ["app", "owner", "creator", "created", "name", "data"];
-		var data = {"properties": properties, "fields": fields};
-		$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
-			success(function(records) {
-				$scope.error = null;
-				space.baseRecords = records;
-				prepareRecords(space.baseRecords)
-				spaceChanged(space); // chain because callback is async
-			}).
-			error(function(err) { $scope.error = "Failed to load records for space '" + space.name + "': " + err; });
-	}
-	
-	// prepare records: clip time from created and add JS date
-	prepareRecords = function(records) {
-		_.each(records, function(record) {
-			var date = record.created.split(" ")[0];
-			record.created = {"name": date, "value": dateService.toDate(date)};
-		});
-	}
-	
-	// either the records of a space have changed or another space became active
-	spaceChanged = function(space) {
-		initFilterService(space, $scope.userId);
-		reloadVisualization(space);
-	}
-	
-	// initialize filter service
-	initFilterService = function(space, userId) {
-		$scope.filterChanged = function(serviceId) {
-			var activeSpace = _.find($scope.spaces, function(space) { return space.active; });
-			if (serviceId === 0) {
-				reloadVisualization(activeSpace);
-			} else {
-				reloadVisualization(activeSpace.copy);
-			}
-		}
-		filterService.init(space.name, space.serviceId, space.baseRecords, userId, $scope.filterChanged);
-		$scope.filters = filterService.filters;
-		$scope.filterError = filterService.error;
-		$scope.addFilter = filterService.addFilter;
-		$scope.removeFilter = filterService.removeFilter;
-	}
-	
-	// reload the visualization
-	reloadVisualization = function(space) {
-		var filteredRecords = $filter("recordFilter")(space.baseRecords, space.serviceId);
-		if (space.baseUrl.indexOf(":id") > -1) {
-			cacheRecords(space, filteredRecords);
-		} else {
-			var filteredData = _.map(filteredRecords, function(record) { return record.data; });
-			var completedUrl = space.baseUrl.replace(":records", btoa(JSON.stringify(filteredData)));
-			reloadIframe(space, completedUrl);
-		}
-	}
-	
-	// put the records into the cache for the visualization to load
-	cacheRecords = function(space, records) {
-		var ids = _.map(records, function(record) { return record._id; });
-		$http.post(jsRoutes.controllers.Records.cacheRecords().url, JSON.stringify({"records": ids})).
-			success(function(cacheEntryId) {
-				var completedUrl = space.baseUrl.replace(":id", cacheEntryId.$oid);
-				reloadIframe(space, completedUrl);
-			}).
-			error(function(err) { $scope.error = "Failed to put records for space '" + space.name + "': " + err; });
+			error(function(err) { $scope.error = "Failed to get the authorization token: " + err; });
 	}
 	
 	// reload the iframe displaying the visualization
-	reloadIframe = function(space, completedUrl) {
-		space.trustedUrl = $sce.trustAsResourceUrl(completedUrl);
-		$("#iframe-" + space._id.$oid).attr("src", space.trustedUrl);
+	reloadIframe = function(space) {
+		space.trustedUrl = $sce.trustAsResourceUrl(space.completedUrl);
+
+		// have to detach and append again to force reload; just setting src didn't do the trick
+		var iframe = $("#iframe-" + space._id.$oid).detach();
+		// set src attribute of iframe to avoid creating an entry in the browser history
+		iframe.attr("src", space.trustedUrl);
+		$("#iframe-placeholder-" + space._id.$oid).append(iframe);
 	}
-	
-	// *** COMPARE ***
-	$scope.startCompare = function(space) {
-		// copy relevant properties
-		space.copy = {};
-		space.copy._id = {"$oid": "copy-" + space._id.$oid};
-		space.copy.serviceId = 1;
-		space.copy.name = space.name;
-		space.copy.baseUrl = space.baseUrl;
-		space.copy.baseRecords = space.baseRecords;
-		
-		// init filters and reload space
-		spaceChanged(space.copy);
-		
-		// switch to compare mode
-		space.compare = true;
-	}
-	
-	$scope.endCompare = function(space) {
-		space.compare = false;
-		space.copy = {};
-	}
-	// *** COMPARE END ***
 	
 	// load all installed visualizations (for creating a new space)
 	$scope.loadVisualizations = function() {
@@ -303,9 +197,7 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', '$filter', 'filterSe
 				$scope.error = null;
 				space.recordQuery = null;
 				$scope.foundRecords = [];
-				_.each(recordIds, function(recordId) { space.records.push(recordId); });
-				_.each(recordsToAdd, function(record) { space.baseRecords.push(record); });
-				spaceChanged(space);
+				reloadIframe(space);
 			}).
 			error(function(err) { $scope.error = "Failed to add records: " + err; });
 	}

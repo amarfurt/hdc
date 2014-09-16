@@ -1,18 +1,41 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="hdcRecordList">
-<head>
-	<meta charset="utf-8">
-	<title>Record List</title>
-	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
-	<!-- jQuery needed for Bootstrap's JavaScript plugins -->
-	<script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
-	<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular-route.min.js"></script>
-	<script type="text/javascript" src="js/app.js"></script>
-	<script type="text/javascript" src="js/controllers.js"></script>
-</head>
-<body>
-	<div class="container" ng-view></div>
-</body>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Record List</title>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+		<!-- jQuery needed for Bootstrap's JavaScript plugins -->
+		<script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
+		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+		<script type="text/javascript" src="js/app.js"></script>
+	</head>
+	<body>
+		<div class="container" ng-app="recordList" ng-controller="RecordListCtrl">
+			<div class="alert alert-danger alert-dismissable" ng-show="error">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p>{{error}}</p>
+			</div>
+			<div ng-show="loading">
+				<p>Loading records...</p>
+			</div>
+			<div ng-hide="loading">
+				<p ng-hide="records.length">There are no records to display.</p>
+				<div class="panel-group" ng-show="records.length">
+					<div class="panel panel-primary" ng-repeat="record in records">
+						<div class="panel-heading">
+							<h4 class="panel-title">
+								<a data-toggle="collapse" data-target="#collapse-{{record.id}}">
+									{{record.title}}
+								</a>
+							</h4>
+						</div>
+						<div id="collapse-{{record.id}}" class="panel-collapse collapse">
+							<div class="panel-body" style="white-space: pre-line;">{{record.data}}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
 </html>

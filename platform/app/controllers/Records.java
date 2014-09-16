@@ -2,14 +2,12 @@ package controllers;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import models.App;
-import models.CacheEntry;
 import models.Circle;
 import models.ModelException;
 import models.Record;
@@ -81,6 +79,11 @@ public class Records extends Controller {
 		// get records
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
 		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
+		return getRecords(properties, fields);
+	}
+
+	static Result getRecords(Map<String, ? extends Object> properties, Set<String> fields) {
+		// Also used by Visualizations API
 		List<Record> records;
 		try {
 			records = new ArrayList<Record>(Record.getAll(properties, fields));
@@ -153,29 +156,6 @@ public class Records extends Controller {
 		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
 		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
 		return ok("https://" + appServer + "/" + app.filename + "/" + detailsUrl);
-	}
-
-	@BodyParser.Of(BodyParser.Json.class)
-	public static Result cacheRecords() {
-		// validate json
-		JsonNode json = request().body().asJson();
-		try {
-			JsonValidation.validate(json, "records");
-		} catch (JsonValidationException e) {
-			return badRequest(e.getMessage());
-		}
-
-		// create cache entry
-		CacheEntry entry = new CacheEntry();
-		entry._id = new ObjectId();
-		entry.expires = new Date().getTime() + 10 * 1000; // expires in 10 seconds
-		entry.items = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("records")));
-		try {
-			CacheEntry.add(entry);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		return ok(Json.toJson(entry._id));
 	}
 
 	public static Result search(String query) {

@@ -17,6 +17,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.auth.AuthToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.db.ObjectIdConversion;
@@ -133,8 +134,7 @@ public class Spaces extends Controller {
 		// validate request
 		ObjectId userId = new ObjectId(request().username());
 		ObjectId spaceId = new ObjectId(spaceIdString);
-		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId)
-				.get();
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId).get();
 		try {
 			if (!Space.exists(properties)) {
 				return badRequest("No space with this id exists.");
@@ -154,5 +154,22 @@ public class Spaces extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok();
+	}
+
+	public static Result getToken(String spaceIdString) {
+		ObjectId userId = new ObjectId(request().username());
+		ObjectId spaceId = new ObjectId(spaceIdString);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", spaceId).put("owner", userId).get();
+		try {
+			if (!Space.exists(properties)) {
+				return badRequest("No space with this id exists.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+
+		// create encrypted authToken
+		AuthToken authToken = new AuthToken(spaceId, userId);
+		return ok(authToken.encrypt());
 	}
 }
