@@ -387,7 +387,8 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 		if (!app.filename) {
 			getFilename();
 		} else {
-			var url = "https://" + window.location.hostname + ":3000/" + app.filename + "/#/import/" + userId + "/" + appId + "/abc";
+			// import urls are the same for all apps for now
+			var url = "https://" + window.location.hostname + ":3000/" + app.filename + "/#/" + userId + "/" + appId;
 			$scope.importUrl = $sce.trustAsResourceUrl(url);
 			$scope.message = null;
 			$scope.loaded = true;

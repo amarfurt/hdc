@@ -41,7 +41,7 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 	// register app
 	$scope.registerApp = function(type) {
 		// check required fields
-		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description || !$scope.app.detailsUrl) {
+		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		} else if (type === "create" && !$scope.app.createUrl) {
@@ -57,11 +57,11 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 		
 		// piece together data object
 		if (type === "create") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "create": $scope.app.createUrl};
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "create": $scope.app.createUrl};
 		} else if (type === "oauth1") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey};
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey};
 		} else if (type === "oauth2") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "detailsUrl": $scope.app.detailsUrl, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey, "consumerSecret": $scope.app.consumerSecret, "scopeParameters": $scope.app.scopeParameters};
+			var data = {"name": $scope.app.name, "description": $scope.app.description, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey, "consumerSecret": $scope.app.consumerSecret, "scopeParameters": $scope.app.scopeParameters};
 		}
 		
 		// send the request

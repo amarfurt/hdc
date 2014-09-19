@@ -1,5 +1,5 @@
 var details = angular.module('details', []);
-details.controller('RecordCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
+details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 	// init
 	$scope.error = null;
 	$scope.record = {};
@@ -12,10 +12,10 @@ details.controller('RecordCtrl', ['$scope', '$http', '$sce', function($scope, $h
 	$http.post(jsRoutes.controllers.Records.get().url, JSON.stringify(data)).
 		success(function(records) {
 			$scope.record = records[0];
+			$scope.record.json = JSON.stringify($scope.record.data, null, "\t");
 			loadUserNames();
 			loadAppName();
 			rewriteCreated();
-			loadDetailsUrl();
 		}).
 		error(function(err) { $scope.error = "Failed to load record details: " + err; });
 	
@@ -36,12 +36,6 @@ details.controller('RecordCtrl', ['$scope', '$http', '$sce', function($scope, $h
 		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
 			success(function(apps) { $scope.record.app = apps[0].name; }).
 			error(function(err) { $scope.error = "Failed to load app name: " + err; });
-	}
-	
-	loadDetailsUrl = function() {
-		$http(jsRoutes.controllers.Records.getDetailsUrl($scope.record._id.$oid)).
-			success(function(url) { $scope.record.url = $sce.trustAsResourceUrl(url); }).
-			error(function(err) { $scope.error = "Failed to load record details: " + err; });
 	}
 	
 	rewriteCreated = function() {

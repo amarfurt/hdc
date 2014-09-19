@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import models.App;
 import models.Circle;
 import models.ModelException;
 import models.Record;
@@ -16,7 +15,6 @@ import models.User;
 
 import org.bson.types.ObjectId;
 
-import play.Play;
 import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -37,7 +35,6 @@ import views.html.dialogs.createrecords;
 import views.html.dialogs.importrecords;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.util.JSON;
 
 @Security.Authenticated(Secured.class)
 public class Records extends Controller {
@@ -127,36 +124,6 @@ public class Records extends Controller {
 		}
 		Collections.sort(records);
 		return ok(Json.toJson(records));
-	}
-
-	@Deprecated
-	public static Result getDetailsUrl(String recordIdString) {
-		// get record
-		ObjectId recordId = new ObjectId(recordIdString);
-		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", recordId).get();
-		Set<String> fields = new ChainedSet<String>().add("data").add("app").get();
-		Record record;
-		try {
-			record = Record.get(properties, fields);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-
-		// get app
-		properties = new ChainedMap<String, ObjectId>().put("_id", record.app).get();
-		fields = new ChainedSet<String>().add("filename").add("detailsUrl").get();
-		App app;
-		try {
-			app = App.get(properties, fields);
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-
-		// put together url to send to iframe (which then loads the record representation)
-		String appServer = Play.application().configuration().getString("apps.server");
-		String encodedData = JSON.serialize(record.data);
-		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
-		return ok("https://" + appServer + "/" + app.filename + "/" + detailsUrl);
 	}
 
 	public static Result search(String query) {

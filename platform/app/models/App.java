@@ -14,7 +14,6 @@ public class App extends Plugin implements Comparable<App> {
 
 	private static final String collection = "apps";
 
-	public String detailsUrl; // url for detailed view of a record
 	public String type; // type can be one of: create, oauth1, oauth2
 
 	// create app

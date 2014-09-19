@@ -40,11 +40,12 @@ public class Market extends Controller {
 		JsonNode json = request().body().asJson();
 		try {
 			if (type.equals("create")) {
-				JsonValidation.validate(json, "filename", "name", "description", "createUrl", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "createUrl");
 			} else if (type.equals("oauth1")) {
-				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey");
 			} else if (type.equals("oauth2")) {
-				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey", "consumerSecret", "scopeParameters", "detailsUrl");
+				JsonValidation.validate(json, "filename", "name", "description", "authorizationUrl", "accessTokenUrl", "consumerKey",
+						"consumerSecret", "scopeParameters");
 			} else {
 				return badRequest("Unknown app type.");
 			}
@@ -74,7 +75,6 @@ public class Market extends Controller {
 		app.name = name;
 		app.description = json.get("description").asText();
 		app.spotlighted = false;
-		app.detailsUrl = json.get("detailsUrl").asText();
 		app.type = type;
 
 		// fill in specific fields
