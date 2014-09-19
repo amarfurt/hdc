@@ -15,6 +15,9 @@ import utils.json.JsonValidation;
 import utils.json.JsonValidation.JsonValidationException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
 
 // Not secured, accessible from app server
 public class AppsAPI extends Controller {
@@ -43,6 +46,9 @@ public class AppsAPI extends Controller {
 		}
 
 		// save new record with additional metadata
+		if (!json.get("data").isTextual() || !json.get("name").isTextual() || !json.get("description").isTextual()) {
+			return badRequest("At least one request parameter is of the wrong type.");
+		}
 		String data = json.get("data").asText();
 		String name = json.get("name").asText();
 		String description = json.get("description").asText();
@@ -52,7 +58,11 @@ public class AppsAPI extends Controller {
 		record.owner = new ObjectId(userIdString);
 		record.creator = new ObjectId(userIdString);
 		record.created = DateTimeUtils.now();
-		record.data = data;
+		try {
+			record.data = (DBObject) JSON.parse(data);
+		} catch (JSONParseException e) {
+			return badRequest("Record data is invalid JSON.");
+		}
 		record.name = name;
 		record.description = description;
 		try {

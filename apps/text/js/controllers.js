@@ -12,8 +12,8 @@ textRecordControllers.controller('CreateCtrl', ['$scope', '$http', '$routeParams
 			$scope.loading = true;
 			$scope.hasError = false;
 			$scope.validateTitle();
-			$scope.validateData();
-			if(!$scope.errors.title && !$scope.errors.data) {
+			$scope.validateContent();
+			if(!$scope.errors.title && !$scope.errors.content) {
 				$scope.submit()
 			}
 			$scope.loading = false;
@@ -28,19 +28,19 @@ textRecordControllers.controller('CreateCtrl', ['$scope', '$http', '$routeParams
 			}
 		};
 		
-		$scope.validateData = function() {
-			$scope.errors.data = null;
-			if (!$scope.data) {
-				$scope.errors.data = "No data provided.";
+		$scope.validateContent = function() {
+			$scope.errors.content = null;
+			if (!$scope.content) {
+				$scope.errors.content = "No content provided.";
 			}
 		};
 		
 		$scope.submit = function() {
 			// construct json
 			var record = {
-				"data": JSON.stringify({"title": $scope.title, "data": $scope.data}),
+				"data": JSON.stringify({"title": $scope.title, "content": $scope.content}),
 				"name": $scope.title,
-				"description": $scope.data
+				"description": $scope.content
 			};
 			
 			// submit to server
@@ -49,11 +49,11 @@ textRecordControllers.controller('CreateCtrl', ['$scope', '$http', '$routeParams
 					$scope.success = "Record created successfully.";
 					$scope.error = null;
 					$scope.title = null;
-					$scope.data = null;
+					$scope.content = null;
 				}).
 				error(function(err) {
 					$scope.success = null;
-					$scope.error = err.responseText;
+					$scope.error = err;
 				});
 		};
 		
@@ -66,7 +66,7 @@ textRecordControllers.controller('DetailsCtrl', ['$scope', '$routeParams',
 		$scope.loading = true;
 		
 		// parse Base64 encoded JSON record
-		$scope.record = JSON.parse(atob($routeParams.record));
+		$scope.record = JSON.parse($routeParams.record);
 		$scope.loading = false;
 		
 	}]);

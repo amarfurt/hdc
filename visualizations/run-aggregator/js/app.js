@@ -33,7 +33,7 @@ runAggregator.controller('RunAggregatorCtrl', ['$scope', '$http', '$location',
 					// parse JSON records
 					for (var i = 0; i < records.length; i++) {
 						try {
-							$scope.records.push(JSON.parse(records[i].data));
+							$scope.records.push(records[i].data);
 						} catch(parsingError) {
 							// skip this record
 						}

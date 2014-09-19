@@ -14,7 +14,6 @@ import models.Record;
 import models.Space;
 import models.User;
 
-import org.apache.commons.codec.binary.Base64;
 import org.bson.types.ObjectId;
 
 import play.Play;
@@ -38,6 +37,7 @@ import views.html.dialogs.createrecords;
 import views.html.dialogs.importrecords;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.util.JSON;
 
 @Security.Authenticated(Secured.class)
 public class Records extends Controller {
@@ -129,6 +129,7 @@ public class Records extends Controller {
 		return ok(Json.toJson(records));
 	}
 
+	@Deprecated
 	public static Result getDetailsUrl(String recordIdString) {
 		// get record
 		ObjectId recordId = new ObjectId(recordIdString);
@@ -153,7 +154,7 @@ public class Records extends Controller {
 
 		// put together url to send to iframe (which then loads the record representation)
 		String appServer = Play.application().configuration().getString("apps.server");
-		String encodedData = new String(Base64.encodeBase64(record.data.getBytes()));
+		String encodedData = JSON.serialize(record.data);
 		String detailsUrl = app.detailsUrl.replace(":record", encodedData);
 		return ok("https://" + appServer + "/" + app.filename + "/" + detailsUrl);
 	}

@@ -9,6 +9,8 @@ import utils.collections.ChainedMap;
 import utils.search.Search;
 import utils.search.SearchException;
 
+import com.mongodb.DBObject;
+
 public class Record extends Model implements Comparable<Record> {
 
 	private static final String collection = "records";
@@ -19,7 +21,7 @@ public class Record extends Model implements Comparable<Record> {
 	public String created; // date + time created
 	public String name; // used to display a record and for autocompletion
 	public String description; // this will be indexed in the search cluster
-	public String data; // arbitrary string data
+	public DBObject data; // arbitrary json data
 
 	@Override
 	public int compareTo(Record other) {
@@ -39,8 +41,7 @@ public class Record extends Model implements Comparable<Record> {
 		return Model.get(Record.class, collection, properties, fields);
 	}
 
-	public static Set<Record> getAll(Map<String, ? extends Object> properties, Set<String> fields)
-			throws ModelException {
+	public static Set<Record> getAll(Map<String, ? extends Object> properties, Set<String> fields) throws ModelException {
 		return Model.getAll(Record.class, collection, properties, fields);
 	}
 

@@ -16,6 +16,8 @@ import org.bson.types.ObjectId;
 import utils.db.Database;
 
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 public class CreateDBObjects {
 
@@ -62,7 +64,7 @@ public class CreateDBObjects {
 			record.owner = owner;
 			record.creator = creator;
 			record.created = DateTimeUtils.now();
-			record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
+			record.data = (DBObject) JSON.parse("{\"title\":\"Test record\",\"data\":\"Test data.\"}");
 			record.name = "Test record";
 			record.description = "Test data.";
 			Record.add(record);

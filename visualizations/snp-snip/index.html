@@ -22,7 +22,9 @@
 			<div ng-show="imported" class="alert alert-success alert-dismissable">
 				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 				<strong>Record import successful!</strong><br/>
-				{{recordCount()}} records have been imported.
+				<span ng-show="recordCount() === 1">{{recordCount()}} record has </span>
+				<span ng-hide="recordCount() === 1">{{recordCount()}} records have </span>
+				been imported.
 			</div>
 
 			<div ng-show="importFailed" class="alert alert-danger alert-dismissable">
@@ -41,13 +43,13 @@
 				<form class="form-inline" ng-submit="">
 					<div class="form-group">
 						<label for="selectRecord" class="control-label">Selected record: </label>
-						<select id="selectedRecord" class="form-control" ng-model="selectedRecord" ng-options="data.name for (id, data) in records">
+						<select id="selectedRecord" class="form-control" ng-model="selectedRecord" ng-options="record.name for (id, record) in records">
 						</select>
 					</div>
 				</form>
 				<p>
-					Date of generation: {{selectedRecord.date}}<br/>
-					Build: <a href={{selectedRecord.buildUrl}}>{{selectedRecord.build}}</a><br/>
+					Date of generation: {{selectedRecord.data.date}}<br/>
+					Build: <a href={{selectedRecord.data.buildUrl}}>{{selectedRecord.data.build}}</a><br/>
 				</p>
 			</div>
 
@@ -130,8 +132,14 @@
 				<!-- Search content -->
 				<div class="tab-content">
 					<div class="tab-pane fade" ng-class="{'active in': search.active}" ng-repeat="search in searches">
+						<div ng-show="loadingRecordDataFailed" class="alert alert-danger alert-dismissable">
+							<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+							<strong>Loading record data failed!</strong><br/>
+							Could not load record information for this SNP.
+						</div>
+
 						<div class="jumbotron">
-							<h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="data[rs].genotypes[selectedRecord.id]"><span class="label label-default">{{data[rs].genotypes[selectedRecord.id]}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!data[rs].genotypes[selectedRecord.id]">not available</span>.</h4>
+							<h4>Your genotype for SNP <span class="label label-default">{{rs}}</span> is <span ng-show="selectedRecord[rs]"><span class="label label-default">{{selectedRecord[rs].genotype}}</span> (Orientation: {{data[rs].orientation}})</font></span><span ng-show="!selectedRecord[rs]">not available</span>.</h4>
 						</div>
 
 						<div ng-show="loadingDataFailed" class="alert alert-danger alert-dismissable">

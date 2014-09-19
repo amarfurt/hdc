@@ -91,7 +91,7 @@ jawboneUp.controller('DetailsCtrl', ['$scope', '$routeParams', function($scope, 
     $scope.loading = true;
 
     // parse Base64 encoded JSON record
-    var record = JSON.parse(atob($routeParams.record));
+    var record = JSON.parse($routeParams.record);
     $scope.output = JSON.stringify(record, null, "\t");
     $scope.loading = false;
 }]);

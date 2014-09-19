@@ -1,15 +1,15 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1409650150472,
-  "time" : 1705,
+  "start_time" : 1411134041150,
+  "time" : 1006,
   "number_of_files" : 13,
   "total_size" : 16409,
   "files" : [ {
     "name" : "__0",
     "physical_name" : "_2.si",
     "length" : 282,
-    "checksum" : "qjf1ju"
+    "checksum" : "nyebin"
   }, {
     "name" : "__1",
     "physical_name" : "_0.cfs",
@@ -29,7 +29,7 @@
     "name" : "__4",
     "physical_name" : "_1.si",
     "length" : 282,
-    "checksum" : "prpq94"
+    "checksum" : "ot579f"
   }, {
     "name" : "__5",
     "physical_name" : "segments_2",
@@ -38,7 +38,7 @@
     "name" : "__6",
     "physical_name" : "_3.si",
     "length" : 282,
-    "checksum" : "oq6fq3"
+    "checksum" : "ougyf8"
   }, {
     "name" : "__7",
     "physical_name" : "_3.cfe",
@@ -53,7 +53,7 @@
     "name" : "__9",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "p4gjw6"
+    "checksum" : "oqvq6b"
   }, {
     "name" : "__a",
     "physical_name" : "_2.cfs",

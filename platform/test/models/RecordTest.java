@@ -18,6 +18,8 @@ import utils.collections.ChainedMap;
 import utils.db.Database;
 
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 
 public class RecordTest {
 
@@ -43,13 +45,12 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
 		record.created = DateTimeUtils.now();
-		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
+		record.data = (DBObject) JSON.parse("{\"title\":\"Test record\",\"data\":\"Test data.\"}");
 		record.name = "Test record";
 		record.description = "Test data.";
 		Record.add(record);
 		assertEquals(1, records.count());
-		assertTrue(Record.exists(new ChainedMap<String, ObjectId>().put("_id", record._id).put("owner", record.owner)
-				.get()));
+		assertTrue(Record.exists(new ChainedMap<String, ObjectId>().put("_id", record._id).put("owner", record.owner).get()));
 	}
 
 	@Test
@@ -62,13 +63,12 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
 		record.created = DateTimeUtils.now();
-		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
+		record.data = (DBObject) JSON.parse("{\"title\":\"Test record\",\"data\":\"Test data.\"}");
 		record.name = "Test record";
 		record.description = "Test data.";
 		Record.add(record);
 		assertEquals(1, records.count());
-		assertFalse(Record.exists(new ChainedMap<String, ObjectId>().put("_id", record._id)
-				.put("owner", new ObjectId()).get()));
+		assertFalse(Record.exists(new ChainedMap<String, ObjectId>().put("_id", record._id).put("owner", new ObjectId()).get()));
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
 		record.created = DateTimeUtils.now();
-		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
+		record.data = (DBObject) JSON.parse("{\"title\":\"Test record\",\"data\":\"Test data.\"}");
 		record.name = "Test record";
 		record.description = "Test data.";
 		Record.add(record);
@@ -102,7 +102,7 @@ public class RecordTest {
 		record.owner = new ObjectId();
 		record.creator = new ObjectId();
 		record.created = DateTimeUtils.now();
-		record.data = "{\"title\":\"Test record\",\"data\":\"Test data.\"}";
+		record.data = (DBObject) JSON.parse("{\"title\":\"Test record\",\"data\":\"Test data.\"}");
 		record.name = "Test record";
 		record.description = "Test data.";
 		Record.add(record);

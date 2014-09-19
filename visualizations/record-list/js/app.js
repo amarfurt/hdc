@@ -29,7 +29,7 @@ recordList.controller('RecordListCtrl', ['$scope', '$http', '$location',
 				success(function(records) {
 					for (var i = 0; i < records.length; i++) {
 						try {
-							$scope.records.push(JSON.parse(records[i].data));
+							$scope.records.push(records[i].data);
 							$scope.records[$scope.records.length - 1].id = $scope.records.length - 1;
 						} catch(parsingError) {
 							// skip this record
