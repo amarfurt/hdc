@@ -57,11 +57,32 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 		
 		// piece together data object
 		if (type === "create") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "create": $scope.app.createUrl};
+			var data = {
+					"filename": $scope.app.filename,
+					"name": $scope.app.name,
+					"description": $scope.app.description,
+					"createUrl": $scope.app.createUrl
+			};
 		} else if (type === "oauth1") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey};
+			var data = {
+					"filename": $scope.app.filename,
+					"name": $scope.app.name,
+					"description": $scope.app.description,
+					"authorizationUrl": $scope.app.authorizationUrl,
+					"accessTokenUrl": $scope.app.accessTokenUrl,
+					"consumerKey": $scope.app.consumerKey
+			};
 		} else if (type === "oauth2") {
-			var data = {"name": $scope.app.name, "description": $scope.app.description, "authorizationUrl": $scope.app.authorizationUrl, "accessTokenUrl": $scope.app.accessTokenUrl, "consumerKey": $scope.app.consumerKey, "consumerSecret": $scope.app.consumerSecret, "scopeParameters": $scope.app.scopeParameters};
+			var data = {
+					"filename": $scope.app.filename,
+					"name": $scope.app.name,
+					"description": $scope.app.description,
+					"authorizationUrl": $scope.app.authorizationUrl,
+					"accessTokenUrl": $scope.app.accessTokenUrl,
+					"consumerKey": $scope.app.consumerKey,
+					"consumerSecret": $scope.app.consumerSecret,
+					"scopeParameters": $scope.app.scopeParameters
+			};
 		}
 		
 		// send the request
@@ -85,7 +106,12 @@ market.controller('RegisterVisualizationCtrl', ['$scope', '$http', function($sco
 		}
 		
 		// send the request
-		var data = {"name": $scope.visualization.name, "description": $scope.visualization.description, "url": $scope.visualization.url};
+		var data = {
+				"filename": $scope.visualization.filename,
+				"name": $scope.visualization.name,
+				"description": $scope.visualization.description,
+				"url": $scope.visualization.url
+		};
 		$http.post(jsRoutes.controllers.Market.registerVisualization().url, data).
 			success(function(redirectUrl) { window.location.replace(redirectUrl); }).
 			error(function(err) { $scope.error = "Failed to register visualization: " + err; });
