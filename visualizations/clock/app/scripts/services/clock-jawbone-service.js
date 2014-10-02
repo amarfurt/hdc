@@ -18,6 +18,66 @@ angular.module('clockApp')
     };
 
     /**
+     * Preprocess jawbone records and filter out other records.
+     * 
+     * Adds a date field as well as a type field to a record.
+     * The date is given in the granularity of days (without time).
+     * The type can be one of 'moveList', 'moveTicks', 'sleepList' or 
+     * 'sleepTicks'.
+     * Finally, the data is a top-level node.
+     */
+     instance.preprocessRecord = function(record) {
+        var data = {},
+            type = null,
+            date = null;
+
+        // remove the meta information and bring the data node to the top level
+        if (_.has(record, 'data') && _.has(record.data, 'data')) {
+            data = record.data.data;
+        }
+
+        // set the type of the record
+        if (_.has(data, 'items')) {
+            if (_.isArray(data.items) && data.items.length === 1) {
+                if (_.has(data.items[0], 'type') && data.items[0].type === 'move') {
+                    type = 'moveList';
+                } else if (_.has(data.items[0], 'details') && _.has(data.items[0].details, 'awakenings')) {
+                    type = 'sleepList';
+                }
+            } else if (data.items.length > 1) {
+                if (_.has(data.items[0], 'active_time')) {
+                    type = 'moveTicks';
+                } else if (_.has(data.items[0], 'depth')) {
+                    type = 'sleepTicks';
+                }
+            }
+        }
+
+        // set the date of the record (without time)
+        if (type === 'moveList' || type === 'sleepList') {
+            if (_.has(data.items[0], 'time_completed')) {
+                date = new Date(data.items[0].time_completed * 1000);
+                date = new Date(date.toDateString());
+            }
+        } else if (type === 'moveTicks' || type === 'sleepTicks') {
+            if (_.has(_.last(data.items), 'time')) {
+                date = new Date(_.last(data.items).time * 1000);
+                date = new Date(date.toDateString());
+            }
+        }
+
+        // If preprocessing was successful, return the record, otherwise null
+        if (_.isEmpty(data) || !type || !date) {
+            return null;
+        } else {
+            record.data = data;
+            record.type = type;
+            record.date = date;
+            return record;
+        }
+     }
+
+    /**
      *  This function transforms the move data into the format to be
      *  used by the visualization widget.
      *
