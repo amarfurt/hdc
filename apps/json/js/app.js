@@ -5,8 +5,8 @@ jsonRecords.controller('CreateCtrl', ['$scope', '$http', '$location',
 		// init
 		$scope.errors = {};
 
-		// get reply-to address
-		var replyTo = atob($location.path().split("/")[1]);
+		// get authorization token
+		var authToken = $location.path().split("/")[1];
 		
 		// controller functions
 		$scope.validate = function() {
@@ -53,14 +53,15 @@ jsonRecords.controller('CreateCtrl', ['$scope', '$http', '$location',
 		
 		$scope.submit = function() {
 			// construct json
-			var record = {
+			var data = {
+				"authToken": authToken,
 				"data": JSON.stringify($scope.json),
 				"name": $scope.title,
 				"description": $scope.description
 			};
 			
 			// submit to server
-			$http.post(replyTo, record).
+			$http.post("https://" + window.location.hostname + ":9000/api/apps/create", data).
 				success(function() {
 					$scope.success = "Record created successfully.";
 					$scope.title = null;

@@ -14,7 +14,7 @@ import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.auth.AuthToken;
+import utils.auth.SpaceToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonExtraction;
@@ -50,12 +50,12 @@ public class VisualizationsAPI extends Controller {
 		}
 
 		// decrypt authToken and check whether space with corresponding owner exists
-		AuthToken authToken = AuthToken.decrypt(json.get("authToken").asText());
-		if (authToken == null) {
+		SpaceToken spaceToken = SpaceToken.decrypt(json.get("authToken").asText());
+		if (spaceToken == null) {
 			return badRequest("Invalid authToken.");
 		}
-		Map<String, ObjectId> spaceProperties = new ChainedMap<String, ObjectId>().put("_id", authToken.spaceId)
-				.put("owner", authToken.userId).get();
+		Map<String, ObjectId> spaceProperties = new ChainedMap<String, ObjectId>().put("_id", spaceToken.spaceId)
+				.put("owner", spaceToken.userId).get();
 		try {
 			if (!Space.exists(spaceProperties)) {
 				return badRequest("Invalid authToken.");
@@ -89,7 +89,7 @@ public class VisualizationsAPI extends Controller {
 		}
 
 		// decrypt authToken and check whether space with corresponding owner exists
-		AuthToken authToken = AuthToken.decrypt(json.get("authToken").asText());
+		SpaceToken authToken = SpaceToken.decrypt(json.get("authToken").asText());
 		if (authToken == null) {
 			return badRequest("Invalid authToken.");
 		}

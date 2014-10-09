@@ -17,7 +17,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
-import utils.auth.AuthToken;
+import utils.auth.SpaceToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.db.ObjectIdConversion;
@@ -169,7 +169,7 @@ public class Spaces extends Controller {
 		}
 
 		// create encrypted authToken
-		AuthToken authToken = new AuthToken(spaceId, userId);
-		return ok(authToken.encrypt());
+		SpaceToken spaceToken = new SpaceToken(spaceId, userId);
+		return ok(spaceToken.encrypt());
 	}
 }

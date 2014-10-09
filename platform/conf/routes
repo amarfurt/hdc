@@ -75,7 +75,7 @@ GET     /apps/:id                   controllers.Apps.details(id: String)
 PUT     /apps/:id                   controllers.Apps.install(id: String)
 DELETE  /apps/:id                   controllers.Apps.uninstall(id: String)
 GET     /apps/:id/installed         controllers.Apps.isInstalled(id: String)
-GET     /apps/:id/create            controllers.Apps.getCreateUrl(id: String)
+GET     /apps/:id/url               controllers.Apps.getUrl(id: String)
 # Visualizations
 POST    /visualizations/get         controllers.Visualizations.get()
 GET     /visualizations/:id         controllers.Visualizations.details(id: String)
@@ -93,10 +93,11 @@ GET     /assets/*file               controllers.Assets.at(path="/public", file)
 # Developers Page
 GET     /developers                 controllers.Developers.index()
 # Apps Public API
-OPTIONS /:userId/apps/:appId/create controllers.AppsAPI.checkPreflight(userId: String, appId: String)
-POST    /:userId/apps/:appId/create controllers.AppsAPI.createRecord(userId: String, appId: String)
+OPTIONS /api/apps/create            controllers.AppsAPI.checkPreflight()
+POST    /api/apps/create            controllers.AppsAPI.createRecord()
+OPTIONS /api/apps/oauth             controllers.AppsAPI.checkPreflight()
+POST    /api/apps/oauth             controllers.AppsAPI.oAuthCall()
 # Node API
-GET     /:userId/apps/:appId/tokens controllers.AppsAPI.getTokens(userId: String, appId: String)
 POST    /:userId/apps/:appId/tokens controllers.AppsAPI.setTokens(userId: String, appId: String)
 POST    /apps/:appId/details        controllers.AppsAPI.getAppDetails(appId: String)
 # Visualizations Public API

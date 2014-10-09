@@ -11,6 +11,7 @@ object ApplicationBuild extends Build {
   val appDependencies = Seq(
     // Add your project dependencies here
     javaCore,
+    javaWs,
     "org.mongodb" % "mongo-java-driver" % "2.12.2",
     "org.elasticsearch" % "elasticsearch" % "1.2.1"
   )

@@ -9,7 +9,7 @@
 		<p ng-hide="loading">
 			<p ng-show="message">{{message}}</p>
 			<button id="authorize" type="button" class="btn btn-success" ng-hide="authorized" ng-click="authorize()">Authorize</button>
-			<iframe ng-src="{{importUrl}}" height="600px" width="100%" ng-show="authorized"></iframe>
+			<iframe ng-src="{{url}}" height="600px" width="100%" ng-show="authorized"></iframe>
 		</p>
 	</div>
 	

@@ -10,42 +10,6 @@ var querystring = require("querystring");
 var settings = require("./settings");
 var utils = require("./utils");
 
-// get access token from database
-var getAccessToken = function(response, origin, params) {
-	var request = http.request("http://localhost:9001/" + params.userId + "/apps/" + params.appId + "/tokens", function(getResponse) {
-		utils.parseRequestBody(getResponse, function(json) {
-			if (json.accessToken) {
-				params.accessToken = json.accessToken;
-				var next = params.queue.shift();
-				next(response, origin, params);
-			} else if (json.error) {
-				utils.badRequest(response, origin, "Failed to get tokens from database: " + json.error);
-			} else {
-				utils.badRequest(response, origin, "No access token found.");
-			}
-		});
-	});
-	request.end();
-	request.on("error", function(err) { utils.internalServerError(response, origin, err); });
-}
-
-// imports the data 
-var getData = function(response, origin, params) {
-	var options = url.parse(params.endpoint);
-	options.headers = {"Authorization": "Bearer " + params.accessToken};
-	var request = https.request(options, function(getResponse) {
-		utils.parseRequestBody(getResponse, function(json) {
-			if (json.error) {
-				utils.badRequest(response, origin, "Failed to get the data: " + json.error);
-			} else {
-				utils.ok(response, origin, JSON.stringify(json));
-			}
-		});
-	});
-	request.end();
-	request.on("error", function(err) { utils.internalServerError(response, origin, err); });
-}
-
 // get app details from database
 var getAppDetails = function(response, origin, params) {
 	var data = JSON.stringify({
@@ -132,17 +96,7 @@ var saveTokens = function(response, origin, params) {
 var process = function(request, response) {
 	var origin = request.headers.origin;
 	var requestUrl = url.parse(request.url);
-	if (request.method === "GET" && requestUrl.pathname.indexOf("data") > -1) {
-		// get the data
-		var split = requestUrl.pathname.split("/");
-		var params = {
-				"userId": split[3],
-				"appId": split[4],
-				"endpoint": decodeURIComponent(split[5]),
-				"queue": [getData]
-		};
-		getAccessToken(response, origin, params);
-	} else if (request.method === "POST" && requestUrl.pathname.indexOf("accessToken") > -1) {
+	if (request.method === "POST" && requestUrl.pathname.indexOf("accessToken") > -1) {
 		// request the permanent access token
 		var split = requestUrl.pathname.split("/");
 		var params = {

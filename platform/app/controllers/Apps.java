@@ -10,7 +10,6 @@ import models.App;
 import models.ModelException;
 import models.User;
 
-import org.apache.commons.codec.binary.Base64;
 import org.bson.types.ObjectId;
 
 import play.Play;
@@ -19,6 +18,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.Security;
+import utils.auth.AppToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonExtraction;
@@ -102,11 +102,12 @@ public class Apps extends Controller {
 		return ok(Json.toJson(isInstalled));
 	}
 
-	public static Result getCreateUrl(String appIdString) {
+	public static Result getUrl(String appIdString) {
 		// get app
 		ObjectId appId = new ObjectId(appIdString);
+		ObjectId userId = new ObjectId(request().username());
 		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
-		Set<String> fields = new ChainedSet<String>().add("filename").add("createUrl").get();
+		Set<String> fields = new ChainedSet<String>().add("filename").add("type").add("url").get();
 		App app;
 		try {
 			app = App.get(properties, fields);
@@ -114,16 +115,14 @@ public class Apps extends Controller {
 			return internalServerError(e.getMessage());
 		}
 
-		// create reply to address and encode it with Base64
-		String platformServer = Play.application().configuration().getString("platform.server");
-		String replyTo = "https://" + platformServer + routes.AppsAPI.createRecord(request().username(), appIdString).url();
-		String encodedReplyTo = new String(new Base64().encode(replyTo.getBytes()));
+		// create encrypted authToken
+		AppToken appToken = new AppToken(appId, userId);
+		String authToken = appToken.encrypt();
 
 		// put together url to load in iframe
 		String appServer = Play.application().configuration().getString("apps.server");
-		String createUrl = app.createUrl.replace(":replyTo", encodedReplyTo);
-		String url = "https://" + appServer + "/" + app.filename + "/" + createUrl;
-		return ok(url);
+		String url = app.url.replace(":authToken", authToken);
+		return ok("https://" + appServer + "/" + app.filename + "/" + url);
 	}
 
 }

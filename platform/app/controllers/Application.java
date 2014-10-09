@@ -136,7 +136,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Apps.install(),
 				controllers.routes.javascript.Apps.uninstall(),
 				controllers.routes.javascript.Apps.isInstalled(),
-				controllers.routes.javascript.Apps.getCreateUrl(),
+				controllers.routes.javascript.Apps.getUrl(),
 				// Visualizations
 				controllers.routes.javascript.Visualizations.details(),
 				controllers.routes.javascript.Visualizations.get(),

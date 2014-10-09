@@ -36,9 +36,9 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="createUrl" class="col-md-2 control-label">URL to create records</label>
+						<label for="url" class="col-md-2 control-label">URL to create records</label>
 						<div class="col-md-10">
-							<input type="text" id="create" class="form-control" placeholder="URL (relative to project home)" ng-model="app.createUrl">
+							<input type="text" id="url" class="form-control" placeholder="URL (must include &quot;:authToken&quot;)" ng-model="app.url">
 						</div>
 					</div>
 					<div class="pull-right">
@@ -50,15 +50,27 @@
 			<div id="oauth1" class="tab-pane fade">
 				<form class="form-horizontal" ng-submit="registerApp('oauth1')">
 					<div class="form-group">
-						<label for="name" class="col-md-2 control-label">Name</label>
+						<label for="filename1" class="col-md-2 control-label">Filename</label>
 						<div class="col-md-10">
-							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+							<input type="text" id="filename1" class="form-control" placeholder="Filename" ng-model="app.filename" autofocus>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="description" class="col-md-2 control-label">Description</label>
+						<label for="name1" class="col-md-2 control-label">Name</label>
 						<div class="col-md-10">
-							<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+							<input type="text" id="name1" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description1" class="col-md-2 control-label">Description</label>
+						<div class="col-md-10">
+							<textarea rows="5" id="description1" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="url1" class="col-md-2 control-label">URL</label>
+						<div class="col-md-10">
+							<input type="text" id="url1" class="form-control" placeholder="URL (must include &quot;:authToken&quot;)" ng-model="app.url">
 						</div>
 					</div>
 					<div class="form-group">
@@ -88,15 +100,27 @@
 			<div id="oauth2" class="tab-pane fade">
 				<form class="form-horizontal" ng-submit="registerApp('oauth2')">
 					<div class="form-group">
-						<label for="name" class="col-md-2 control-label">Name</label>
+						<label for="filename2" class="col-md-2 control-label">Filename</label>
 						<div class="col-md-10">
-							<input type="text" id="name" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+							<input type="text" id="filename2" class="form-control" placeholder="Filename" ng-model="app.filename" autofocus>
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="description" class="col-md-2 control-label">Description</label>
+						<label for="name2" class="col-md-2 control-label">Name</label>
 						<div class="col-md-10">
-							<textarea rows="5" id="description" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+							<input type="text" id="name2" class="form-control" placeholder="Name" ng-model="app.name" autofocus>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="description2" class="col-md-2 control-label">Description</label>
+						<div class="col-md-10">
+							<textarea rows="5" id="description2" class="form-control" placeholder="Description" ng-model="app.description"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="url2" class="col-md-2 control-label">URL</label>
+						<div class="col-md-10">
+							<input type="text" id="url2" class="form-control" placeholder="URL (must include &quot;:authToken&quot;)" ng-model="app.url">
 						</div>
 					</div>
 					<div class="form-group">

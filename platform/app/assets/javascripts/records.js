@@ -270,13 +270,13 @@ createRecords.controller('CreateRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// get app id (format: /records/create/:appId)
 	var appId = window.location.pathname.split("/")[3];
 	
-	// get record creation url
-	$http(jsRoutes.controllers.Apps.getCreateUrl(appId)).
+	// get app url
+	$http(jsRoutes.controllers.Apps.getUrl(appId)).
 		success(function(url) {
 			$scope.error = null;
 			$scope.url = $sce.trustAsResourceUrl(url);
 		}).
-		error(function(err) { $scope.error = "Failed to load record creation dialog: " + err; });
+		error(function(err) { $scope.error = "Failed to load app: " + err; });
 	
 }]);
 
@@ -384,26 +384,13 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// load the app into the iframe
 	loadApp = function() {
-		if (!app.filename) {
-			getFilename();
-		} else {
-			// import urls are the same for all apps for now
-			var url = "https://" + window.location.hostname + ":3000/" + app.filename + "/#/" + userId + "/" + appId;
-			$scope.importUrl = $sce.trustAsResourceUrl(url);
-			$scope.message = null;
-			$scope.loaded = true;
-		}
-	}
-	
-	// get the app's filename
-	getFilename = function() {
-		var properties = {"_id": {"$oid": appId}};
-		var fields = ["filename"];
-		var data = {"properties": properties, "fields": fields};
-		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
-			success(function(apps) {
-				app.filename = apps[0].filename;
-				loadApp();
+		// get app url
+		$http(jsRoutes.controllers.Apps.getUrl(appId)).
+			success(function(url) {
+				$scope.error = null;
+				$scope.url = $sce.trustAsResourceUrl(url);
+				$scope.message = null;
+				$scope.loaded = true;
 			}).
 			error(function(err) { $scope.error = "Failed to load app: " + err; });
 	}

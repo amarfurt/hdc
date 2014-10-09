@@ -54,7 +54,7 @@ runAggregator.controller('RunAggregatorCtrl', ['$scope', '$http', '$location',
 
 			// parse numbers out of text records
 			for (var i = 0; i < $scope.records.length; i++) {
-				var data = $scope.records[i].data;
+				var data = $scope.records[i].content;
 				var distanceEnd = data.lastIndexOf("km");
 				var timeEnd = data.lastIndexOf("h");
 				if (distanceEnd !== -1 && timeEnd !== -1) {

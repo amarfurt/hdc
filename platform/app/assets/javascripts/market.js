@@ -41,10 +41,7 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 	// register app
 	$scope.registerApp = function(type) {
 		// check required fields
-		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description) {
-			$scope.error = "Please fill in all required fields";
-			return;
-		} else if (type === "create" && !$scope.app.createUrl) {
+		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description || !$scope.app.url) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		} else if (type === "oauth1" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey)) {
@@ -56,33 +53,20 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 		}
 		
 		// piece together data object
-		if (type === "create") {
-			var data = {
-					"filename": $scope.app.filename,
-					"name": $scope.app.name,
-					"description": $scope.app.description,
-					"createUrl": $scope.app.createUrl
-			};
-		} else if (type === "oauth1") {
-			var data = {
-					"filename": $scope.app.filename,
-					"name": $scope.app.name,
-					"description": $scope.app.description,
-					"authorizationUrl": $scope.app.authorizationUrl,
-					"accessTokenUrl": $scope.app.accessTokenUrl,
-					"consumerKey": $scope.app.consumerKey
-			};
-		} else if (type === "oauth2") {
-			var data = {
-					"filename": $scope.app.filename,
-					"name": $scope.app.name,
-					"description": $scope.app.description,
-					"authorizationUrl": $scope.app.authorizationUrl,
-					"accessTokenUrl": $scope.app.accessTokenUrl,
-					"consumerKey": $scope.app.consumerKey,
-					"consumerSecret": $scope.app.consumerSecret,
-					"scopeParameters": $scope.app.scopeParameters
-			};
+		var data = {
+				"filename": $scope.app.filename,
+				"name": $scope.app.name,
+				"description": $scope.app.description,
+				"url": $scope.app.createUrl
+		};
+		if (type === "oauth1" || type === "oauth2") {
+			data.authorizationUrl = $scope.app.authorizationUrl;
+			data.accessTokenUrl = $scope.app.accessTokenUrl;
+			data.consumerKey = $scope.app.consumerKey;
+		}
+		if (type === "oauth2") {
+			data.consumerSecret = $scope.app.consumerSecret;
+			data.scopeParameters = $scope.app.scopeParameters
 		}
 		
 		// send the request

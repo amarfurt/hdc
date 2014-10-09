@@ -11,7 +11,7 @@
 	
 		<form class="form-horizontal" ng-submit="registerVisualization()">
 			<div class="form-group">
-				<label for="filename" class="col-md-2 control-label">Name</label>
+				<label for="filename" class="col-md-2 control-label">Filename</label>
 				<div class="col-md-10">
 					<input type="text" id="filename" class="form-control" placeholder="Filename" ng-model="visualization.filename" autofocus>
 				</div>
@@ -31,7 +31,7 @@
 			<div class="form-group">
 				<label for="url" class="col-md-2 control-label">URL</label>
 				<div class="col-md-10">
-					<input type="text" id="url" class="form-control" placeholder="URL" ng-model="visualization.url">
+					<input type="text" id="url" class="form-control" placeholder="URL (must include &quot;:authToken&quot;)" ng-model="visualization.url">
 				</div>
 			</div>
 			<div class="pull-right">
