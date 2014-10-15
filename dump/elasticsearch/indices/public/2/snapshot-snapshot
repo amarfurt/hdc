@@ -1,8 +1,8 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1413298090712,
-  "time" : 217,
+  "start_time" : 1413368056284,
+  "time" : 156,
   "number_of_files" : 4,
   "total_size" : 5204,
   "files" : [ {
@@ -23,6 +23,6 @@
     "name" : "__3",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "q27l3b"
+    "checksum" : "ovlox5"
   } ]
 }

@@ -74,46 +74,49 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 			$scope.saved = 0;
 
 			// import records explicitly for each day (we want to store it in that granularity)
-			for (var date = fromDate; date <= toDate; date.setDate(date.getDate() + 1)) {
-				var jawboneDate = date.getFullYear() + twoDigit(date.getMonth() + 1) + twoDigit(date.getDate());
-				var formattedDate = date.getFullYear() + "-" + twoDigit(date.getMonth() + 1) + "-" + twoDigit(date.getDate());
-				var data = {
-					"authToken": authToken,
-					"url": baseUrl + $scope.measure.main.endpoint.replace("{date}", jawboneDate)
-				};
-				$scope.requested += 1;
-				$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
-					success(function(response) {
-						// check if an error was returned
-						if (response.meta.code !== 200) {
-							if (response.meta.error_detail) {
-								errorMessage("Failed to import data on " + formattedDate + ": " + response.meta.error_detail);
+			for (var curDate = fromDate; curDate <= toDate; curDate.setDate(curDate.getDate() + 1)) {
+				// capture loop variable 'curDate'
+				(function(date) {
+					var jawboneDate = date.getFullYear() + twoDigit(date.getMonth() + 1) + twoDigit(date.getDate());
+					var formattedDate = date.getFullYear() + "-" + twoDigit(date.getMonth() + 1) + "-" + twoDigit(date.getDate());
+					var data = {
+						"authToken": authToken,
+						"url": baseUrl + $scope.measure.main.endpoint.replace("{date}", jawboneDate)
+					};
+					$scope.requested += 1;
+					$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+						success(function(response) {
+							// check if an error was returned
+							if (response.meta.code !== 200) {
+								if (response.meta.error_detail) {
+									errorMessage("Failed to import data on " + formattedDate + ": " + response.meta.error_detail);
+								} else {
+									errorMessage("Failed to import data on " + formattedDate + ": Unknown error.");
+								}
+							} else if (response.data.items.length > 1) {
+								// there should only be one item per day
+								errorMessage("More than one record on " + formattedDate + ".");
 							} else {
-								errorMessage("Failed to import data on " + formattedDate + ": Unknown error.");
-							}
-						} else if (response.data.items.length > 1) {
-							// there should only be one item per day
-							errorMessage("More than one record on " + formattedDate + ".");
-						} else {
-							saveRecord($scope.measure.main.title, formattedDate, response);
+								saveRecord($scope.measure.main.title, formattedDate, response);
 
-							// also import record ticks if present
-							if ($scope.measure.details && response.data.items.length > 0) {
-								data.url = baseUrl + $scope.measure.details.endpoint.replace("{xid}", response.data.items[0].xid);
-								$scope.requested += 1;
-								$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
-									success(function(response) {
-										saveRecord($scope.measure.details.title, formattedDate, response);
-									}).
-									error(function(err) {
-										errorMessage("Failed to import record ticks on " + formattedDate + ": " + err);
-									});
+								// also import record ticks if present
+								if ($scope.measure.details && response.data.items.length > 0) {
+									data.url = baseUrl + $scope.measure.details.endpoint.replace("{xid}", response.data.items[0].xid);
+									$scope.requested += 1;
+									$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+										success(function(response) {
+											saveRecord($scope.measure.details.title, formattedDate, response);
+										}).
+										error(function(err) {
+											errorMessage("Failed to import record ticks on " + formattedDate + ": " + err);
+										});
+								}
 							}
-						}
-					}).
-					error(function(err) {
-						errorMessage("Failed to import data on " + formattedDate + ": " + err);
-					});
+						}).
+						error(function(err) {
+							errorMessage("Failed to import data on " + formattedDate + ": " + err);
+						});
+					})(curDate);
 			}
 			$scope.requesting = false;
 		}
@@ -138,7 +141,8 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 					finish();
 				}).
 				error(function(err) {
-					errorMessage("Failed to save record to database: " + err);
+					console.log(data);
+					errorMessage("Failed to save record '" + name + "' to database: " + err);
 				});
 		}
 

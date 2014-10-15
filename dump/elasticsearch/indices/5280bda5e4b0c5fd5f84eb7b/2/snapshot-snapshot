@@ -1,20 +1,20 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1413298090930,
-  "time" : 286,
+  "start_time" : 1413368056720,
+  "time" : 188,
   "number_of_files" : 4,
-  "total_size" : 5487,
+  "total_size" : 4946,
   "files" : [ {
     "name" : "__0",
     "physical_name" : "_0.cfs",
-    "length" : 4437,
-    "checksum" : "2fp7i0"
+    "length" : 3896,
+    "checksum" : "1tr2cnb"
   }, {
     "name" : "__1",
     "physical_name" : "_0.cfe",
     "length" : 653,
-    "checksum" : "u9ewkz"
+    "checksum" : "1e07on2"
   }, {
     "name" : "__2",
     "physical_name" : "segments_2",
@@ -23,6 +23,6 @@
     "name" : "__3",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "s5frtg"
+    "checksum" : "pff9d8"
   } ]
 }
