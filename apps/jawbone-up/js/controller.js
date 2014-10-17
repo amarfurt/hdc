@@ -93,9 +93,10 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 								} else {
 									errorMessage("Failed to import data on " + formattedDate + ": Unknown error.");
 								}
-							} else if (response.data.items.length > 1) {
-								// there should only be one item per day
-								errorMessage("More than one record on " + formattedDate + ".");
+							} else if (response.data.links && response.data.links.next) {
+								data.url = baseUrl + response.data.links.next;
+								delete response.data.links;
+								fetchRemaining($scope.measure.main.title, formattedDate, response, data);
 							} else {
 								saveRecord($scope.measure.main.title, formattedDate, response);
 
@@ -125,6 +126,28 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 		twoDigit = function(num) {
 			return ("0" + num).slice(-2);
 		}
+
+		// fetch the remaining data items of a record
+		fetchRemaining = function(title, formattedDate, record, data) {
+			$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+				success(function(response) {
+					if (response.meta.code !== 200) {
+						errorMessage("Failed to fetch remaining data items on " + formattedDate + ".");
+					} else {
+						record.data.items = record.data.items.concat(response.data.items);
+						record.data.size += response.data.size;
+						if (response.data.links && response.data.links.next) {
+							data.url = baseUrl + response.data.links.next;
+							fetchRemaining(title, formattedDate, record, data);
+						} else {
+							saveRecord(title, formattedDate, record);
+						}
+					}
+				}).
+				error(function(err) {
+					errorMessage("Failed to fetch remaining data items on " + formattedDate + ": " + err);
+				});
+		}
 		
 		// save a single record to the database
 		saveRecord = function(title, formattedDate, record) {
@@ -141,7 +164,6 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 					finish();
 				}).
 				error(function(err) {
-					console.log(data);
 					errorMessage("Failed to save record '" + name + "' to database: " + err);
 				});
 		}
