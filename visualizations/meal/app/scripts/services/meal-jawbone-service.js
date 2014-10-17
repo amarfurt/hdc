@@ -6,6 +6,54 @@ angular.module('mealApp')
         var instance = {};
 
         /**
+         * Preprocess jawbone records and filter out other records.
+         * 
+         * Adds a date field as well as a type field to a record.
+         * The date is given in the granularity of days (without time).
+         * The type can be one of 'moveList', 'moveTicks', 'sleepList' or 
+         * 'sleepTicks'.
+         * Finally, the data is a top-level node.
+         */
+        instance.preprocessRecord = function(record) {
+            var data = {},
+            type = null,
+            date = null;
+
+            // remove the meta information and bring the data node to the top level
+            if (_.has(record, 'data') && _.has(record.data, 'data')) {
+                data = record.data.data;
+            }
+
+            // set the type of the record
+            if (_.has(data, 'items')) {
+                if (_.isArray(data.items) && data.items.length > 0) {
+                    if (_.has(data.items[0], 'details') && _.has(data.items[0].details, 'carbohydrate')) {
+                        type = 'mealList';
+                    }
+                }
+            }
+
+            // set the date of the record (without time)
+            if (type === 'mealList' || type === 'sleepList') {
+                if (_.has(data.items[0], 'time_created')) {
+                    date = new Date(data.items[0].time_created * 1000);
+                    // round to midnight
+                    date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                }
+            }
+
+            // If preprocessing was successful, return the record, otherwise null
+            if (_.isEmpty(data) || !type || !date) {
+                return null;
+            } else {
+                record.data = data;
+                record.type = type;
+                record.date = date;
+                return record;
+            }
+        }
+
+        /**
          * This function transforms the meal data into the format to be used
          * by the visualization widget.
          */
