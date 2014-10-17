@@ -1,73 +1,58 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1413368058566,
-  "time" : 403,
-  "number_of_files" : 13,
-  "total_size" : 16409,
+  "start_time" : 1413550929963,
+  "time" : 447,
+  "number_of_files" : 10,
+  "total_size" : 13133,
   "files" : [ {
     "name" : "__0",
     "physical_name" : "_2.si",
     "length" : 282,
-    "checksum" : "msewkz"
+    "checksum" : "qpdyju"
   }, {
     "name" : "__1",
     "physical_name" : "_0.cfs",
-    "length" : 3416,
-    "checksum" : "4y1dfi"
+    "length" : 2912,
+    "checksum" : "14xjjln"
   }, {
     "name" : "__2",
-    "physical_name" : "_3.cfs",
-    "length" : 3206,
-    "checksum" : "1473mvr"
-  }, {
-    "name" : "__3",
     "physical_name" : "_0.cfe",
     "length" : 653,
-    "checksum" : "18syouq"
+    "checksum" : "lkbvp4"
   }, {
-    "name" : "__4",
+    "name" : "__3",
     "physical_name" : "_1.si",
     "length" : 282,
-    "checksum" : "pw8o7i"
+    "checksum" : "mifb5f"
+  }, {
+    "name" : "__4",
+    "physical_name" : "segments_2",
+    "length" : 187
   }, {
     "name" : "__5",
-    "physical_name" : "segments_2",
-    "length" : 223
+    "physical_name" : "_1.cfs",
+    "length" : 4023,
+    "checksum" : "31gtsz"
   }, {
     "name" : "__6",
-    "physical_name" : "_3.si",
-    "length" : 282,
-    "checksum" : "pj1wht"
-  }, {
-    "name" : "__7",
-    "physical_name" : "_3.cfe",
-    "length" : 653,
-    "checksum" : "czf5jf"
-  }, {
-    "name" : "__8",
-    "physical_name" : "_1.cfs",
-    "length" : 2912,
-    "checksum" : "3wczme"
-  }, {
-    "name" : "__9",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "p1t14e"
+    "checksum" : "rnetkp"
   }, {
-    "name" : "__a",
+    "name" : "__7",
     "physical_name" : "_2.cfs",
-    "length" : 2912,
-    "checksum" : "a6l77n"
+    "length" : 3206,
+    "checksum" : "1iznwck"
   }, {
-    "name" : "__b",
+    "name" : "__8",
     "physical_name" : "_2.cfe",
     "length" : 653,
-    "checksum" : "m2qvd9"
+    "checksum" : "13ibi0g"
   }, {
-    "name" : "__c",
+    "name" : "__9",
     "physical_name" : "_1.cfe",
     "length" : 653,
-    "checksum" : "u6pz26"
+    "checksum" : "19a1xki"
   } ]
 }
