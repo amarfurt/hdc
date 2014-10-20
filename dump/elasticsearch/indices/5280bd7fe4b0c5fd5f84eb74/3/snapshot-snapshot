@@ -1,8 +1,8 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1413550926107,
-  "time" : 136,
+  "start_time" : 1413816874796,
+  "time" : 180,
   "number_of_files" : 4,
   "total_size" : 3862,
   "files" : [ {
@@ -23,6 +23,6 @@
     "name" : "__3",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "os0gkq"
+    "checksum" : "rfri3w"
   } ]
 }
