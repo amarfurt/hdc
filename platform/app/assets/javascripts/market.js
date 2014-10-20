@@ -52,12 +52,18 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 			return;
 		}
 		
+		// check whether url contains ":authToken"
+		if ($scope.app.url.indexOf(":authToken") < 0) {
+			$scope.error = "Url must contain ':authToken' to receive the authorization token required to create records.";
+			return;
+		}
+		
 		// piece together data object
 		var data = {
 				"filename": $scope.app.filename,
 				"name": $scope.app.name,
 				"description": $scope.app.description,
-				"url": $scope.app.createUrl
+				"url": $scope.app.url
 		};
 		if (type === "oauth1" || type === "oauth2") {
 			data.authorizationUrl = $scope.app.authorizationUrl;
@@ -86,6 +92,12 @@ market.controller('RegisterVisualizationCtrl', ['$scope', '$http', function($sco
 	$scope.registerVisualization = function() {
 		if (!$scope.visualization.filename || !$scope.visualization.name || !$scope.visualization.description || !$scope.visualization.url) {
 			$scope.error = "Please fill in all required fields";
+			return;
+		}
+		
+		// check whether url contains ":authToken"
+		if ($scope.visualization.url.indexOf(":authToken") < 0) {
+			$scope.error = "Url must contain ':authToken' to receive the authorization token required to create records.";
 			return;
 		}
 		
