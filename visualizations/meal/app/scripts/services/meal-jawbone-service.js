@@ -10,8 +10,7 @@ angular.module('mealApp')
          * 
          * Adds a date field as well as a type field to a record.
          * The date is given in the granularity of days (without time).
-         * The type can be one of 'moveList', 'moveTicks', 'sleepList' or 
-         * 'sleepTicks'.
+         * The type is 'mealList'.
          * Finally, the data is a top-level node.
          */
         instance.preprocessRecord = function(record) {
@@ -34,7 +33,7 @@ angular.module('mealApp')
             }
 
             // set the date of the record (without time)
-            if (type === 'mealList' || type === 'sleepList') {
+            if (type === 'mealList') {
                 if (_.has(data.items[0], 'time_created')) {
                     date = new Date(data.items[0].time_created * 1000);
                     // round to midnight
