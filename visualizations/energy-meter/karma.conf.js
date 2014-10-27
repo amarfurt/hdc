@@ -14,9 +14,11 @@ module.exports = function(config) {
       'app/bower_components/angular/angular.js',
       'app/bower_components/angular-mocks/angular-mocks.js',
       'app/bower_components/angular-route/angular-route.js',
+      'app/bower_components/lodash/dist/lodash.compat.js',
+      'http://maps.googleapis.com/maps/api/js?sensor=false',
+      'app/bower_components/angular-google-maps/dist/angular-google-maps.js',
       'app/scripts/*.js',
       'app/scripts/**/*.js',
-      'test/mock/**/*.js',
       'test/spec/**/*.js'
     ],
 

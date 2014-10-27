@@ -18,28 +18,75 @@ angular.module('energyMeterApp')
     };
 
     /**
+     * Preprocess jawbone records and filter out other records.
+     *
+     * Adds a date field as well as a type field to a record.
+     * The date is given in the granularity of days (without time).
+     * The type is 'workoutList'.
+     * Finally, the data is a top-level node.
+     */
+    api.preprocessRecord = function(record) {
+        var data = {},
+        type = null,
+        date = null;
+
+        // capture the record's data
+        if (_.has(record, 'data') && _.has(record.data, 'data')) {
+            data = record.data.data;
+        }
+
+        // set the type of the record
+        if (_.has(data, 'items')) {
+            if (_.isArray(data.items) && data.items.length > 0) {
+                if (_.has(data.items[0], 'details') && _.has(data.items[0].details, 'intensity')) {
+                    type = 'workoutList';
+                }
+            }
+        }
+
+        // set the date of the record (without time)
+        if (type === 'workoutList') {
+            if (_.has(data.items[0], 'time_created')) {
+                date = new Date(data.items[0].time_created * 1000);
+                // round to midnight
+                date = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            }
+        }
+
+        // If preprocessing was successful, return the record, otherwise null
+        if (_.isEmpty(data) || !type || !date) {
+            return null;
+        } else {
+            record.data = data;
+            record.type = type;
+            record.date = date;
+            return record;
+        }
+    }
+
+    /**
      * Generate an array of marker models from an array of weekly workout data.
      */
-    api.generateMarkers = function generateMarkers(weekData){
+    api.generateMarkers = function(weekData){
       var markers = _.map(weekData, function generateMarkersForDay(element){
         return _.map(element.data.items,
           function generateMarkersForWorkout(innerElement){
             return {
               longitude : innerElement.place_lon, //jshint ignore:line
               latitude : innerElement.place_lat, //jshint ignore:line
-              icon : markerDays[element.meta.date.getDay()],
-              id : element.meta.date.getDay(),
+              icon : markerDays[element.date.getDay()],
+              id : element.date.getDay(),
               workout : innerElement
             };
           });
       });
       return _.flatten(markers, true);
-    };
+    }
 
     /**
      * Generate a summary object from the weekly data.
      */
-    api.generateSummary = function generateSummary(weekData){
+    api.generateSummary = function(weekData){
       var summary = {
         totalCalories : 0,
         totalSteps : 0,
@@ -72,15 +119,15 @@ angular.module('energyMeterApp')
         summary.totalSteps += dailySteps;
         summary.totalTime += dailyTime/60;
         summary.caloriesPerDay.push({
-          dayNumber : element.meta.date.getDay(),
+          dayNumber : element.date.getDay(),
           calories : dailyCalories
         });
         summary.stepsPerDay.push({
-          dayNumber : element.meta.date.getDay(),
+          dayNumber : element.date.getDay(),
           steps: dailySteps
         });
         summary.timePerDay.push({
-          dayNumber : element.meta.date.getDay(),
+          dayNumber : element.date.getDay(),
           time : dailyTime/60
         });
       });
@@ -98,6 +145,6 @@ angular.module('energyMeterApp')
                 count : val};
       });
       return summary;
-    };
+    }
     return api;
   });

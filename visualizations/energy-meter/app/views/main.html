@@ -1,15 +1,15 @@
 <div ng-hide="error.show" class="row">
   <div class="col-xs-6">
-    <google-map center="mapParams.center" zoom="mapParams.zoom"
+    <ui-gmap-google-map center="mapParams.center" zoom="mapParams.zoom"
       draggable="true">
-        <window coords="infoWindow.coords" show="infoWindow.show"
+        <ui-gmap-window coords="infoWindow.coords" show="infoWindow.show"
           templateUrl="'templates/info-window.html'"
           templateParameter="infoWindow.workout"
-          closeClick="closeInfoWindow(true)"></window>
-        <markers models="weeklyMarkers" coords="'self'" icon="'icon'"
-          click="showInfoWindow">
-        </markers>
-    </google-map>
+          closeClick="closeInfoWindow(true)"></ui-gmap-window>
+        <ui-gmap-markers models="weeklyMarkers" coords="'self'" icon="'icon'"
+          click="'onClick'">
+        </ui-gmap-markers>
+    </ui-gmap-google-map>
   </div>
   <div class="col-xs-3">
     <div ng-show="summary.ready" class="row">

@@ -7,11 +7,11 @@ angular
    */
   .module('energyMeterApp', [
     'ngRoute',
-    'google-maps'
+    'google-maps'.ns()
   ])
   .config(function ($routeProvider) {
     $routeProvider
-      .when('/:records', {
+      .when('/:authToken', {
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'
       })

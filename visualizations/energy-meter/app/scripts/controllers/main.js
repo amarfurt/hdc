@@ -4,23 +4,23 @@ angular.module('energyMeterApp')
   /**
    * Main controller for the visualization, it implements the following
    * functionality:
-   * 1. Read the records from the URL parameters and pass them
-   *    through the Jawbone workout filter.
+   * 1. Get the records with the authorization token passed through the
+   *    URL, filter out all but the Jawbone workouts and preprocess them.
    * 2. Implement the functionality for picking weeks using the HTML5 input
    *    element.
    * 3. Respond to changes in the selected week and display the weekly
    *    data in the map and the summary div.
    */
   .controller('MainCtrl', ['$scope', '$routeParams', '$filter',
-    'JawboneWorkout',
-    function ($scope, $routeParams, $filter, JawboneWorkout) {
+    'JawboneWorkout', '$http',
+    function ($scope, $routeParams, $filter, JawboneWorkout, $http) {
       // Initialize basic variables for the display
       $scope.mapParams = {
         center : {
           latitude : 47.3667,
           longitude : 8.5500
         },
-        zoom : 11,
+        zoom : 11
       };
 
       $scope.weekDays = [
@@ -36,7 +36,7 @@ angular.module('energyMeterApp')
       $scope.error = {show : false};
 
       // Define functionality regarding the info window for each workout in
-      // the map
+      // the map...
       /**
        * Reset the info window object.
        */
@@ -44,44 +44,47 @@ angular.module('energyMeterApp')
         $scope.infoWindow = {
           coords : {
             latitude : 0,
-            longitude : 0,
+            longitude : 0
           },
           show : false,
-          workout : null,
+          workout : null
         };
       }
+
+      // ... and initialize it
       resetInfoWindow();
+
       /**
        * Show the info window when a marker is clicked. This calls $apply
        * because the click is triggered outside AngularJS.
        */
-      $scope.showInfoWindow = function showInfoWindow($markerModel){
+      function showInfoWindow($markerModel){
         $scope.infoWindow.show = true;
         $scope.infoWindow.coords.latitude = $markerModel.latitude;
         $scope.infoWindow.coords.longitude = $markerModel.longitude;
         $scope.infoWindow.workout = $markerModel.workout;
         $scope.$apply();
-      };
+      }
       /**
        * Close the info window by resetting the info window object.
        * This calls $apply when called from a click in the map (i.e. outside an
        * AngularJS event).
        */
-      $scope.closeInfoWindow = function closeInfoWindow(doApply){
+      $scope.closeInfoWindow = function(doApply){
         resetInfoWindow();
         if(doApply){
           $scope.$apply();
         }
-      };
+      }
 
       // Functionality for legend collapse
       $scope.legendCollapsed = false;
       /**
        * Collapse/expand the legend when the title is clicked.
        */
-      $scope.collapseLegend = function toggleLegend(){
+      $scope.collapseLegend = function(){
         $scope.legendCollapsed = !$scope.legendCollapsed;
-      };
+      }
 
       /**
        * Function that responds to changes in the selected week.
@@ -89,7 +92,7 @@ angular.module('energyMeterApp')
        * produces the marker models and summary object for display
        * in the view.
        */
-      $scope.changedWeekSelection = function onWeekChange(){
+      $scope.changedWeekSelection = function(){
         if($scope.dateForm.dateInput.$valid){
           $scope.closeInfoWindow(false);
           var weekNumber = $filter('date')($scope.selectedWeek, 'yyyy-Www');
@@ -103,6 +106,13 @@ angular.module('energyMeterApp')
             $scope.dataPresent = true;
             $scope.weeklyMarkers = JawboneWorkout.generateMarkers(
               $scope.availableData[weekNumber]);
+
+            // define the onClick function here to access the showInfoWindow function
+            _.each($scope.weeklyMarkers, function(marker) {
+              marker.onClick = function() {
+                showInfoWindow(marker);
+              }
+            });
             $scope.summary = JawboneWorkout.generateSummary(
               $scope.availableData[weekNumber]);
             $scope.summary.ready = true;
@@ -110,7 +120,7 @@ angular.module('energyMeterApp')
               function isDayPresent(day, idx){
                 var found = _.find($scope.availableData[weekNumber],
                   function findDayInData(element){
-                    return element.meta.date.getDay() === idx;
+                    return element.date.getDay() === idx;
                   });
                 return found !== undefined;
               });
@@ -121,22 +131,48 @@ angular.module('energyMeterApp')
             $scope.summary = {ready: false};
           }
         }
-      };
-
-      // Standard retrieval of records from URL and JSON parsing.
-      var rawRecords = JSON.parse(atob($routeParams.records));
-      var recordList = _.map(rawRecords, function(ele){
-        try{
-          return JSON.parse(ele);
-        } catch(e){
-          $scope.error.show = true;
-          $scope.error.message = 'Found a non-JSON record. ' +
-            'Please check the assigned records.';
-        }
-      });
-      $scope.availableData = $filter('workoutRecords')(recordList);
-      if(_.keys($scope.availableData).length === 0){
-        $scope.error.show = true;
-        $scope.error.message = 'Did not find any workout records in this space.';
       }
+
+      // filter out records that are not jawbone workouts and bring them
+      // into the desired form
+      function preprocessRecords(records) {
+        var filteredRecords = _.compact(_.map(records, JawboneWorkout.preprocessRecord));
+        var sortedRecords = _.sortBy(filteredRecords, 'data');
+        $scope.availableData = _.groupBy(sortedRecords,
+          function getWeekNumber(element){
+            return $filter('date')(element.date, 'yyyy-Www');
+          });
+        if(_.keys($scope.availableData).length === 0){
+          $scope.error.show = true;
+          $scope.error.message = 'Did not find any workout records in this space.';
+        }
+      }
+
+      // get the records
+      function getRecords(recordIds) {
+          data.properties = {"_id": recordIds};
+          data.fields = ["data.data"];
+          $http.post("https://" + window.location.hostname +
+              ":9000/api/visualizations/records", JSON.stringify(data)).
+              success(function(records) {
+                preprocessRecords(records);
+              }).
+              error(function(err) {
+                  $scope.error.show = true;
+                  $scope.error.message = "Failed to load records: " + err;
+              });
+      }
+
+      // get the ids of the records assigned to this space
+      var data = {"authToken": $routeParams.authToken};
+      $http.post("https://" + window.location.hostname +
+          ":9000/api/visualizations/ids", JSON.stringify(data)).
+          success(function(recordIds) {
+              getRecords(recordIds);
+          }).
+          error(function(err) {
+              $scope.error.show = true;
+              $scope.error.message = "Failed to load records: " + err;
+          });
+
     }]);
