@@ -1,20 +1,20 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1413816878538,
-  "time" : 443,
+  "start_time" : 1414416804031,
+  "time" : 514,
   "number_of_files" : 13,
   "total_size" : 16409,
   "files" : [ {
     "name" : "__0",
     "physical_name" : "_2.si",
     "length" : 282,
-    "checksum" : "pn8710"
+    "checksum" : "ryc4ph"
   }, {
     "name" : "__1",
     "physical_name" : "_0.cfs",
     "length" : 2912,
-    "checksum" : "14xjjln"
+    "checksum" : "1qkz31v"
   }, {
     "name" : "__2",
     "physical_name" : "_3.cfs",
@@ -29,7 +29,7 @@
     "name" : "__4",
     "physical_name" : "_1.si",
     "length" : 282,
-    "checksum" : "s5edid"
+    "checksum" : "qhqn73"
   }, {
     "name" : "__5",
     "physical_name" : "segments_2",
@@ -38,7 +38,7 @@
     "name" : "__6",
     "physical_name" : "_3.si",
     "length" : 282,
-    "checksum" : "sxj4qw"
+    "checksum" : "scazvc"
   }, {
     "name" : "__7",
     "physical_name" : "_3.cfe",
@@ -47,27 +47,27 @@
   }, {
     "name" : "__8",
     "physical_name" : "_1.cfs",
-    "length" : 2912,
-    "checksum" : "z4r60f"
+    "length" : 3416,
+    "checksum" : "1jj6nyw"
   }, {
     "name" : "__9",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "q1jp6u"
+    "checksum" : "ougy98"
   }, {
     "name" : "__a",
     "physical_name" : "_2.cfs",
-    "length" : 3416,
-    "checksum" : "1va9fhz"
+    "length" : 2912,
+    "checksum" : "9gojf4"
   }, {
     "name" : "__b",
     "physical_name" : "_2.cfe",
     "length" : 653,
-    "checksum" : "13rstxq"
+    "checksum" : "m2qvd9"
   }, {
     "name" : "__c",
     "physical_name" : "_1.cfe",
     "length" : 653,
-    "checksum" : "u6pz26"
+    "checksum" : "juvj73"
   } ]
 }
