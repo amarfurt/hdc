@@ -10,7 +10,12 @@ import models.User;
 import org.bson.types.ObjectId;
 
 import play.Play;
-import play.libs.Json;
+import play.libs.F.Function;
+import play.libs.F.Function0;
+import play.libs.F.Promise;
+import play.libs.ws.WS;
+import play.libs.ws.WSRequestHolder;
+import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -25,11 +30,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.util.JSONParseException;
-
-import play.libs.ws.*;
-import play.libs.F.Function;
-import play.libs.F.Function0;
-import play.libs.F.Promise;
 
 // Not secured, accessible from app server
 public class AppsAPI extends Controller {
@@ -163,41 +163,4 @@ public class AppsAPI extends Controller {
 		return promise;
 	}
 
-	/**
-	 * Helper method for node server to save tokens to the database.
-	 */
-	@BodyParser.Of(BodyParser.Json.class)
-	public static Result setTokens(String userIdString, String appIdString) {
-		// check whether the request is complete
-		JsonNode json = request().body().asJson();
-		try {
-			JsonValidation.validate(json, "accessToken", "refreshToken");
-		} catch (JsonValidationException e) {
-			return badRequest(e.getMessage());
-		}
-
-		// save the tokens to the database
-		try {
-			Users.setTokens(new ObjectId(userIdString), new ObjectId(appIdString), json.get("accessToken").asText(),
-					json.get("refreshToken").asText());
-		} catch (ModelException e) {
-			return badRequest(e.getMessage());
-		}
-		return ok(Json.newObject());
-	}
-
-	/**
-	 * Get app details (duplicate code fragment from Apps class for now).
-	 */
-	@BodyParser.Of(BodyParser.Json.class)
-	public static Result getAppDetails(String appIdString) {
-		// validate json
-		JsonNode json = request().body().asJson();
-		try {
-			JsonValidation.validate(json, "properties", "fields");
-		} catch (JsonValidationException e) {
-			return badRequest(e.getMessage());
-		}
-		return Apps.getApps(json);
-	}
 }

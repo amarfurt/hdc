@@ -13,7 +13,12 @@ import models.User;
 import org.bson.types.ObjectId;
 
 import play.Play;
+import play.libs.F.Function;
+import play.libs.F.Function0;
+import play.libs.F.Promise;
 import play.libs.Json;
+import play.libs.ws.WS;
+import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -123,6 +128,62 @@ public class Apps extends Controller {
 		String appServer = Play.application().configuration().getString("apps.server");
 		String url = app.url.replace(":authToken", authToken);
 		return ok("https://" + appServer + "/" + app.filename + "/" + url);
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Promise<Result> requestTokensOAuth2(String appIdString) {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "code");
+		} catch (final JsonValidationException e) {
+			return Promise.promise(new Function0<Result>() {
+				public Result apply() {
+					return badRequest(e.getMessage());
+				}
+			});
+		}
+
+		// get app details
+		final ObjectId appId = new ObjectId(appIdString);
+		final ObjectId userId = new ObjectId(request().username());
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
+		Set<String> fields = new ChainedSet<String>().add("accessTokenUrl").add("consumerKey").add("consumerSecret").get();
+		App app;
+		try {
+			app = App.get(properties, fields);
+		} catch (final ModelException e) {
+			return Promise.promise(new Function0<Result>() {
+				public Result apply() {
+					return internalServerError(e.getMessage());
+				}
+			});
+		}
+
+		// request tokens
+		Promise<WSResponse> promise = WS.url(app.accessTokenUrl).setQueryParameter("client_id", app.consumerKey)
+				.setQueryParameter("client_secret", app.consumerSecret).setQueryParameter("grant_type", "authorization_code")
+				.setQueryParameter("code", json.get("code").asText()).get();
+		return promise.map(new Function<WSResponse, Result>() {
+			public Result apply(WSResponse response) {
+				JsonNode jsonNode = response.asJson();
+				if (jsonNode.has("access_token") && jsonNode.get("access_token").isTextual()) {
+					String accessToken = jsonNode.get("access_token").asText();
+					String refreshToken = null;
+					if (jsonNode.has("refresh_token") && jsonNode.get("refresh_token").isTextual()) {
+						refreshToken = jsonNode.get("refresh_token").asText();
+					}
+					try {
+						Users.setTokens(userId, appId, accessToken, refreshToken);
+					} catch (ModelException e) {
+						return badRequest(e.getMessage());
+					}
+					return ok();
+				} else {
+					return badRequest("Access token not found.");
+				}
+			}
+		});
 	}
 
 }

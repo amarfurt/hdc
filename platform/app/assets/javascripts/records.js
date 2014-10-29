@@ -357,7 +357,8 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	
 	// authorization granted
 	onAuthorized = function(event) {
-		if (event.origin === "https://" + window.location.hostname + ":9000" && event.source === authWindow) {
+		if (event.origin === "https://" + window.location.hostname + ":9000" && event.source === authWindow
+				&& event.data !== "access_denied") {
 			$scope.$apply(function() {
 				$scope.message = "User authorization granted. Requesting access token...";
 			});
@@ -373,7 +374,11 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 	// request access token
 	requestAccessToken = function(code) {
 		var data = {"code": code};
-		$http.post("https://" + window.location.hostname + ":5000/oauth2/accessToken/" + userId + "/" + appId, JSON.stringify(data)).
+		var requestTokensUrl = null; 
+		if (app.type === "oauth2") {
+			requestTokensUrl = jsRoutes.controllers.Apps.requestTokensOAuth2(appId).url;
+		}
+		$http.post(requestTokensUrl, JSON.stringify(data)).
 			success(function() {
 				$scope.authorized = true;
 				$scope.message = "Loading app...";
@@ -388,8 +393,8 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 		$http(jsRoutes.controllers.Apps.getUrl(appId)).
 			success(function(url) {
 				$scope.error = null;
-				$scope.url = $sce.trustAsResourceUrl(url);
 				$scope.message = null;
+				$scope.url = $sce.trustAsResourceUrl(url);
 				$scope.loaded = true;
 			}).
 			error(function(err) { $scope.error = "Failed to load app: " + err; });

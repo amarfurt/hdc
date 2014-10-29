@@ -76,6 +76,7 @@ PUT     /apps/:id                   controllers.Apps.install(id: String)
 DELETE  /apps/:id                   controllers.Apps.uninstall(id: String)
 GET     /apps/:id/installed         controllers.Apps.isInstalled(id: String)
 GET     /apps/:id/url               controllers.Apps.getUrl(id: String)
+POST    /apps/:id/tokens/oauth2     controllers.Apps.requestTokensOAuth2(id: String)
 # Visualizations
 POST    /visualizations/get         controllers.Visualizations.get()
 GET     /visualizations/:id         controllers.Visualizations.details(id: String)
@@ -97,9 +98,6 @@ OPTIONS /api/apps/create            controllers.AppsAPI.checkPreflight()
 POST    /api/apps/create            controllers.AppsAPI.createRecord()
 OPTIONS /api/apps/oauth             controllers.AppsAPI.checkPreflight()
 POST    /api/apps/oauth             controllers.AppsAPI.oAuthCall()
-# Node API
-POST    /:userId/apps/:appId/tokens controllers.AppsAPI.setTokens(userId: String, appId: String)
-POST    /apps/:appId/details        controllers.AppsAPI.getAppDetails(appId: String)
 # Visualizations Public API
 OPTIONS /api/visualizations/ids     controllers.VisualizationsAPI.checkPreflight()
 POST    /api/visualizations/ids     controllers.VisualizationsAPI.getIds()
