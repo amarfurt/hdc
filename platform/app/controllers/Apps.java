@@ -17,6 +17,10 @@ import play.libs.F.Function;
 import play.libs.F.Function0;
 import play.libs.F.Promise;
 import play.libs.Json;
+import play.libs.oauth.OAuth;
+import play.libs.oauth.OAuth.ConsumerKey;
+import play.libs.oauth.OAuth.RequestToken;
+import play.libs.oauth.OAuth.ServiceInfo;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
@@ -131,7 +135,7 @@ public class Apps extends Controller {
 	}
 
 	@BodyParser.Of(BodyParser.Json.class)
-	public static Promise<Result> requestTokensOAuth2(String appIdString) {
+	public static Promise<Result> requestAccessTokenOAuth2(String appIdString) {
 		// validate json
 		JsonNode json = request().body().asJson();
 		try {
@@ -160,7 +164,7 @@ public class Apps extends Controller {
 			});
 		}
 
-		// request tokens
+		// request access token
 		Promise<WSResponse> promise = WS.url(app.accessTokenUrl).setQueryParameter("client_id", app.consumerKey)
 				.setQueryParameter("client_secret", app.consumerSecret).setQueryParameter("grant_type", "authorization_code")
 				.setQueryParameter("code", json.get("code").asText()).get();
@@ -174,7 +178,9 @@ public class Apps extends Controller {
 						refreshToken = jsonNode.get("refresh_token").asText();
 					}
 					try {
-						Users.setTokens(userId, appId, accessToken, refreshToken);
+						Map<String, String> tokens = new ChainedMap<String, String>().put("accessToken", accessToken)
+								.put("refreshToken", refreshToken).get();
+						Users.setTokens(userId, appId, tokens);
 					} catch (ModelException e) {
 						return badRequest(e.getMessage());
 					}
@@ -186,4 +192,67 @@ public class Apps extends Controller {
 		});
 	}
 
+	public static Result getRequestTokenOAuth1(String appIdString) {
+		// get app details
+		ObjectId appId = new ObjectId(appIdString);
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
+		Set<String> fields = new ChainedSet<String>().add("consumerKey").add("consumerSecret").add("requestTokenUrl").add("accessTokenUrl")
+				.add("authorizationUrl").get();
+		App app;
+		try {
+			app = App.get(properties, fields);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+
+		// get request token (pass callback url as argument)
+		ConsumerKey key = new ConsumerKey(app.consumerKey, app.consumerSecret);
+		ServiceInfo info = new ServiceInfo(app.requestTokenUrl, app.accessTokenUrl, app.authorizationUrl, key);
+		OAuth client = new OAuth(info);
+		RequestToken requestToken = client.retrieveRequestToken(routes.Records.onAuthorized(app._id.toString())
+				.absoluteURL(request(), true));
+		session("token", requestToken.token);
+		session("secret", requestToken.secret);
+		return ok(client.redirectUrl(requestToken.token));
+	}
+
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result requestAccessTokenOAuth1(String appIdString) {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "code");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// get app details
+		final ObjectId appId = new ObjectId(appIdString);
+		final ObjectId userId = new ObjectId(request().username());
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("_id", appId).get();
+		Set<String> fields = new ChainedSet<String>().add("accessTokenUrl").add("consumerKey").add("consumerSecret").get();
+		App app;
+		try {
+			app = App.get(properties, fields);
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+
+		// request access token
+		ConsumerKey key = new ConsumerKey(app.consumerKey, app.consumerSecret);
+		ServiceInfo info = new ServiceInfo(app.requestTokenUrl, app.accessTokenUrl, app.authorizationUrl, key);
+		OAuth client = new OAuth(info);
+		RequestToken requestToken = new RequestToken(session("token"), session("secret"));
+		RequestToken accessToken = client.retrieveAccessToken(requestToken, json.get("code").asText());
+
+		// save token and secret to database
+		try {
+			Map<String, String> tokens = new ChainedMap<String, String>().put("oauthToken", accessToken.token)
+					.put("oauthTokenSecret", accessToken.secret).get();
+			Users.setTokens(userId, appId, tokens);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
 }

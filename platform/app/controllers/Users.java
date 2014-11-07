@@ -266,11 +266,8 @@ public class Users extends Controller {
 	/**
 	 * Set authorization tokens, namely the access and refresh token.
 	 */
-	static void setTokens(ObjectId userId, ObjectId appId, String accessToken, String refreshToken) throws ModelException {
+	static void setTokens(ObjectId userId, ObjectId appId, Map<String, String> tokens) throws ModelException {
 		User user = User.get(new ChainedMap<String, ObjectId>().put("_id", userId).get(), new ChainedSet<String>().add("tokens").get());
-		Map<String, String> tokens = new HashMap<String, String>();
-		tokens.put("accessToken", accessToken);
-		tokens.put("refreshToken", refreshToken);
 		user.tokens.put(appId.toString(), tokens);
 		User.set(userId, "tokens", user.tokens);
 	}

@@ -21,8 +21,10 @@ public class App extends Plugin implements Comparable<App> {
 	public String authorizationUrl;
 	public String accessTokenUrl;
 	public String consumerKey;
-	// oauth 2.0 app
 	public String consumerSecret;
+	// oauth 1.0 app
+	public String requestTokenUrl;
+	// oauth 2.0 app
 	public String scopeParameters;
 
 	@Override

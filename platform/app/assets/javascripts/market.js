@@ -44,7 +44,7 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 		if (!$scope.app.filename || !$scope.app.name || !$scope.app.description || !$scope.app.url) {
 			$scope.error = "Please fill in all required fields";
 			return;
-		} else if (type === "oauth1" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey)) {
+		} else if (type === "oauth1" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey || !$scope.app.consumerSecret || !$scope.app.requestTokenUrl)) {
 			$scope.error = "Please fill in all required fields";
 			return;
 		} else if (type === "oauth2" && (!$scope.app.authorizationUrl || !$scope.app.accessTokenUrl || !$scope.app.consumerKey || !$scope.app.consumerSecret || !$scope.app.scopeParameters)) {
@@ -69,10 +69,12 @@ market.controller('RegisterAppCtrl', ['$scope', '$http', function($scope, $http)
 			data.authorizationUrl = $scope.app.authorizationUrl;
 			data.accessTokenUrl = $scope.app.accessTokenUrl;
 			data.consumerKey = $scope.app.consumerKey;
-		}
-		if (type === "oauth2") {
 			data.consumerSecret = $scope.app.consumerSecret;
-			data.scopeParameters = $scope.app.scopeParameters
+			if (type === "oauth1") {
+				data.requestTokenUrl = $scope.app.requestTokenUrl;
+			} else if (type === "oauth2") {
+				data.scopeParameters = $scope.app.scopeParameters;
+			}
 		}
 		
 		// send the request

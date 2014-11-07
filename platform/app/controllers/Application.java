@@ -137,7 +137,9 @@ public class Application extends Controller {
 				controllers.routes.javascript.Apps.uninstall(),
 				controllers.routes.javascript.Apps.isInstalled(),
 				controllers.routes.javascript.Apps.getUrl(),
-				controllers.routes.javascript.Apps.requestTokensOAuth2(),
+				controllers.routes.javascript.Apps.requestAccessTokenOAuth2(),
+				controllers.routes.javascript.Apps.getRequestTokenOAuth1(),
+				controllers.routes.javascript.Apps.requestAccessTokenOAuth1(),
 				// Visualizations
 				controllers.routes.javascript.Visualizations.details(),
 				controllers.routes.javascript.Visualizations.get(),

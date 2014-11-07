@@ -42,8 +42,8 @@ public class Market extends Controller {
 			if (type.equals("create")) {
 				JsonValidation.validate(json, "filename", "name", "description", "url");
 			} else if (type.equals("oauth1")) {
-				JsonValidation
-						.validate(json, "filename", "name", "description", "url", "authorizationUrl", "accessTokenUrl", "consumerKey");
+				JsonValidation.validate(json, "filename", "name", "description", "url", "authorizationUrl", "accessTokenUrl",
+						"consumerKey", "consumerSecret", "requestTokenUrl");
 			} else if (type.equals("oauth2")) {
 				JsonValidation.validate(json, "filename", "name", "description", "url", "authorizationUrl", "accessTokenUrl",
 						"consumerKey", "consumerSecret", "scopeParameters");
@@ -80,16 +80,16 @@ public class Market extends Controller {
 		app.url = json.get("url").asText();
 
 		// fill in specific fields
-		if (type.equals("oauth1")) {
-			app.authorizationUrl = json.get("authorizationUrl").asText();
-			app.accessTokenUrl = json.get("accessTokenUrl").asText();
-			app.consumerKey = json.get("consumerKey").asText();
-		} else if (type.equals("oauth2")) {
+		if (type.equals("oauth1") || type.equals("oauth2")) {
 			app.authorizationUrl = json.get("authorizationUrl").asText();
 			app.accessTokenUrl = json.get("accessTokenUrl").asText();
 			app.consumerKey = json.get("consumerKey").asText();
 			app.consumerSecret = json.get("consumerSecret").asText();
-			app.scopeParameters = json.get("scopeParameters").asText();
+			if (type.equals("oauth1")) {
+				app.requestTokenUrl = json.get("requestTokenUrl").asText();
+			} else if (type.equals("oauth2")) {
+				app.scopeParameters = json.get("scopeParameters").asText();
+			}
 		}
 
 		// add app to the platform
