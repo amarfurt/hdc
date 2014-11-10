@@ -30,7 +30,6 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 				}
 		];
 		var baseUrl = "https://jawbone.com";
-		var nodeUrl = "https://" + window.location.hostname + ":5000";
 
 		// init datepicker
 		$("#datepicker").datepicker({
@@ -84,7 +83,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 						"url": baseUrl + $scope.measure.main.endpoint.replace("{date}", jawboneDate)
 					};
 					$scope.requested += 1;
-					$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+					$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth2", data).
 						success(function(response) {
 							// check if an error was returned
 							if (response.meta.code !== 200) {
@@ -104,7 +103,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 								if ($scope.measure.details && response.data.items.length > 0) {
 									data.url = baseUrl + $scope.measure.details.endpoint.replace("{xid}", response.data.items[0].xid);
 									$scope.requested += 1;
-									$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+									$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth2", data).
 										success(function(response) {
 											saveRecord($scope.measure.details.title, formattedDate, response);
 										}).
@@ -129,7 +128,7 @@ jawboneUp.controller('ImportCtrl', ['$scope', '$http', '$location',
 
 		// fetch the remaining data items of a record
 		fetchRemaining = function(title, formattedDate, record, data) {
-			$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth", data).
+			$http.post("https://" + window.location.hostname + ":9000/api/apps/oauth2", data).
 				success(function(response) {
 					if (response.meta.code !== 200) {
 						errorMessage("Failed to fetch remaining data items on " + formattedDate + ".");

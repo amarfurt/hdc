@@ -98,8 +98,10 @@ GET     /developers                 controllers.Developers.index()
 # Apps Public API
 OPTIONS /api/apps/create            controllers.AppsAPI.checkPreflight()
 POST    /api/apps/create            controllers.AppsAPI.createRecord()
-OPTIONS /api/apps/oauth             controllers.AppsAPI.checkPreflight()
-POST    /api/apps/oauth             controllers.AppsAPI.oAuthCall()
+OPTIONS /api/apps/oauth2            controllers.AppsAPI.checkPreflight()
+POST    /api/apps/oauth2            controllers.AppsAPI.oAuth2Call()
+OPTIONS /api/apps/oauth1            controllers.AppsAPI.checkPreflight()
+POST    /api/apps/oauth1            controllers.AppsAPI.oAuth1Call()
 # Visualizations Public API
 OPTIONS /api/visualizations/ids     controllers.VisualizationsAPI.checkPreflight()
 POST    /api/visualizations/ids     controllers.VisualizationsAPI.getIds()

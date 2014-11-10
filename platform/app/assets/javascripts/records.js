@@ -315,7 +315,7 @@ importRecords.controller('ImportRecordsCtrl', ['$scope', '$http', '$sce', functi
 		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
 			success(function(users) {
 				var tokens = users[0].tokens[appId];
-				if(tokens && tokens.accessToken) {
+				if(!_.isEmpty(tokens)) {
 					$scope.authorized = true;
 					$scope.message = "Loading app...";
 					$scope.loading = false;

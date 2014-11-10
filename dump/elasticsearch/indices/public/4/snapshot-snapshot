@@ -1,71 +1,56 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1414416804031,
-  "time" : 514,
-  "number_of_files" : 13,
-  "total_size" : 16409,
+  "start_time" : 1415637369388,
+  "time" : 492,
+  "number_of_files" : 10,
+  "total_size" : 12811,
   "files" : [ {
     "name" : "__0",
     "physical_name" : "_2.si",
     "length" : 282,
-    "checksum" : "ryc4ph"
+    "checksum" : "oc8z8x"
   }, {
     "name" : "__1",
     "physical_name" : "_0.cfs",
-    "length" : 2912,
-    "checksum" : "1qkz31v"
+    "length" : 3197,
+    "checksum" : "q9jz3p"
   }, {
     "name" : "__2",
-    "physical_name" : "_3.cfs",
-    "length" : 3206,
-    "checksum" : "1473mvr"
-  }, {
-    "name" : "__3",
     "physical_name" : "_0.cfe",
     "length" : 653,
-    "checksum" : "lkbvp4"
+    "checksum" : "1wyalnr"
   }, {
-    "name" : "__4",
+    "name" : "__3",
     "physical_name" : "_1.si",
     "length" : 282,
-    "checksum" : "qhqn73"
+    "checksum" : "qvihn1"
+  }, {
+    "name" : "__4",
+    "physical_name" : "segments_2",
+    "length" : 187
   }, {
     "name" : "__5",
-    "physical_name" : "segments_2",
-    "length" : 223
-  }, {
-    "name" : "__6",
-    "physical_name" : "_3.si",
-    "length" : 282,
-    "checksum" : "scazvc"
-  }, {
-    "name" : "__7",
-    "physical_name" : "_3.cfe",
-    "length" : 653,
-    "checksum" : "czf5jf"
-  }, {
-    "name" : "__8",
     "physical_name" : "_1.cfs",
     "length" : 3416,
     "checksum" : "1jj6nyw"
   }, {
-    "name" : "__9",
+    "name" : "__6",
     "physical_name" : "_0.si",
     "length" : 282,
-    "checksum" : "ougy98"
+    "checksum" : "rx5zng"
   }, {
-    "name" : "__a",
+    "name" : "__7",
     "physical_name" : "_2.cfs",
-    "length" : 2912,
-    "checksum" : "9gojf4"
+    "length" : 3206,
+    "checksum" : "1iznwck"
   }, {
-    "name" : "__b",
+    "name" : "__8",
     "physical_name" : "_2.cfe",
     "length" : 653,
-    "checksum" : "m2qvd9"
+    "checksum" : "13ibi0g"
   }, {
-    "name" : "__c",
+    "name" : "__9",
     "physical_name" : "_1.cfe",
     "length" : 653,
     "checksum" : "juvj73"
