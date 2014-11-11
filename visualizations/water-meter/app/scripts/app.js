@@ -11,7 +11,7 @@ angular
    */
   .config(function ($routeProvider) {
     $routeProvider
-      .when('/:records', {
+      .when('/:authToken', {
         templateUrl: 'views/main.html',
         controller: 'MainCtrl'
       })

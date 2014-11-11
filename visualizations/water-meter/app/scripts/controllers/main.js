@@ -8,8 +8,8 @@ angular.module('waterMeterApp')
    * 2. Load an animation with the water glass directive based on the
    *    water consumption data for the selected day.
    */
-  .controller('MainCtrl', ['$scope', '$interval', '$filter', '$routeParams',
-    function ($scope, $interval, $filter, $routeParams) {
+  .controller('MainCtrl', ['$scope', '$interval', '$routeParams', '$http',
+    function ($scope, $interval, $routeParams, $http) {
       // Initialize basic elements for the controller
       $scope.error = {show : false};
       var recommendedWaterConsumption = 2000;
@@ -53,24 +53,51 @@ angular.module('waterMeterApp')
         }
       };
 
-      // Standard retrieval of records from URL and JSON parsing.
-      var rawRecords = JSON.parse(atob($routeParams.records));
-      var recordList = _.map(rawRecords, function(ele){
-        try{
-          return JSON.parse(ele);
-        } catch(e){
+      function preprocessRecords(records) {
+        // filter out records that are not fitbit water consumption records
+        var filteredRecords = _.filter(records, function(record) {
+          return _.has(record, "data") && _.has(record.data, "water") && record.data.water.length > 0;
+        });
+
+        // check if we have any records left
+        if(filteredRecords.length === 0){
           $scope.error.show = true;
-          $scope.error.message = 'Found a non-JSON record. ' +
-            'Please check the assigned records.';
+          $scope.error.message = 'Did not find any water records in this space.';
+        } else {
+          // create a list of dates and of record data
+          var dates = _.map(filteredRecords, function(record) { return record.name.slice(-10); });
+          var data = _.map(filteredRecords, function(record) { return record.data; });
+
+          // waterData is an object with dates as keys and data as values
+          $scope.waterData = _.object(dates, data);
         }
-      });
-      $scope.filteredData = $filter('fitbitWater')(recordList);
-      if(_.keys($scope.filteredData).length === 0){
-        $scope.error.show = true;
-        $scope.error.message = 'Did not find any water records in this space.';
       }
-      $scope.waterData = {};
-      _.each($scope.filteredData, function pluck(element, key){
-        $scope.waterData[key] = element[0];
-      });
+
+      // get the records
+      function getRecords(recordIds) {
+        data.properties = {"_id": recordIds};
+        data.fields = ["name", "data"];
+        $http.post("https://" + window.location.hostname +
+          ":9000/api/visualizations/records", JSON.stringify(data)).
+          success(function(records) {
+            preprocessRecords(records);
+          }).
+          error(function(err) {
+            $scope.error.show = true;
+            $scope.error.message = "Failed to load records: " + err;
+          });
+      }
+
+      // get the ids of the records assigned to this space
+      var data = {authToken : $routeParams.authToken};
+      $http.post("https://" + window.location.hostname +
+        ":9000/api/visualizations/ids", JSON.stringify(data)).
+        success(function(recordIds) {
+          getRecords(recordIds);
+        }).
+        error(function(err) {
+          $scope.error.show = true;
+          $scope.error.message = "Failed to load records: " + err;
+        });
+
     }]);
