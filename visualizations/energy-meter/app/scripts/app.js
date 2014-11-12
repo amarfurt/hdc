@@ -2,8 +2,8 @@
 
 angular
   /**
-   * Define the app with a single route that is called when the records are
-   * passed in the URL.
+   * Define the app with a single route that is called when the authorization
+   * token is passed in the URL.
    */
   .module('energyMeterApp', [
     'ngRoute',

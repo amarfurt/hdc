@@ -7,7 +7,7 @@ angular
   ])
   /**
    * Configure the app with a single route for the path which reads the
-   * records from the URL.
+   * authorization token from the URL.
    */
   .config(function ($routeProvider) {
     $routeProvider
