@@ -1,8 +1,8 @@
 {
   "name" : "snapshot",
   "index_version" : 2,
-  "start_time" : 1415637364644,
-  "time" : 101,
+  "start_time" : 1415976484857,
+  "time" : 201,
   "number_of_files" : 1,
   "total_size" : 79,
   "files" : [ {
