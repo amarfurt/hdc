@@ -4,7 +4,7 @@ angular.module('timeSeriesApp')
   /**
    * Main controller for the time series visualization, it takes care of
    * the following functionality.
-   * 1. Read the data from the URL params and clear it
+   * 1. Get the data with the authorization token.
    * 2. Provide the available datasets in a control that allows the user
    *    control over what is displayed.
    * 3. Attach the selected datasets to the time-series directive for display.
@@ -12,58 +12,82 @@ angular.module('timeSeriesApp')
    * 5. Ensure that no more than 5 datasets are showed in the directive
    *    at the same time.
    */
-  .controller('MainCtrl', ['$scope', '$routeParams', 'FitbitResources',
-    function ($scope, $routeParams, FitbitResources) {
+  .controller('MainCtrl', ['$scope', '$routeParams', 'FitbitResources', '$http',
+    function ($scope, $routeParams, FitbitResources, $http) {
       // Initialize the error variable
       $scope.error = {show: false};
 
-      // Read the raw data from the url.
-      var rawRecords = JSON.parse(atob($routeParams.records));
-
-      // Parse all the objects and ensure they are Javascript Objects.
-      var recordList = _.map(rawRecords, function(ele){
-        try{
-          return JSON.parse(ele);
-        } catch(e){
+      // Get the ids of the records assigned to this space
+      var data = {authToken : $routeParams.authToken};
+      $http.post("https://" + window.location.hostname +
+        ":9000/api/visualizations/ids", JSON.stringify(data)).
+        success(function(recordIds) {
+          getRecords(recordIds);
+        }).
+        error(function(err) {
           $scope.error.show = true;
-          $scope.error.msg = 'Found a non-JSON record. ' +
-            'Please check the assigned records.';
-        }
-      });
+          $scope.error.msg = "Failed to load records: " + err;
+        });
+
+      // Get the records
+      function getRecords(recordIds) {
+        data.properties = {"_id": recordIds};
+        data.fields = ["data"];
+        $http.post("https://" + window.location.hostname +
+          ":9000/api/visualizations/records", JSON.stringify(data)).
+          success(function(records) {
+            // only the data field is used
+            records = _.compact(_.map(records, function(record) { return record.data; }));
+            cleanRecords(records);
+          }).
+          error(function(err) {
+            $scope.error.show = true;
+            $scope.error.msg = "Failed to load records: " + err;
+          });
+      }
 
       // Clean the list of records according to the defined resources
       // in the fitbit service
-      var cleanList = _.filter(recordList, function(ele){
-        return _.keys(ele).length === 1 &&
-          _.find(FitbitResources.timeSeriesResourcesKeys, function findKey(val){
-            return val.localeCompare(_.keys(ele)[0]) === 0;
-          }) !== undefined;
-      });
-      if(cleanList.length === 0){
-        $scope.error.show = true;
-        $scope.error.msg = 'Did not find any valid records for the space.';
-        return;
+      function cleanRecords(recordList) {
+        var cleanList = _.filter(recordList, function(ele){
+          return _.keys(ele).length === 1 &&
+            _.find(FitbitResources.timeSeriesResourcesKeys, function findKey(val){
+              return val.localeCompare(_.keys(ele)[0]) === 0;
+            }) !== undefined;
+        });
+        if(cleanList.length === 0){
+          $scope.error.show = true;
+          $scope.error.msg = 'Did not find any valid records for the space.';
+        } else {
+          computeAvailableDataSets(cleanList);
+        }
       }
 
       // Manipulate the records to adapt them to the directive's data format
       // this implies creating Javascript Date objects and ensuring
       // that the values are float
-      $scope.availableDataSets = _.map(cleanList, function transformRecord(ele){
-        var dataKey = _.keys(ele)[0];
-        var modifiedElement = {
-          title: FitbitResources.timeSeriesResources[dataKey].title,
-          units : FitbitResources.timeSeriesResources[dataKey].units,
-          data : _.map(ele[dataKey], function transformData(subEle){
-            return {
-              datetime: new Date(subEle.dateTime),
-              value : parseFloat(subEle.value)
+      function computeAvailableDataSets(cleanList) {
+        // first, create an object with one list of records for each resource
+        var resources = {};
+        _.each(cleanList, function(record) {
+          var dataKey = _.keys(record)[0];
+          var recordData = record[dataKey][0];
+          if (!(dataKey in resources)) {
+            resources[dataKey] = {
+              title: FitbitResources.timeSeriesResources[dataKey].title,
+              units : FitbitResources.timeSeriesResources[dataKey].units,
+              data: []
             };
-          })
-        };
-        return modifiedElement;
-      });
-      $scope.displayedDatasets = [];
-      $scope.displayTimeSeries = false;
+          }
+          resources[dataKey].data.push({
+            datetime: new Date(recordData.dateTime),
+            value: parseFloat(recordData.value)
+          });
+        });
+        $scope.availableDataSets = _.values(resources);
+        $scope.displayedDatasets = [];
+        $scope.displayTimeSeries = false;
+      }
 
       /**
        * UI control that determines when the display button can be clicked.
