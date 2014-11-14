@@ -21,9 +21,104 @@ fitbit.controller('ImportCtrl', ['$scope', '$http', '$location',
 					"endpoint": "/1/user/-/body/log/weight/date/{date}.json"
 				},
 				{
-					"name": "Sleep",
-					"title": "Fitbit sleep {date}",
+					"name": "Food - Calories Intake",
+					"title": "Fitbit food (calories intake) {date}",
+					"endpoint": "/1/user/-/foods/log/caloriesIn/date/{date}/1d.json"
+				},
+				{
+					"name": "Food - Water Consumption",
+					"title": "Fitbit food (water consumption) {date}",
+					"endpoint": "/1/user/-/foods/log/water/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Calories Burned",
+					"title": "Fitbit activities (calories burned) {date}",
+					"endpoint": "/1/user/-/activities/calories/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Steps",
+					"title": "Fitbit activities (steps) {date}",
+					"endpoint": "/1/user/-/activities/steps/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Distance",
+					"title": "Fitbit activities (distance) {date}",
+					"endpoint": "/1/user/-/activities/distance/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Floors Climbed",
+					"title": "Fitbit activities (floors climbed) {date}",
+					"endpoint": "/1/user/-/activities/floors/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Elevation",
+					"title": "Fitbit activities (elevation) {date}",
+					"endpoint": "/1/user/-/activities/elevation/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Minutes Sedentary",
+					"title": "Fitbit activities (minutes sedentary) {date}",
+					"endpoint": "/1/user/-/activities/minutesSedentary/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Minutes Lightly Active",
+					"title": "Fitbit activities (minutes lightly active) {date}",
+					"endpoint": "/1/user/-/activities/minutesLightlyActive/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Minutes Fairly Active",
+					"title": "Fitbit activities (minutes fairly active) {date}",
+					"endpoint": "/1/user/-/activities/minutesFairlyActive/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Minutes Very Active",
+					"title": "Fitbit activities (minutes very active) {date}",
+					"endpoint": "/1/user/-/activities/minutesVeryActive/date/{date}/1d.json"
+				},
+				{
+					"name": "Activities - Calories Burned in Activities",
+					"title": "Fitbit activities (calories burned in activities) {date}",
+					"endpoint": "/1/user/-/activities/activityCalories/date/{date}/1d.json"
+				},
+				{
+					"name": "Sleep - Time in Bed",
+					"title": "Fitbit sleep (time in bed) {date}",
+					"endpoint": "/1/user/-/sleep/timeInBed/date/{date}/1d.json"
+				},
+				{
+					"name": "Sleep - Minutes Asleep",
+					"title": "Fitbit sleep (minutes asleep) {date}",
+					"endpoint": "/1/user/-/sleep/minutesAsleep/date/{date}/1d.json"
+				},
+				{
+					"name": "Sleep - Minutes Awake",
+					"title": "Fitbit sleep (minutes awake) {date}",
 					"endpoint": "/1/user/-/sleep/minutesAwake/date/{date}/1d.json"
+				},
+				{
+					"name": "Sleep - Minutes to Fall Asleep",
+					"title": "Fitbit sleep (minutes to fall asleep) {date}",
+					"endpoint": "/1/user/-/sleep/minutesToFallAsleep/date/{date}/1d.json"
+				},
+				{
+					"name": "Sleep - Efficiency",
+					"title": "Fitbit sleep (efficiency) {date}",
+					"endpoint": "/1/user/-/sleep/efficiency/date/{date}/1d.json"
+				},
+				{
+					"name": "Body - Weight",
+					"title": "Fitbit body (weight) {date}",
+					"endpoint": "/1/user/-/body/weight/date/{date}/1d.json"
+				},
+				{
+					"name": "Body - BMI",
+					"title": "Fitbit body (BMI) {date}",
+					"endpoint": "/1/user/-/body/bmi/date/{date}/1d.json"
+				},
+				{
+					"name": "Body - Fat",
+					"title": "Fitbit body (fat) {date}",
+					"endpoint": "/1/user/-/body/fat/date/{date}/1d.json"
 				}
 		];
 		var baseUrl = "https://api.fitbit.com";
