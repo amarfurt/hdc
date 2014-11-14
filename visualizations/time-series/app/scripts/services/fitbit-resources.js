@@ -32,7 +32,7 @@ angular.module('timeSeriesApp')
       'activities-activityCalories' : {title: 'Calories burned in activities',
                                        units: 'kcal'},
       'sleep-timeInBed' : {title: 'Time in bed', units: 'min'},
-      'sleep-minutesAsSleep' : {title:'Minutes asleep', units: 'min'},
+      'sleep-minutesAsleep' : {title:'Minutes asleep', units: 'min'},
       'sleep-minutesAwake' : {title: 'Minutes awake', units: 'min'},
       'sleep-minutesToFallAsleep' : {title:'Minutes to fall asleep',
                                      units: 'min'},
