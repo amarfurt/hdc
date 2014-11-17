@@ -10,57 +10,81 @@ angular.module('weightWatcherApp')
    *  3. Retrieve the HDC tips from the message generator and display them.<br>
    *  4. Define the functionality for UI elements (e.g. pager for the tips).<br>
    */
-  .controller('MainCtrl', ['$scope', '$routeParams', 'MessageGenerator',
-    'BmiZones', function ($scope, $routeParams, MessageGenerator, BmiZones) {
+  .controller('MainCtrl', ['$scope', '$routeParams', '$http', 'MessageGenerator',
+    'BmiZones', function ($scope, $routeParams, $http, MessageGenerator, BmiZones) {
       // Initialize a few scope variables.
       $scope.error = {show: false};
+      $scope.messages = [];
 
-      // Retrieve the records from the URL object.
-      var rawRecords = JSON.parse(atob($routeParams.records));
-      var recordList = _.map(rawRecords, function(ele){
-        try{
-          return JSON.parse(ele);
-        } catch(e){
+      // Get the ids of the records assigned to this space
+      var data = {authToken : $routeParams.authToken};
+      $http.post("https://" + window.location.hostname +
+        ":9000/api/visualizations/ids", JSON.stringify(data)).
+        success(function(recordIds) {
+          getRecords(recordIds);
+        }).
+        error(function(err) {
           $scope.error.show = true;
-          $scope.error.msg = 'Found a non-JSON record.' +
-            'Please check the assigned records.';
-        }
-      });
+          $scope.error.msg = "Failed to load records: " + err;
+        });
 
-      // Clean them by filtering the non-weight ones.
-      var cleanRecordList = _.filter(recordList, function(ele){
-        if(ele.weight && ele.weight.length > 0){
-          return true;
-        }
-        return false;
-      });
-      if(cleanRecordList.length === 0){
-        $scope.error.show = true;
-        $scope.error.msg = 'Did not find any weight records in the space.';
-        return;
+      // Get the records
+      function getRecords(recordIds) {
+        data.properties = {"_id": recordIds};
+        data.fields = ["data"];
+        $http.post("https://" + window.location.hostname +
+          ":9000/api/visualizations/records", JSON.stringify(data)).
+          success(function(records) {
+            // only the data field is used
+            records = _.compact(_.map(records, function(record) { return record.data; }));
+            cleanRecords(records);
+          }).
+          error(function(err) {
+            $scope.error.show = true;
+            $scope.error.msg = "Failed to load records: " + err;
+          });
       }
 
-      // Sort them by date and reverse it to have the latest first.
-      var sortedRecordList = _.sortBy(cleanRecordList, function(ele){
-        var measurementDate = ele.weight[0].date;
-        return new Date(measurementDate);
-      }).reverse();
+      // Clean the list of records according to the defined resources
+      // in the fitbit service
+      function cleanRecords(recordList) {
+        var cleanRecordList = _.filter(recordList, function(ele){
+          return _.isArray(ele.weight) && ele.weight.length > 0;
+        });
+        if(cleanRecordList.length === 0){
+          $scope.error.show = true;
+          $scope.error.msg = 'Did not find any weight records in the space.';
+        } else {
+          initialize(cleanRecordList);
+        }
+      }
 
-      // Define the latest measurement object to be used by the scale directive.
-      $scope.latestMeasurement = sortedRecordList[0].weight[0];
+      // initialization: sort, set the scale and legend and get the message
+      function initialize(cleanRecordList) {
+        // Sort them by date and reverse it to have the latest first.
+        var sortedRecordList = _.sortBy(cleanRecordList, function(ele){
+          var measurementDate = ele.weight[0].date;
+          return new Date(measurementDate);
+        }).reverse();
 
-      // Define the bmi zones to be displayed in the legend.
-      var lowWeight = Math.floor($scope.latestMeasurement.weight - 10.0);
-      var highWeight = Math.ceil($scope.latestMeasurement.weight + 10.0);
-      var lowBmi = lowWeight * $scope.latestMeasurement.bmi /
-        $scope.latestMeasurement.weight;
-      var highBmi = highWeight * $scope.latestMeasurement.bmi /
-        $scope.latestMeasurement.weight;
-      $scope.bmiZones = BmiZones.getIntervals(lowBmi, highBmi);
+        // Define the latest measurement object to be used by the scale directive.
+        $scope.latestMeasurement = sortedRecordList[0].weight[0];
 
-      // Retrieve the messages from the message generator based on the sorted
-      // data. Display the first message.
-      $scope.messages = MessageGenerator.generateMessages(sortedRecordList);
+        // Define the bmi zones to be displayed in the legend.
+        var lowWeight = Math.floor($scope.latestMeasurement.weight - 10.0);
+        var highWeight = Math.ceil($scope.latestMeasurement.weight + 10.0);
+        var lowBmi = lowWeight * $scope.latestMeasurement.bmi /
+          $scope.latestMeasurement.weight;
+        var highBmi = highWeight * $scope.latestMeasurement.bmi /
+          $scope.latestMeasurement.weight;
+        $scope.bmiZones = BmiZones.getIntervals(lowBmi, highBmi);
+
+        // Retrieve the messages from the message generator based on the sorted
+        // data.
+        $scope.messages = MessageGenerator.generateMessages(sortedRecordList);
+      }
+
+      // Display the first message.
       $scope.currentMsg = 0;
 
       // Define the handler functions for the pager UI element.
