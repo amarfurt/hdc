@@ -11,27 +11,27 @@
 		<meta name="author" content="amarfurt">
 		<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 		<!-- Clear CSS defaults -->
-		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/reset.css")">
+		<link rel="stylesheet" href="@routes.Assets.at("stylesheets/reset.css")">
+		<!-- ng-cloak CSS rules until AngularJS has been loaded -->
+		<link rel="stylesheet" href="@routes.Assets.at("stylesheets/ng-cloak.css")">
 		<!-- Bootstrap core CSS -->
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
 		<!-- Plugin CSS -->
 		<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css">
 		<link href="@routes.Assets.at("bootstrap/css/typeahead.css")" rel="stylesheet">
-		<!-- Custom styles for this template -->
+		<!-- Adaptations for bootstrap -->
 		<link href="@routes.Assets.at("bootstrap/css/custom/main.css")" rel="stylesheet">
 		<!-- JS framework and libraries -->
-        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
-        <!-- jQuery needed for Bootstrap's JavaScript plugins -->
-		<script type="text/javascript" src="//code.jquery.com/jquery-2.0.3.min.js"></script>
-		<script type="text/javascript" src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
-		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
-		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/typeahead.min.js")"></script>
+        <!-- jQuery needed for Bootstrap's JavaScript plugins and is also used by AngularJS -->
+		<script type="text/javascript" src="//code.jquery.com/jquery-2.0.3.min.js" defer></script>
+		<script type="text/javascript" src="//code.jquery.com/ui/1.10.4/jquery-ui.js" defer></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js" defer></script>
+		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js" defer></script>
+		<script type="text/javascript" src="@routes.Assets.at("bootstrap/js/typeahead.min.js")" defer></script>
+		<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js" defer></script>
+		<script type="text/javascript" src="@routes.Application.javascriptRoutes()" defer></script>
 	</head>
 	<body>
 		@content
-	
-		<!-- Scripts at the end for faster page loading -->
-		<script type="text/javascript" src="@routes.Application.javascriptRoutes()"></script>
 	</body>
 </html>

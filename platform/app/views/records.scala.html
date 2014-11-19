@@ -2,7 +2,7 @@
 	<div ng-app="records" ng-controller="RecordsCtrl">
 		<!-- Header -->
 		<div class="page-header">
-			<div class="pull-right">
+			<div class="pull-right" ng-cloak>
 				<p ng-show="loadingApps">Loading apps...</p>
 				<div ng-show="!loadingApps && apps.length === 0">
 					<p>You can create or import records with apps.</p>
@@ -22,33 +22,35 @@
 			<h1>My records</h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error || filterError">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			<p ng-show="error">{{error}}</p>
-			<p ng-show="filterError">{{filterError}}</p>
-		</div>
-		
-		<!-- Records -->
-		<p ng-show="loadingRecords">Loading records...</p>
-		<p ng-show="!loadingRecords && records.length === 0">No available records found.</p>
-		<ul class="list-group" ng-show="!loadingRecords && records.length > 0">
-			<li class="list-group-item" ng-repeat="record in filteredRecords = (records | recordFilter:0)">
-				<span class="label label-info">{{record.created.name}}</span>
-				<a href="javascript:;" ng-click="showDetails(record)">{{record.name}}</a>
-				<div class="pull-right">
-					<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary" ng-click="activate(record); loadSpaces()">
-						<span class="glyphicon glyphicon-picture"></span> Show
-					</button>
-					<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary" ng-class="{'disabled': !isOwnRecord(record)}" ng-click="activate(record); loadCircles()">
-						<span class="glyphicon glyphicon-share"></span> Share
-					</button>
-				</div>
-			</li>
-		</ul>
-		
-		<!-- Filters -->
-		<div id="records-0" ng-show="records.length > 0">
-			@filters(0)
+		<div ng-cloak>
+			<div class="alert alert-danger alert-dismissable" ng-show="error || filterError">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p ng-show="error">{{error}}</p>
+				<p ng-show="filterError">{{filterError}}</p>
+			</div>
+			
+			<!-- Records -->
+			<p ng-show="loadingRecords">Loading records...</p>
+			<p ng-show="!loadingRecords && records.length === 0">No available records found.</p>
+			<ul class="list-group" ng-show="!loadingRecords && records.length > 0">
+				<li class="list-group-item" ng-repeat="record in filteredRecords = (records | recordFilter:0)">
+					<span class="label label-info">{{record.created.name}}</span>
+					<a href="javascript:;" ng-click="showDetails(record)">{{record.name}}</a>
+					<div class="pull-right">
+						<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary" ng-click="activate(record); loadSpaces()">
+							<span class="glyphicon glyphicon-picture"></span> Show
+						</button>
+						<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary" ng-class="{'disabled': !isOwnRecord(record)}" ng-click="activate(record); loadCircles()">
+							<span class="glyphicon glyphicon-share"></span> Share
+						</button>
+					</div>
+				</li>
+			</ul>
+			
+			<!-- Filters -->
+			<div id="records-0" ng-show="records.length > 0">
+				@filters(0)
+			</div>
 		</div>
 		
 		<!-- Spaces modal -->
@@ -109,7 +111,7 @@
 	</div>
 	
 	<!-- Load records controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/filters.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/records.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")" defer></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/filters.js")" defer></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/records.js")" defer></script>
 }

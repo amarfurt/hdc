@@ -14,7 +14,7 @@
 		</div>
 	</div>
 
-	<div class="container" ng-app="login" ng-controller="LoginCtrl">
+	<div class="container" ng-app="login" ng-controller="LoginCtrl" ng-cloak>
 		<div class="row">
 			<!-- Login -->
 			<div class="col-sm-6">
@@ -66,5 +66,5 @@
 	</div>
 	
 	<!-- Load login controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/login.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/login.js")" defer></script>
 }

@@ -4,7 +4,7 @@
 			<h1>Register a new app</h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error">
+		<div class="alert alert-danger alert-dismissable" ng-show="error" ng-cloak>
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 			<p>{{error}}</p>
 		</div>
@@ -175,5 +175,5 @@
 	</div>
 	
 	<!-- Load market controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")" defer></script>
 }

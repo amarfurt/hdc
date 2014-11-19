@@ -4,29 +4,31 @@
 			<h1>Market <small>Apps</small></h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			<p>{{error}}</p>
+		<div ng-cloak>
+			<div class="alert alert-danger alert-dismissable" ng-show="error">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p>{{error}}</p>
+			</div>
+			<div class="alert alert-success alert-dismissable" ng-show="success">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p>You have successfully installed a new app. Go to your <a href="@routes.Records.index()">records</a> now to import records.</p>
+			</div>
+			
+			<p class="lead">{{app.name}}</p>
+			<div class="row">
+				<p class="col-xs-2">Created by:</p>
+				<p class="col-xs-10">{{app.creator}}</p>
+			</div>
+			<div class="row">
+				<p class="col-xs-2">Description:</p>
+				<p class="col-xs-10">{{app.description}}</p>
+			</div>
+			
+			<button type="button" class="btn btn-primary" ng-hide="app.installed" ng-click="install()">Install</button>
+			<button type="button" class="btn btn-default" ng-show="app.installed" ng-click="uninstall()">Uninstall</button>
 		</div>
-		<div class="alert alert-success alert-dismissable" ng-show="success">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			<p>You have successfully installed a new app. Go to your <a href="@routes.Records.index()">records</a> now to import records.</p>
-		</div>
-		
-		<p class="lead">{{app.name}}</p>
-		<div class="row">
-			<p class="col-xs-2">Created by:</p>
-			<p class="col-xs-10">{{app.creator}}</p>
-		</div>
-		<div class="row">
-			<p class="col-xs-2">Description:</p>
-			<p class="col-xs-10">{{app.description}}</p>
-		</div>
-		
-		<button type="button" class="btn btn-primary" ng-hide="app.installed" ng-click="install()">Install</button>
-		<button type="button" class="btn btn-default" ng-show="app.installed" ng-click="uninstall()">Uninstall</button>
 	</div>
 	
 	<!-- Load details controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/details.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/details.js")" defer></script>
 }

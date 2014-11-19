@@ -7,14 +7,14 @@
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
 		<!-- jQuery needed for Bootstrap's JavaScript plugins -->
 		<script type="text/javascript" src="//code.jquery.com/jquery-2.0.2.min.js"></script>
-		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.min.js"></script>
+		<script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js" defer></script>
 		<!-- Ignoring locales for now -->
-		<script type="text/javascript" src="js/bootstrap-datepicker.js"></script>
-		<script type="text/javascript" src="js/controller.js"></script>
+		<script type="text/javascript" src="js/bootstrap-datepicker.js" defer></script>
+		<script type="text/javascript" src="js/controller.js" defer></script>
 	</head>
 	<body>
-		<div ng-app="jawbone-up" ng-controller="ImportCtrl">
+		<div ng-app="jawbone-up" ng-controller="ImportCtrl" ng-cloak>
 			<div class="page-header">
 				<h1>Import a record</h1>
 			</div>

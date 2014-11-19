@@ -9,79 +9,81 @@
 			<h1>My spaces</h1>
 		</div>
 		
-		<div class="alert alert-danger alert-dismissable" ng-show="error">
-			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-			<p ng-show="error">{{error}}</p>
-		</div>
-		
-		<!-- Spaces -->
-		<p ng-show="loading">Loading spaces...</p>
-		<div ng-show="!loading && spaces.length === 0">
-			<p>You have no spaces yet.</p>
-			<p>Add one by clicking on the button on the top right.</p>
-		</div>
-		<div ng-show="!loading && spaces.length > 0">
-			<!-- Space tabs -->
-			<ul class="nav nav-tabs">
-				<li ng-class="{'active': space.active}" ng-repeat="space in spaces">
-					<a href="javascript:;" ng-click="makeActive(space)">{{space.name}}</a>
-				</li>
-			</ul>
-			<!-- Space content -->
-			<div class="tab-content">
-				<div class="tab-pane fade" ng-class="{'active in': space.active}" ng-repeat="space in spaces">
-					<div class="row">
-						<div ng-class="{'col-lg-6': space.compare}">
-							<!-- Visualization -->
-							<p ng-hide="space.trustedUrl">Loading space...</p>
-							<div id="iframe-placeholder-{{space._id.$oid}}">
-								<iframe id="iframe-{{space._id.$oid}}" height="600px" width="100%" ng-show="space.trustedUrl"></iframe>
+		<div ng-cloak>
+			<div class="alert alert-danger alert-dismissable" ng-show="error">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p ng-show="error">{{error}}</p>
+			</div>
+			
+			<!-- Spaces -->
+			<p ng-show="loading">Loading spaces...</p>
+			<div ng-show="!loading && spaces.length === 0">
+				<p>You have no spaces yet.</p>
+				<p>Add one by clicking on the button on the top right.</p>
+			</div>
+			<div ng-show="!loading && spaces.length > 0">
+				<!-- Space tabs -->
+				<ul class="nav nav-tabs">
+					<li ng-class="{'active': space.active}" ng-repeat="space in spaces">
+						<a href="javascript:;" ng-click="makeActive(space)">{{space.name}}</a>
+					</li>
+				</ul>
+				<!-- Space content -->
+				<div class="tab-content">
+					<div class="tab-pane fade" ng-class="{'active in': space.active}" ng-repeat="space in spaces">
+						<div class="row">
+							<div ng-class="{'col-lg-6': space.compare}">
+								<!-- Visualization -->
+								<p ng-hide="space.trustedUrl">Loading space...</p>
+								<div id="iframe-placeholder-{{space._id.$oid}}">
+									<iframe id="iframe-{{space._id.$oid}}" height="600px" width="100%" ng-show="space.trustedUrl"></iframe>
+								</div>
 							</div>
 						</div>
-					</div>
-					
-					<!-- Space controls -->
-					<button data-toggle="modal" data-target="#recordModal-{{space._id.$oid}}" class="btn btn-primary">
-						<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
-					</button>
-					<button class="btn btn-danger" ng-click="deleteSpace(space)">
-						<span class="glyphicon glyphicon-remove-sign"></span> Delete this space
-					</button>
-					
-					<!-- Add records modal -->
-					<div class="modal fade" id="recordModal-{{space._id.$oid}}" role="dialog" aria-labelledby="recordModalLabel-{{space._id.$oid}}" aria-hidden="true">
-						<div class="modal-dialog">
-							<div class="modal-content">
-								<div class="modal-header">
-									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-									<h4 class="modal-title" id="recordModalLabel-{{space._id.$oid}}">Add records to this space</h4>
-								</div>
-								<div class="modal-body">
-									<form class="form-horizontal" ng-submit="searchRecords(space)">
-										<div class="form-group">
-											<div class="col-xs-10">
-												<input type="text" class="form-control" placeholder="Search in your records" ng-model="space.recordQuery" autofocus>
-											</div>
-											<div class="col-xs-2">
-												<button type="submit" class="btn btn-primary form-control">Search</button>
-											</div>
-										</div>
-									</form>
-									<p ng-show="searching">Searching...</p>
-									<p ng-show="!searching && foundRecords.length === 0">No records matched your search.</p>
-									<div ng-show="!searching && foundRecords.length > 0">
-										<div class="checkbox" ng-repeat="record in filteredRecords = (foundRecords | filter:isntInSpace)">
-											<label>
-												<input type="checkbox" name="{{record._id.$oid}}" ng-model="record.checked">
-												{{record.name}}
-											</label>
-										</div>
-										<p ng-show="filteredRecords.length === 0">All found records are already in this space.</p>
+						
+						<!-- Space controls -->
+						<button data-toggle="modal" data-target="#recordModal-{{space._id.$oid}}" class="btn btn-primary">
+							<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
+						</button>
+						<button class="btn btn-danger" ng-click="deleteSpace(space)">
+							<span class="glyphicon glyphicon-remove-sign"></span> Delete this space
+						</button>
+						
+						<!-- Add records modal -->
+						<div class="modal fade" id="recordModal-{{space._id.$oid}}" role="dialog" aria-labelledby="recordModalLabel-{{space._id.$oid}}" aria-hidden="true">
+							<div class="modal-dialog">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+										<h4 class="modal-title" id="recordModalLabel-{{space._id.$oid}}">Add records to this space</h4>
 									</div>
-								</div>
-								<div class="modal-footer">
-									<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-click="addRecords(space)">Add</button>
-									<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									<div class="modal-body">
+										<form class="form-horizontal" ng-submit="searchRecords(space)">
+											<div class="form-group">
+												<div class="col-xs-10">
+													<input type="text" class="form-control" placeholder="Search in your records" ng-model="space.recordQuery" autofocus>
+												</div>
+												<div class="col-xs-2">
+													<button type="submit" class="btn btn-primary form-control">Search</button>
+												</div>
+											</div>
+										</form>
+										<p ng-show="searching">Searching...</p>
+										<p ng-show="!searching && foundRecords.length === 0">No records matched your search.</p>
+										<div ng-show="!searching && foundRecords.length > 0">
+											<div class="checkbox" ng-repeat="record in filteredRecords = (foundRecords | filter:isntInSpace)">
+												<label>
+													<input type="checkbox" name="{{record._id.$oid}}" ng-model="record.checked">
+													{{record.name}}
+												</label>
+											</div>
+											<p ng-show="filteredRecords.length === 0">All found records are already in this space.</p>
+										</div>
+									</div>
+									<div class="modal-footer">
+										<button type="submit" class="btn btn-primary" data-dismiss="modal" ng-click="addRecords(space)">Add</button>
+										<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -133,6 +135,6 @@
 	</div>
 
 	<!-- Load spaces controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")"></script>
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")" defer></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")" defer></script>
 }

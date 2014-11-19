@@ -14,8 +14,8 @@
 			</div>
 			<h1>Market</h1>
 		</div>
-	
-		<div class="alert alert-danger alert-dismissable" ng-show="error">
+		
+		<div class="alert alert-danger alert-dismissable" ng-show="error" ng-cloak>
 			<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 			<p>{{error}}</p>
 		</div>
@@ -24,7 +24,7 @@
 		<div class="page-header">
 			<h1><small>Apps</small></h1>
 		</div>
-		<div class="row">
+		<div class="row" ng-cloak>
 			<div class="col-md-6">
 				<p class="lead">Spotlight</p>
 				<p ng-hide="apps.spotlighted.length">There are no spotlighted apps yet.</p>
@@ -57,7 +57,7 @@
 		<div class="page-header">
 			<h1><small>Visualizations</small></h1>
 		</div>
-		<div class="row">
+		<div class="row" ng-cloak>
 			<div class="col-md-6">
 				<p class="lead">Spotlight</p>
 				<p ng-hide="visualizations.spotlighted.length">There are no spotlighted visualizations yet.</p>
@@ -88,5 +88,5 @@
 	</div>
 	
 	<!-- Load market controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")"></script>
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/market.js")" defer></script>
 }
