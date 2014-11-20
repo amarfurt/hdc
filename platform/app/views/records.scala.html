@@ -29,6 +29,25 @@
 				<p ng-show="filterError">{{filterError}}</p>
 			</div>
 			
+			<!-- Show/share all records passing the filter -->
+			<div class="pull-right">
+				<button data-toggle="modal" data-target="#spacesModal" class="btn btn-primary" ng-click="activate(); loadSpaces()">
+					<span class="glyphicon glyphicon-picture"></span>
+					<span ng-show="filters[0].current.length">Show these</span>
+					<span ng-hide="filters[0].current.length">Show all</span>
+				</button>
+				<button data-toggle="modal" data-target="#circlesModal" class="btn btn-primary" ng-click="activate(); loadCircles()">
+					<span class="glyphicon glyphicon-share"></span>
+					<span ng-show="filters[0].current.length">Share these</span>
+					<span ng-hide="filters[0].current.length">Share all</span>
+				</button>
+			</div>
+			
+			<!-- Filters -->
+			<div id="records-0" ng-show="records.length > 0">
+				@filters(0)
+			</div>
+			
 			<!-- Records -->
 			<p ng-show="loadingRecords">Loading records...</p>
 			<p ng-show="!loadingRecords && records.length === 0">No available records found.</p>
@@ -38,19 +57,14 @@
 					<a href="javascript:;" ng-click="showDetails(record)">{{record.name}}</a>
 					<div class="pull-right">
 						<button data-toggle="modal" data-target="#spacesModal" class="btn btn-sm btn-primary" ng-click="activate(record); loadSpaces()">
-							<span class="glyphicon glyphicon-picture"></span> Show
+							<span class="glyphicon glyphicon-picture"></span>
 						</button>
 						<button data-toggle="modal" data-target="#circlesModal" class="btn btn-sm btn-primary" ng-class="{'disabled': !isOwnRecord(record)}" ng-click="activate(record); loadCircles()">
-							<span class="glyphicon glyphicon-share"></span> Share
+							<span class="glyphicon glyphicon-share"></span>
 						</button>
 					</div>
 				</li>
 			</ul>
-			
-			<!-- Filters -->
-			<div id="records-0" ng-show="records.length > 0">
-				@filters(0)
-			</div>
 		</div>
 		
 		<!-- Spaces modal -->

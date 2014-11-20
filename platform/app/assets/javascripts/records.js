@@ -127,7 +127,7 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 	// activate record (spaces or circles of this record are being looked at)
 	$scope.activate = function(record) {
 		_.each($scope.records, function(record) { record.active = false; });
-		record.active = true;
+		if (record) { record.active = true; }
 	}
 	
 	// get active record
@@ -163,8 +163,10 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 	prepareSpaces = function() {
 		_.each($scope.spaces, function(space) { space.checked = false; });
 		var activeRecord = getActiveRecord();
-		var spacesWithRecord = _.filter($scope.spaces, function(space) { return containsRecord(space.records, activeRecord._id); });
-		_.each(spacesWithRecord, function(space) { space.checked = true; });
+		if (activeRecord) {
+			var spacesWithRecord = _.filter($scope.spaces, function(space) { return containsRecord(space.records, activeRecord._id); });
+			_.each(spacesWithRecord, function(space) { space.checked = true; });
+		}
 	}
 	
 	// load circles
@@ -195,8 +197,10 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 	prepareCircles = function() {
 		_.each($scope.circles, function(circle) { circle.checked = false; });
 		var activeRecord = getActiveRecord();
-		var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
-		_.each(circlesWithRecord, function(circle) { circle.checked = true; });
+		if (activeRecord) {
+			var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
+			_.each(circlesWithRecord, function(circle) { circle.checked = true; });
+		}
 	}
 	
 	// helper method for contains
@@ -211,15 +215,25 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 		var checkedSpaces = _.filter($scope.spaces, function(space) { return space.checked; });
 		var spaceIds = _.map(checkedSpaces, function(space) { return space._id; });
 		var data = {"spaces": spaceIds};
-		$http.post(jsRoutes.controllers.Records.updateSpaces(activeRecord._id.$oid).url, JSON.stringify(data)).
-			success(function() {
-				$scope.error = null;
-				_.each($scope.spaces, function(space) {
-					removeRecordIfPresent(space.records, activeRecord._id);
-				});
-				_.each(checkedSpaces, function(space) { space.records.push(activeRecord._id); });
-			}).
-			error(function(err) { $scope.error = "Failed to update spaces: " + err; });
+		if (activeRecord) {
+			$http.post(jsRoutes.controllers.Records.updateSpaces(activeRecord._id.$oid).url, JSON.stringify(data)).
+				success(function() {
+					$scope.error = null;
+					_.each($scope.spaces, function(space) {
+						removeRecordIfPresent(space.records, activeRecord._id);
+					});
+					_.each(checkedSpaces, function(space) { space.records.push(activeRecord._id); });
+				}).
+				error(function(err) { $scope.error = "Failed to update spaces: " + err; });
+		} else {
+			data.records = _.pluck($scope.filteredRecords, '_id');
+			$http.post(jsRoutes.controllers.Records.showInSpaces().url, JSON.stringify(data)).
+				success(function() {
+					$scope.error = null;
+					_.each(checkedSpaces, function(space) { space.records = _.union(space.records, data.records); });
+				}).
+				error(function(err) { $scope.error = "Failed to add records to space(s): " + err; });
+		}
 	}
 	
 	// helper method for remove (in cases where object equality doesn't work)
@@ -234,28 +248,40 @@ records.controller('RecordsCtrl', ['$scope', '$http', 'filterService', 'dateServ
 	// update circles for active record
 	$scope.updateCircles = function() {
 		var activeRecord = getActiveRecord();
-		var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
 		var circlesChecked = _.filter($scope.circles, function(circle) { return circle.checked; });
-		var circleIdsWithRecord = _.map(circlesWithRecord, function(circle) { return circle._id.$oid; });
-		var circleIdsChecked = _.map(circlesChecked, function(circle) { return circle._id.$oid; });
-		var idsStarted = _.difference(circleIdsChecked, circleIdsWithRecord);
-		var idsStopped = _.difference(circleIdsWithRecord, circleIdsChecked);
-		// construct objectId objects again...
-		var circleIdsStarted = _.map(idsStarted, function(id) { return {"$oid": id}; });
-		var circleIdsStopped = _.map(idsStopped, function(id) { return {"$oid": id}; });
-		var data = {"started": circleIdsStarted, "stopped": circleIdsStopped};
-		$http.post(jsRoutes.controllers.Records.updateSharing(activeRecord._id.$oid).url, JSON.stringify(data)).
-			success(function() {
-				$scope.error = null;
-				_.each($scope.circles, function(circle) {
-					if (containsRecord(circleIdsStarted, circle._id)) {
-						circle.shared.push(activeRecord._id);
-					} else if (containsRecord(circleIdsStopped, circle._id)) {
-						removeRecordIfPresent(circle.shared, activeRecord._id);
-					}
-				});
-			}).
-			error(function(err) { $scope.error = "Failed to update circles: " + err; });
+		if (activeRecord) {
+			var circlesWithRecord = _.filter($scope.circles, function(circle) { return containsRecord(circle.shared, activeRecord._id); });
+			var circleIdsChecked = _.map(circlesChecked, function(circle) { return circle._id.$oid; });
+			var circleIdsWithRecord = _.map(circlesWithRecord, function(circle) { return circle._id.$oid; });
+			var idsStarted = _.difference(circleIdsChecked, circleIdsWithRecord);
+			var idsStopped = _.difference(circleIdsWithRecord, circleIdsChecked);
+			// construct objectId objects again...
+			var circleIdsStarted = _.map(idsStarted, function(id) { return {"$oid": id}; });
+			var circleIdsStopped = _.map(idsStopped, function(id) { return {"$oid": id}; });
+			var data = {"started": circleIdsStarted, "stopped": circleIdsStopped};
+			$http.post(jsRoutes.controllers.Records.updateSharing(activeRecord._id.$oid).url, JSON.stringify(data)).
+				success(function() {
+					$scope.error = null;
+					_.each($scope.circles, function(circle) {
+						if (containsRecord(circleIdsStarted, circle._id)) {
+							circle.shared.push(activeRecord._id);
+						} else if (containsRecord(circleIdsStopped, circle._id)) {
+							removeRecordIfPresent(circle.shared, activeRecord._id);
+						}
+					});
+				}).
+				error(function(err) { $scope.error = "Failed to update circles: " + err; });
+		} else {
+			var data = {};
+			data.circles = _.pluck(circlesChecked, '_id');
+			data.records = _.pluck($scope.filteredRecords, '_id');
+			$http.post(jsRoutes.controllers.Records.shareWithCircles().url, JSON.stringify(data)).
+				success(function() {
+					$scope.error = null;
+					_.each(circlesChecked, function(circle) { circle.shared = _.union(circle.shared, data.records)});
+				}).
+				error(function(err) { $scope.error = "Failed to share records with circle(s): " + err; });
+		}
 	}
 	
 }]);

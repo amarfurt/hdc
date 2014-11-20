@@ -1,4 +1,9 @@
 @(id: Integer)
+<!-- Add new filter button -->
+<button class="btn btn-primary" style="margin-bottom:10px;" ng-click="addFilter(@id)">
+	<span class="glyphicon glyphicon-filter"></span> Add filter
+</button>
+
 <!-- Current filters -->
 <div class="well well-sm" ng-repeat="filter in filters[@id].current">
 	<button type="button" class="close" aria-hidden="true" ng-click="removeFilter(filter)">&times;</button>
@@ -19,8 +24,3 @@
 		<div id="{{filter.id}}" style="margin-top:10px; margin-left:10px; width:250px;" ng-show="filter.property.type === 'range'"></div>
 	</form>
 </div>
-
-<!-- Add new filter button -->
-<button class="btn btn-primary" style="margin-bottom:10px;" ng-click="addFilter(@id)">
-	<span class="glyphicon glyphicon-filter"></span> Add filter
-</button>

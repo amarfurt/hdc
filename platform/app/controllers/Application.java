@@ -167,6 +167,8 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.search(),
 				controllers.routes.javascript.Records.updateSpaces(),
 				controllers.routes.javascript.Records.updateSharing(),
+				controllers.routes.javascript.Records.showInSpaces(),
+				controllers.routes.javascript.Records.shareWithCircles(),
 				// Circles
 				controllers.routes.javascript.Circles.get(),
 				controllers.routes.javascript.Circles.add(),

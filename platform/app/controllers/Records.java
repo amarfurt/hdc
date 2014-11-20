@@ -255,4 +255,83 @@ public class Records extends Controller {
 		}
 		return ok();
 	}
+
+	/**
+	 * Add a set of records to one or more spaces.
+	 */
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result showInSpaces() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "spaces", "records");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// update spaces
+		ObjectId userId = new ObjectId(request().username());
+		Set<ObjectId> spaceIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("spaces")));
+		Set<ObjectId> recordIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("records")));
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("records").get();
+		try {
+			Set<Space> spaces = Space.getAll(properties, fields);
+			for (Space space : spaces) {
+				if (spaceIds.contains(space._id)) {
+					int originalSize = space.records.size();
+					space.records.addAll(recordIds);
+					if (space.records.size() > originalSize) {
+						Space.set(space._id, "records", space.records);
+					}
+				}
+			}
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
+
+	/**
+	 * Share a set of records with possibly multiple circles.
+	 */
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result shareWithCircles() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+			JsonValidation.validate(json, "circles", "records");
+		} catch (JsonValidationException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// update circles
+		ObjectId userId = new ObjectId(request().username());
+		Set<ObjectId> circleIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("circles")));
+		Set<ObjectId> recordIds = ObjectIdConversion.castToObjectIds(JsonExtraction.extractSet(json.get("records")));
+		Map<String, ObjectId> properties = new ChainedMap<String, ObjectId>().put("owner", userId).get();
+		Set<String> fields = new ChainedSet<String>().add("shared").add("members").get();
+		try {
+			Set<Circle> circles = Circle.getAll(properties, fields);
+
+			// update 'shared' field of circles and collect all members
+			Set<ObjectId> members = new HashSet<ObjectId>();
+			for (Circle circle : circles) {
+				if (circleIds.contains(circle._id)) {
+					int originalSize = circle.shared.size();
+					circle.shared.addAll(recordIds);
+					if (circle.shared.size() > originalSize) {
+						Circle.set(circle._id, "shared", circle.shared);
+						members.addAll(circle.members);
+					}
+				}
+			}
+
+			// make record visible to members
+			Users.makeVisible(userId, recordIds, members);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
 }
