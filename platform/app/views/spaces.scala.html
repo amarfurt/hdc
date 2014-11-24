@@ -39,9 +39,22 @@
 									<iframe id="iframe-{{space._id.$oid}}" height="600px" width="100%" ng-show="space.trustedUrl"></iframe>
 								</div>
 							</div>
+							<div class="col-lg-6" ng-show="space.compare">
+								<!-- Visualization -->
+								<p ng-hide="space.copy.trustedUrl">Loading space...</p>
+								<div id="iframe-placeholder-copy-{{space._id.$oid}}">
+									<iframe id="iframe-copy-{{space._id.$oid}}" height="600px" width="100%" ng-show="space.copy.trustedUrl"></iframe>
+								</div>
+							</div>
 						</div>
 						
 						<!-- Space controls -->
+						<button class="btn btn-default" ng-hide="space.compare" ng-click="startCompare(space)">
+							<span class="glyphicon glyphicon-adjust"></span> Compare
+						</button>
+						<button class="btn btn-default" ng-show="space.compare" ng-click="endCompare(space)">
+							<span class="glyphicon glyphicon-ban-circle"></span> Finished comparing
+						</button>
 						<button data-toggle="modal" data-target="#recordModal-{{space._id.$oid}}" class="btn btn-primary">
 							<span class="glyphicon glyphicon-plus-sign"></span> Add a record to this space
 						</button>
@@ -135,6 +148,5 @@
 	</div>
 
 	<!-- Load spaces controller -->
-	<script type="text/javascript" src="@routes.Assets.at("javascripts/date.js")" defer></script>
 	<script type="text/javascript" src="@routes.Assets.at("javascripts/spaces.js")" defer></script>
 }

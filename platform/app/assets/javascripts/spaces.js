@@ -1,5 +1,5 @@
-var spaces = angular.module('spaces', ['date']);
-spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', 'dateService', function($scope, $http, $sce, dateService) {
+var spaces = angular.module('spaces', []);
+spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
 	
 	// init
 	$scope.error = null;
@@ -82,6 +82,27 @@ spaces.controller('SpacesCtrl', ['$scope', '$http', '$sce', 'dateService', funct
 		// set src attribute of iframe to avoid creating an entry in the browser history
 		iframe.attr("src", space.trustedUrl);
 		$("#iframe-placeholder-" + space._id.$oid).append(iframe);
+	}
+	
+	// start side-by-side display of current visualization
+	$scope.startCompare = function(space) {
+		// copy relevant properties
+		space.copy = {};
+		space.copy._id = {"$oid": "copy-" + space._id.$oid};
+		space.copy.name = space.name;
+		space.copy.completedUrl = space.completedUrl;
+		
+		// detach/attach iframe to force loading
+		reloadIframe(space.copy);
+		
+		// start side-by-side display
+		space.compare = true;
+	}
+
+	// end side-by-side display of current visualization
+	$scope.endCompare = function(space) {
+		space.compare = false;
+		space.copy = {};
 	}
 	
 	// load all installed visualizations (for creating a new space)
