@@ -1,0 +1,48 @@
+@setup("Password Assistance - Step 1") {
+	<!-- Navbar -->
+	<div id="navbar" class="navbar navbar-default" role="navigation">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="@routes.Messages.index()">
+           		<img class="navbar-brand" src="@routes.Assets.at("images/logo.png")" alt="Health Data Cooperative" />
+           	</a>
+		</div>
+	</div>
+
+	<div class="container" ng-app="lostpw" ng-controller="LostPasswordCtrl" ng-cloak>
+		<div class="row">
+			<!-- Login -->
+			<div class="col-sm-12">
+				<div class="panel-container" style="max-width:600px; padding-top:120px; margin:0 auto;">
+					<div class="panel panel-default">
+		            	<div class="panel-heading">
+		              		<h3 class="panel-title">Password Assistance - Step 1</h3>
+		            	</div>
+		            	<div class="panel-body">
+			            	<div class="alert alert-danger" ng-show="lostpw.error">
+								<p>{{lostpw.error}}</p>
+							</div>
+							<div class="alert alert-success" ng-show="lostpw.success">
+								<p>We have sent you an email with instructions on how to reset your password.</p>
+							</div>
+							<p>Enter the e-mail address associated with your account, then click Continue. We'll email you a link to a page where you can easily create a new password.</p>
+							<form ng-submit="submit()" role="form">
+								<input type="email" class="form-control" placeholder="Email address" ng-model="lostpw.email" style="margin-bottom:5px;" autofocus>								
+								<button type="submit" class="btn btn-primary btn-block">Continue</button>
+							</form>
+		            	</div>
+					</div>
+				</div>
+			</div>
+			
+		</div>
+	</div>
+	
+	<!-- Load login controller -->
+	<script type="text/javascript" src="@routes.Assets.at("javascripts/lostpw.js")" defer></script>
+}

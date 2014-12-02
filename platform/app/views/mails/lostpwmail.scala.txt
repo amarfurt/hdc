@@ -1,0 +1,7 @@
+@(website: String)(resetlink: String)
+Dear User,
+
+if you want to reset your password for @website,
+click on the link below and enter a new password.
+
+@resetlink

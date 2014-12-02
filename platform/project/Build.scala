@@ -2,6 +2,8 @@ import sbt._
 import Keys._
 import play.Play.autoImport._
 import PlayKeys._
+import com.typesafe.sbt.less.Import.LessKeys
+import com.typesafe.sbt.web.Import.Assets
 
 object ApplicationBuild extends Build {
 
@@ -13,13 +15,19 @@ object ApplicationBuild extends Build {
     javaCore,
     javaWs,
     "org.mongodb" % "mongo-java-driver" % "2.12.2",
-    "org.elasticsearch" % "elasticsearch" % "1.2.1"
+    "org.elasticsearch" % "elasticsearch" % "1.2.1"  
   )
+
 
   val main = Project(appName, file(".")).enablePlugins(play.PlayJava).settings(
   	// Add your own project settings here
   	version := appVersion,
-  	libraryDependencies ++= appDependencies
+  	Keys.includeFilter in (Assets, LessKeys.less) := "*.less",
+  	Keys.excludeFilter in (Assets, LessKeys.less) := "_*.less",
+  	libraryDependencies ++= appDependencies,
+  	libraryDependencies ++= Seq(
+  	  "com.typesafe.play.plugins" %% "play-plugins-mailer" % "2.3.1"
+  	)  	 
   )
 
 }

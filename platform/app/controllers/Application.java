@@ -10,16 +10,22 @@ import models.User;
 
 import org.bson.types.ObjectId;
 
+import play.Play;
 import play.Routes;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.DateTimeUtils;
+import utils.auth.PasswordResetToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
 import utils.json.JsonValidation;
 import utils.json.JsonValidation.JsonValidationException;
+import utils.mails.MailUtils;
 import views.html.welcome;
+import views.html.lostpw;
+import views.html.setpw;
+import views.txt.mails.lostpwmail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -28,7 +34,91 @@ public class Application extends Controller {
 	public static Result welcome() {
 		return ok(welcome.render());
 	}
+	
+	public static Result lostpw() {
+		return ok(lostpw.render());
+	}
 
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result requestPasswordResetToken() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+		  JsonValidation.validate(json, "email");
+		} catch (JsonValidationException e) {
+		  return badRequest(e.getMessage());
+		}
+
+		// validate request
+		String email = json.get("email").asText();
+		
+		Map<String, String> emailQuery = new ChainedMap<String, String>().put("email", email).get();
+		User user;
+		try {
+			if (User.exists(emailQuery)) {				
+			   user = User.get(emailQuery, new ChainedSet<String>().add("name").add("email").add("password").get());				
+			   
+			   PasswordResetToken token = new PasswordResetToken(user._id);
+			   User.set(user._id, "resettoken", token.token);
+			   User.set(user._id, "resettokenTs", System.currentTimeMillis());
+			   String encrypted = token.encrypt();
+			   
+			   String site = "https://" + Play.application().configuration().getString("platform.server");
+			   String url = site + "/setpw#?token=" + encrypted;
+			   
+			   MailUtils.sendTextMail(email, user.name, "Your Password", lostpwmail.render(site,url));
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+		
+		return ok();
+	}
+	
+	public static Result setpw() {
+		return ok(setpw.render());
+	}
+	
+	@BodyParser.Of(BodyParser.Json.class)
+	public static Result setPasswordWithToken() {
+		// validate json
+		JsonNode json = request().body().asJson();
+		try {
+		  JsonValidation.validate(json, "token", "password");
+		} catch (JsonValidationException e) {
+		  return badRequest(e.getMessage());
+		}
+
+		// validate request
+		PasswordResetToken passwordResetToken = PasswordResetToken.decrypt(json.get("token").asText());
+		if (passwordResetToken == null) return badRequest("Missing or bad password token.");
+		
+		ObjectId userId = passwordResetToken.userId;
+		String token = passwordResetToken.token;
+		String password = json.get("password").asText();
+		
+				
+		Map<String, Object> emailQuery = new ChainedMap<String, Object>().put("_id", userId).get();
+		User user;
+		try {
+			if (User.exists(emailQuery)) {				
+			   user = User.get(emailQuery, new ChainedSet<String>().add("resettoken").add("password").add("resettokenTs").get());				
+		       if (user.resettoken != null 
+		    		    
+		    		   && user.resettoken.equals(token)
+		    		   && System.currentTimeMillis() - user.resettokenTs < 1000 * 60 * 15) {	   
+			   
+		           User.set(userId, "resettoken", null);		       
+			       User.set(userId, "password", User.encrypt(password));
+		       } else return badRequest("Password reset token has already expired.");
+			}
+		} catch (ModelException e) {
+			return internalServerError(e.getMessage());
+		}
+				
+		return ok();		
+	}
+	
 	@BodyParser.Of(BodyParser.Json.class)
 	public static Result authenticate() {
 		// validate json
@@ -128,8 +218,11 @@ public class Application extends Controller {
 		return ok(Routes.javascriptRouter(
 				"jsRoutes",
 				// Application
+				controllers.routes.javascript.Application.welcome(),
 				controllers.routes.javascript.Application.authenticate(),
 				controllers.routes.javascript.Application.register(),
+				controllers.routes.javascript.Application.requestPasswordResetToken(),
+				controllers.routes.javascript.Application.setPasswordWithToken(),
 				// Apps
 				controllers.routes.javascript.Apps.details(),
 				controllers.routes.javascript.Apps.get(),

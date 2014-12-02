@@ -29,6 +29,9 @@ public class User extends Model implements Comparable<User> {
 	public Set<ObjectId> news; // visible news items
 	public Set<ObjectId> pushed; // records pushed by apps (since last login)
 	public Set<ObjectId> shared; // records shared by users (since last login)
+	
+	public String resettoken; // token to reset password
+	public long resettokenTs; // timestamp of password reset token
 
 	@Override
 	public int compareTo(User other) {
