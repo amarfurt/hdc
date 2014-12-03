@@ -22,6 +22,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
+import utils.db.FileStorage;
+import utils.db.FileStorage.FileData;
 import utils.db.ObjectIdConversion;
 import utils.json.JsonExtraction;
 import utils.json.JsonValidation;
@@ -333,5 +335,14 @@ public class Records extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok();
+	}
+
+	/**
+	 * Get the file associated with a record.
+	 */
+	public static Result getFile(String id) {
+		FileData fileData = FileStorage.retrieve(new ObjectId(id));
+		response().setHeader("Content-Disposition", "attachment; filename=" + fileData.filename);
+		return ok(fileData.inputStream);
 	}
 }
