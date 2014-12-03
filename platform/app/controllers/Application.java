@@ -262,6 +262,7 @@ public class Application extends Controller {
 				controllers.routes.javascript.Records.updateSharing(),
 				controllers.routes.javascript.Records.showInSpaces(),
 				controllers.routes.javascript.Records.shareWithCircles(),
+				controllers.routes.javascript.Records.getFile(),
 				// Circles
 				controllers.routes.javascript.Circles.get(),
 				controllers.routes.javascript.Circles.add(),

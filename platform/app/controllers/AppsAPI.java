@@ -1,5 +1,6 @@
 package controllers;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,15 +23,20 @@ import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
+import play.mvc.Http.MultipartFormData;
+import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Result;
 import utils.DateTimeUtils;
 import utils.auth.AppToken;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
+import utils.db.DatabaseException;
+import utils.db.FileStorage;
 import utils.json.JsonValidation;
 import utils.json.JsonValidation.JsonValidationException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.util.JSONParseException;
@@ -99,6 +105,72 @@ public class AppsAPI extends Controller {
 		try {
 			Record.add(record);
 		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		return ok();
+	}
+
+	/**
+	 * Accepts and stores files up to sizes of 2GB.
+	 */
+	public static Result uploadFile() {
+		// allow cross origin request from app server
+		String appServer = Play.application().configuration().getString("apps.server");
+		response().setHeader("Access-Control-Allow-Origin", "https://" + appServer);
+
+		// check meta data
+		MultipartFormData formData = request().body().asMultipartFormData();
+		Map<String, String[]> metaData = formData.asFormUrlEncoded();
+		if (!metaData.containsKey("authToken") || !metaData.containsKey("name") || !metaData.containsKey("description")) {
+			return badRequest("At least one request parameter is missing.");
+		}
+
+		// decrypt authToken and check whether a user exists who has the app installed
+		if (metaData.get("authToken").length != 1) {
+			return badRequest("Invalid authToken.");
+		}
+		AppToken appToken = AppToken.decrypt(metaData.get("authToken")[0]);
+		if (appToken == null) {
+			return badRequest("Invalid authToken.");
+		}
+		Map<String, ObjectId> userProperties = new ChainedMap<String, ObjectId>().put("_id", appToken.userId).put("apps", appToken.appId)
+				.get();
+		try {
+			if (!User.exists(userProperties)) {
+				return badRequest("Invalid authToken.");
+			}
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+
+		// extract file from data
+		FilePart fileData = formData.getFile("file");
+		if (fileData == null) {
+			return badRequest("No file found.");
+		}
+		File file = fileData.getFile();
+		String filename = fileData.getFilename();
+		String contentType = fileData.getContentType();
+
+		// create record
+		Record record = new Record();
+		record._id = new ObjectId();
+		record.app = appToken.appId;
+		record.owner = appToken.userId;
+		record.creator = appToken.userId;
+		record.created = DateTimeUtils.now();
+		record.name = metaData.get("name")[0];
+		record.description = metaData.get("description")[0];
+		record.data = new BasicDBObject(new ChainedMap<String, String>().put("type", "file").put("name", filename)
+				.put("contentType", contentType).get());
+
+		// save file with file storage utility
+		try {
+			Record.add(record);
+			FileStorage.store(file, record._id, filename, contentType);
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		} catch (DatabaseException e) {
 			return badRequest(e.getMessage());
 		}
 		return ok();

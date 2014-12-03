@@ -80,7 +80,7 @@ public class Database {
 	/**
 	 * Get a connection to the database in use.
 	 */
-	private static DB getDB() {
+	static DB getDB() {
 		return mongoClient.getDB(database);
 	}
 
