@@ -13,13 +13,16 @@ details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 		success(function(records) {
 			$scope.record = records[0];
 			$scope.record.json = JSON.stringify($scope.record.data, null, "\t");
+			if (_.has($scope.record.data, "type") && $scope.record.data.type === "file") {
+				$scope.downloadLink = jsRoutes.controllers.Records.getFile(recordId).url;
+			}
 			loadUserNames();
 			loadAppName();
 			rewriteCreated();
 		}).
 		error(function(err) { $scope.error = "Failed to load record details: " + err; });
 	
-	loadUserNames = function() {
+	var loadUserNames = function() {
 		var data = {"properties": {"_id": [$scope.record.owner, $scope.record.creator]}, "fields": ["name"]};
 		$http.post(jsRoutes.controllers.Users.get().url, JSON.stringify(data)).
 			success(function(users) {
@@ -31,14 +34,14 @@ details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 			error(function(err) { $scope.error = "Failed to load names: " + err; });
 	}
 	
-	loadAppName = function() {
+	var loadAppName = function() {
 		var data = {"properties": {"_id": $scope.record.app}, "fields": ["name"]};
 		$http.post(jsRoutes.controllers.Apps.get().url, JSON.stringify(data)).
 			success(function(apps) { $scope.record.app = apps[0].name; }).
 			error(function(err) { $scope.error = "Failed to load app name: " + err; });
 	}
 	
-	rewriteCreated = function() {
+	var rewriteCreated = function() {
 		var split = $scope.record.created.split(" ");
 		$scope.record.created = split[0] + " at " + split[1];
 	}

@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import models.Circle;
+import models.LargeRecord;
 import models.ModelException;
 import models.Record;
 import models.Space;
@@ -22,6 +23,8 @@ import play.mvc.Result;
 import play.mvc.Security;
 import utils.collections.ChainedMap;
 import utils.collections.ChainedSet;
+import utils.db.FileStorage;
+import utils.db.FileStorage.FileData;
 import utils.db.ObjectIdConversion;
 import utils.json.JsonExtraction;
 import utils.json.JsonValidation;
@@ -76,14 +79,23 @@ public class Records extends Controller {
 		// get records
 		Map<String, Object> properties = JsonExtraction.extractMap(json.get("properties"));
 		Set<String> fields = JsonExtraction.extractStringSet(json.get("fields"));
-		return getRecords(properties, fields);
-	}
-
-	static Result getRecords(Map<String, ? extends Object> properties, Set<String> fields) {
-		// Also used by Visualizations API
 		List<Record> records;
 		try {
 			records = new ArrayList<Record>(Record.getAll(properties, fields));
+		} catch (ModelException e) {
+			return badRequest(e.getMessage());
+		}
+		Collections.sort(records);
+		return ok(Json.toJson(records));
+	}
+
+	/**
+	 * Returns record data for visualizations. Also fetches the information for large records.
+	 */
+	static Result getRecordData(Map<String, Object> properties, Set<String> fields) {
+		List<Record> records;
+		try {
+			records = new ArrayList<Record>(LargeRecord.getAll(properties, fields));
 		} catch (ModelException e) {
 			return badRequest(e.getMessage());
 		}
@@ -333,5 +345,14 @@ public class Records extends Controller {
 			return badRequest(e.getMessage());
 		}
 		return ok();
+	}
+
+	/**
+	 * Get the file associated with a record.
+	 */
+	public static Result getFile(String id) {
+		FileData fileData = FileStorage.retrieve(new ObjectId(id));
+		response().setHeader("Content-Disposition", "attachment; filename=" + fileData.filename);
+		return ok(fileData.inputStream);
 	}
 }
