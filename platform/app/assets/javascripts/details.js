@@ -3,7 +3,6 @@ details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 	// init
 	$scope.error = null;
 	$scope.record = {};
-	$scope.isFile = false;
 	
 	// parse record id (format: /record/:id) and load the record
 	var recordId = window.location.pathname.split("/")[2];
@@ -16,7 +15,6 @@ details.controller('RecordCtrl', ['$scope', '$http', function($scope, $http) {
 			$scope.record.json = JSON.stringify($scope.record.data, null, "\t");
 			if (_.has($scope.record.data, "type") && $scope.record.data.type === "file") {
 				$scope.downloadLink = jsRoutes.controllers.Records.getFile(recordId).url;
-				$scope.isFile = true;
 			}
 			loadUserNames();
 			loadAppName();
