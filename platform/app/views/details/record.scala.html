@@ -9,6 +9,10 @@
 				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
 				<p>{{error}}</p>
 			</div>
+			<div class="alert alert-warning alert-dismissable" ng-show="record.data.type === 'largeRecord'">
+				<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+				<p>This is a very large record which has been divided into chunks internally. Only the index information is shown here.</p>
+			</div>
 			
 			<div class="row">
 				<p class="col-sm-2">Name:</p>
@@ -19,19 +23,19 @@
 				<p class="col-sm-10">{{record.owner}}</p>
 			</div>
 			<div class="row">
-				<p class="col-sm-2">Created with:</p>
-				<p class="col-sm-10">{{record.app}}</p>
-			</div>
-			<div class="row">
 				<p class="col-sm-2">Created by:</p>
 				<p class="col-sm-10">{{record.creator}}</p>
+			</div>
+			<div class="row">
+				<p class="col-sm-2">Created with:</p>
+				<p class="col-sm-10">{{record.app}}</p>
 			</div>
 			<div class="row">
 				<p class="col-sm-2">Created on:</p>
 				<p class="col-sm-10">{{record.created}}</p>
 			</div>
 			<div class="well" style="white-space: pre-wrap;" ng-show="record.json">{{record.json}}</div>
-			<a href="{{downloadLink}}" target="_self" class="btn btn-primary" ng-show="isFile">Download</a>
+			<a href="{{downloadLink}}" target="_self" class="btn btn-primary" ng-show="record.data.type === 'file'">Download</a>
 		</div>
 	</div>
 	

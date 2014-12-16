@@ -128,7 +128,7 @@ public class VisualizationsAPI extends Controller {
 			return badRequest("No set of record ids found.");
 		}
 
-		// get records
-		return Records.getRecords(properties, fields);
+		// get record data
+		return Records.getRecordData(properties, fields);
 	}
 }
